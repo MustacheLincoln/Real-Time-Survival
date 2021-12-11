@@ -7,6 +7,7 @@ using UnityEngine.AI;
 public class PlayerController : MonoBehaviour
 {
     NavMeshAgent navMeshAgent;
+    PlayerVitals vitals;
     Camera cam;
 
     float speed = 10;
@@ -21,12 +22,19 @@ public class PlayerController : MonoBehaviour
     Vector3 velocity;
     float turnSpeed;
 
+    KeyCode eatKey;
+    KeyCode eatButton;
+
     private void Start()
     {
         navMeshAgent = GetComponent<NavMeshAgent>();
+        vitals = GetComponent<PlayerVitals>();
         cam = Camera.main;
         navMeshAgent.speed = speed;
         navMeshAgent.acceleration = acceleration;
+
+        eatKey = KeyCode.Space;
+        eatButton = KeyCode.Joystick1Button0;
     }
 
     private void Update()
@@ -50,9 +58,11 @@ public class PlayerController : MonoBehaviour
         navMeshAgent.Move(velocity*Time.deltaTime);
 
 
-        if (Input.GetButtonDown("Jump"))
+        if (Input.GetKeyDown(eatKey) || Input.GetKeyDown(eatButton))
         {
-            navMeshAgent.destination = Vector3.zero;
+            float cals = 10;
+            if (vitals.calories < vitals.maxCalories - cals)
+                vitals.Eat(cals);
         }
     }
 

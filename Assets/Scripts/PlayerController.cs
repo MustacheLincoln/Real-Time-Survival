@@ -8,6 +8,7 @@ public class PlayerController : MonoBehaviour, IDamageable<float>, INoiseEmittab
 {
     NavMeshAgent navMeshAgent;
     PlayerVitals vitals;
+    FieldOfView fov;
     Camera cam;
 
     float speed;
@@ -33,8 +34,6 @@ public class PlayerController : MonoBehaviour, IDamageable<float>, INoiseEmittab
     Vector3 currentPos;
     Vector3 lastPos;
     GameObject pickingUp;
-    float tickTime = .5f;
-    float tick;
     float pulseTime = .5f;
     float pulse;
 
@@ -52,6 +51,7 @@ public class PlayerController : MonoBehaviour, IDamageable<float>, INoiseEmittab
     {
         navMeshAgent = GetComponent<NavMeshAgent>();
         vitals = GetComponent<PlayerVitals>();
+        fov = GetComponent<FieldOfView>();
         cam = Camera.main;
         navMeshAgent.speed = walkSpeed;
         navMeshAgent.acceleration = acceleration;
@@ -70,13 +70,6 @@ public class PlayerController : MonoBehaviour, IDamageable<float>, INoiseEmittab
     {
         CaptureInput();
         CalculateCamera();
-
-        tick -= Time.deltaTime;
-        if (tick <= 0)
-        {
-            NearestInteraction();
-            tick = tickTime;
-        }
 
         MovementType();
 
@@ -99,10 +92,10 @@ public class PlayerController : MonoBehaviour, IDamageable<float>, INoiseEmittab
         {
             if (Input.GetKey(pickUpKey) || Input.GetKey(pickUpButton))
             {
-                if (NearestInteraction())
+                if (fov.target)
                 {
-                    if (NearestInteraction().name != "Door")
-                        pickingUp = NearestInteraction();
+                    if (fov.target.name != "Door")
+                        pickingUp = fov.target;
                 }
                 if (pickingUp)
                     navMeshAgent.destination = pickingUp.transform.position;
@@ -111,15 +104,15 @@ public class PlayerController : MonoBehaviour, IDamageable<float>, INoiseEmittab
 
         if (Input.GetKeyDown(pickUpKey) || Input.GetKeyDown(pickUpButton))
         {
-            if (NearestInteraction())
+            if (fov.target)
             {
-                if (NearestInteraction().name == "Door")
+                if (fov.target.name == "Door")
                 {
-                    if (Vector3.Distance(transform.position, NearestInteraction().transform.position) < grabDistance)
-                        NearestInteraction().GetComponent<Door>().Interact();
+                    if (Vector3.Distance(transform.position, fov.target.transform.position) < grabDistance)
+                        fov.target.GetComponent<Door>().Interact();
                 }
                 else
-                    pickingUp = NearestInteraction();
+                    pickingUp = fov.target;
             }
         }
 
@@ -160,7 +153,10 @@ public class PlayerController : MonoBehaviour, IDamageable<float>, INoiseEmittab
                     state = State.Running;
                 }
                 else
-                    return;
+                {
+                    speed = walkSpeed;
+                    state = State.Walking;
+                }
             }
             else if (Input.GetKey(crouchKey) || Input.GetKey(crouchButton))
             {
@@ -211,28 +207,6 @@ public class PlayerController : MonoBehaviour, IDamageable<float>, INoiseEmittab
             foreach (Collider zombie in hitZombies)
                 zombie.gameObject.GetComponent<Zombie>().StartChase(gameObject);
         }
-    }
-
-    private GameObject NearestInteraction()
-    {
-        Collider[] hitInteractions = Physics.OverlapSphere(transform.position, 5, 1 << LayerMask.NameToLayer("Interactable"));
-        if (hitInteractions.Length > 0)
-        {
-            Collider closest = null;
-            float closestDist = Mathf.Infinity;
-            foreach (Collider interaction in hitInteractions)
-            {
-                float dist = Vector3.Distance(interaction.transform.position, transform.position);
-                if (dist < closestDist)
-                {
-                    closest = interaction;
-                    closestDist = dist;
-                }
-            }
-            return closest.gameObject;
-        }
-        else
-            return null;
     }
 
     private void CaptureInput()

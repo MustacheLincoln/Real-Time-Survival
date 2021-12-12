@@ -6,6 +6,7 @@ using UnityEngine.AI;
 public class Zombie : MonoBehaviour, IDamageable<float>
 {
     NavMeshAgent navMeshAgent;
+    FieldOfView fov;
 
     float walkSpeed = 1;
     float runSpeed = 3;
@@ -30,6 +31,7 @@ public class Zombie : MonoBehaviour, IDamageable<float>
     private void Start()
     {
         navMeshAgent = GetComponent<NavMeshAgent>();
+        fov = GetComponent<FieldOfView>();
         windUp = attackSpeed;
         health = maxHealth;
         navMeshAgent.speed = runSpeed;
@@ -48,6 +50,9 @@ public class Zombie : MonoBehaviour, IDamageable<float>
                 Chase();
                 break;
         }
+
+        if (fov.target)
+            StartChase(fov.target);
 
         if (health <= 0)
             Destroy(gameObject);

@@ -1,8 +1,9 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class PlayerVitals : MonoBehaviour
+public class PlayerVitals : MonoBehaviour, IDamageable<float>
 {
     PlayerController player;
     public float maxMaxHealth = 100;
@@ -74,10 +75,25 @@ public class PlayerVitals : MonoBehaviour
         }
         else
             health -= 1;
+
+        if (health <= 0)
+        {
+            Die();
+        }
+    }
+
+    private void Die()
+    {
+        Destroy(gameObject);
     }
 
     public void Eat(float cals)
     {
         calories += cals;
+    }
+
+    public void TakeDamage(float damage)
+    {
+        health -= damage;
     }
 }

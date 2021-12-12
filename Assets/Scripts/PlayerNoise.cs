@@ -10,11 +10,13 @@ public class PlayerNoise : MonoBehaviour
     float walkRadius = 5;
     float runRadius = 10;
     float crouchRadius = 3;
+    float noiseSphereRadius;
+    float pulseTime = .5f;
+    float pulse;
 
     private void Start()
     {
         player = GetComponent<PlayerController>();
-        noiseSphere = GetComponent<SphereCollider>();
     }
 
     private void Update()
@@ -22,17 +24,34 @@ public class PlayerNoise : MonoBehaviour
         switch (player.state)
         {
             case PlayerController.State.Idle:
-                noiseSphere.radius = idleRadius;
+                noiseSphereRadius = idleRadius;
                 break;
             case PlayerController.State.Walking:
-                noiseSphere.radius = walkRadius;
+                noiseSphereRadius = walkRadius;
                 break;
             case PlayerController.State.Running:
-                noiseSphere.radius = runRadius;
+                noiseSphereRadius = runRadius;
                 break;
             case PlayerController.State.Crouching:
-                noiseSphere.radius = crouchRadius;
+                noiseSphereRadius = crouchRadius;
                 break;
+        }
+
+        pulse -= 1 * Time.deltaTime;
+        if (pulse <= 0)
+        {
+            EmitSound();
+            pulse = pulseTime;
+        }
+    }
+
+    public void EmitSound()
+    {
+        Collider[] hitZombies = Physics.OverlapSphere(transform.position, noiseSphereRadius, 1 << LayerMask.NameToLayer("Zombie"));
+        if (hitZombies.Length > 0)
+        {
+            foreach (Collider zombie in hitZombies)
+                zombie.gameObject.GetComponent<Zombie>().ChaseTarget(gameObject);
         }
     }
 }

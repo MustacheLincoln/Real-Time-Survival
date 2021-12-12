@@ -11,9 +11,9 @@ public class PlayerController : MonoBehaviour
     Camera cam;
 
     float speed;
-    float walkSpeed = 10;
-    float runSpeed = 20;
-    float crouchSpeed = 5;
+    float walkSpeed = 3;
+    float runSpeed = 6;
+    float crouchSpeed = 1.5f;
     float acceleration = 50;
     float turnSpeedLow = 7;
     float turnSpeedHigh = 15;

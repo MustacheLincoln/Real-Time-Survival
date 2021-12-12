@@ -14,7 +14,7 @@ public class Zombie : MonoBehaviour, IDamageable<float>
     float windUp;
     float maxHealth = 100;
     float health;
-    float attackDamage = 10;
+    float attackDamage = 5;
     float wanderTime = 20;
     float wandering;
     float chaseTime = 10;
@@ -42,23 +42,10 @@ public class Zombie : MonoBehaviour, IDamageable<float>
         switch (state)
         {
             case State.Wander:
-                wandering -= Time.deltaTime;
-                if (wandering <= 0)
-                {
-                    wandering = wanderTime + Random.Range(-10, 10);
-                    newRotation = Quaternion.Euler(0, Random.Range(0, 360), 0);
-                }
-                transform.rotation = Quaternion.Lerp(transform.rotation, newRotation, turnSpeed * Time.deltaTime);
-                navMeshAgent.ResetPath();
-                navMeshAgent.Move(transform.forward * walkSpeed * Time.deltaTime);
+                Wander();
                 break;
             case State.Chase:
-                chasing -= Time.deltaTime;
-                if (chasing <= 0)
-                {
-                    chasing = chaseTime;
-                    state = State.Wander;
-                }
+                Chase();
                 break;
         }
 
@@ -66,10 +53,36 @@ public class Zombie : MonoBehaviour, IDamageable<float>
             Destroy(gameObject);
     }
 
-    public void ChaseTarget(GameObject target)
+    private void Wander()
+    {
+        wandering -= Time.deltaTime;
+        if (wandering <= 0)
+        {
+            wandering = wanderTime + Random.Range(-10, 10);
+            newRotation = Quaternion.Euler(0, Random.Range(0, 360), 0);
+            walkSpeed = Random.Range(0f, 1f);
+            if (walkSpeed < .25f)
+                walkSpeed = 0;
+        }
+        transform.rotation = Quaternion.Lerp(transform.rotation, newRotation, turnSpeed * Time.deltaTime);
+        navMeshAgent.ResetPath();
+        navMeshAgent.Move(transform.forward * walkSpeed * Time.deltaTime);
+    }
+
+    private void Chase()
+    {
+        chasing -= Time.deltaTime;
+        if (chasing <= 0)
+        {
+            state = State.Wander;
+        }
+    }
+
+    public void StartChase(GameObject target)
     {
         navMeshAgent.destination = target.transform.position;
         state = State.Chase;
+        chasing = chaseTime + Random.Range(-3, 3); ;
     }
     private void OnTriggerStay(Collider other)
     {

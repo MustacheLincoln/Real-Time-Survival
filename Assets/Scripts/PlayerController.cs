@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.AI;
 
-public class PlayerController : MonoBehaviour
+public class PlayerController : MonoBehaviour, IDamageable<float>, INoiseEmittable
 {
     NavMeshAgent navMeshAgent;
     PlayerVitals vitals;
@@ -18,8 +18,11 @@ public class PlayerController : MonoBehaviour
     float turnSpeedLow = 7;
     float turnSpeedHigh = 15;
     float grabDistance = 1.5f;
-    float tick = .5f;
-    float t;
+    float idleRadius = 2;
+    float walkRadius = 5;
+    float runRadius = 10;
+    float crouchRadius = 3;
+    float noiseSphereRadius;
 
     Vector2 input;
     Vector3 camForward;
@@ -29,9 +32,11 @@ public class PlayerController : MonoBehaviour
     float turnSpeed;
     Vector3 currentPos;
     Vector3 lastPos;
-    bool isMoving;
-    public GameObject nearestPickUp;
     GameObject pickingUp;
+    float tickTime = .5f;
+    float tick;
+    float pulseTime = .5f;
+    float pulse;
 
     KeyCode pickUpKey;
     KeyCode pickUpButton;
@@ -56,7 +61,7 @@ public class PlayerController : MonoBehaviour
         runKey = KeyCode.LeftShift;
         runButton = KeyCode.Joystick1Button5;
         crouchKey = KeyCode.LeftControl;
-        crouchButton = KeyCode.Joystick1Button1;
+        crouchButton = KeyCode.Joystick1Button4;
 
         state = State.Idle;
     }
@@ -66,18 +71,86 @@ public class PlayerController : MonoBehaviour
         CaptureInput();
         CalculateCamera();
 
-        t -= Time.deltaTime;
-        if (t <= 0)
+        tick -= Time.deltaTime;
+        if (tick <= 0)
         {
-            GetNearestInteraction();
-            t = tick;
+            NearestInteraction();
+            tick = tickTime;
         }
 
-        currentPos = transform.position;
-        isMoving = (currentPos != lastPos);
-        lastPos = currentPos;
+        MovementType();
 
-        if (isMoving)
+        velocity = Vector3.Lerp(velocity, transform.forward * input.magnitude * speed, acceleration * Time.deltaTime);
+
+        navMeshAgent.Move(velocity*Time.deltaTime);
+
+        turnSpeed = Mathf.Lerp(turnSpeedHigh, turnSpeedLow, velocity.magnitude / 5);
+
+        navMeshAgent.speed = speed;
+
+        if (input.magnitude > 0)
+        {
+            navMeshAgent.ResetPath();
+            pickingUp = null;
+            intent = camForward * input.y + camRight * input.x;
+            transform.rotation = Quaternion.Lerp(transform.rotation, Quaternion.LookRotation(intent), turnSpeed * Time.deltaTime);
+        }
+        else
+        {
+            if (Input.GetKey(pickUpKey) || Input.GetKey(pickUpButton))
+            {
+                if (NearestInteraction())
+                {
+                    if (NearestInteraction().name != "Door")
+                        pickingUp = NearestInteraction();
+                }
+                if (pickingUp)
+                    navMeshAgent.destination = pickingUp.transform.position;
+            }
+        }
+
+        if (Input.GetKeyDown(pickUpKey) || Input.GetKeyDown(pickUpButton))
+        {
+            if (NearestInteraction())
+            {
+                if (NearestInteraction().name == "Door")
+                {
+                    if (Vector3.Distance(transform.position, NearestInteraction().transform.position) < grabDistance)
+                        NearestInteraction().GetComponent<Door>().Interact();
+                }
+                else
+                    pickingUp = NearestInteraction();
+            }
+        }
+
+        if (pickingUp)
+        {
+            if (Vector3.Distance(transform.position, pickingUp.transform.position) < grabDistance)
+            {
+                Destroy(pickingUp);
+                pickingUp = null;
+                float cals = 10;
+                if (vitals.calories < vitals.maxCalories - cals)
+                    Eat(cals);
+            }
+        }
+
+        pulse -= 1 * Time.deltaTime;
+        if (pulse <= 0)
+        {
+            EmitNoise();
+            pulse = pulseTime;
+        }
+
+        if (Input.GetMouseButton(1) || Input.GetAxis("Aim") > 0)
+        {
+            //target = NearestVisibleTarget();
+        }
+    }
+
+    private void MovementType()
+    {
+        if (IsMoving())
         {
             if (Input.GetKey(runKey) || Input.GetKey(runButton))
             {
@@ -105,86 +178,61 @@ public class PlayerController : MonoBehaviour
             speed = walkSpeed;
             state = State.Idle;
         }
+    }
 
-        velocity = Vector3.Lerp(velocity, transform.forward * input.magnitude * speed, acceleration * Time.deltaTime);
+    private bool IsMoving()
+    {
+        currentPos = transform.position;
+        bool isMoving = (currentPos != lastPos);
+        lastPos = currentPos;
+        return isMoving;
+    }
 
-        navMeshAgent.Move(velocity*Time.deltaTime);
-
-        turnSpeed = Mathf.Lerp(turnSpeedHigh, turnSpeedLow, velocity.magnitude / 5);
-
-        navMeshAgent.speed = speed;
-
-        if (input.magnitude > 0)
+    public void EmitNoise()
+    {
+        switch (state)
         {
-            navMeshAgent.ResetPath();
-            pickingUp = null;
-            intent = camForward * input.y + camRight * input.x;
-            transform.rotation = Quaternion.Lerp(transform.rotation, Quaternion.LookRotation(intent), turnSpeed * Time.deltaTime);
+            case State.Idle:
+                noiseSphereRadius = idleRadius;
+                break;
+            case State.Walking:
+                noiseSphereRadius = walkRadius;
+                break;
+            case State.Running:
+                noiseSphereRadius = runRadius;
+                break;
+            case State.Crouching:
+                noiseSphereRadius = crouchRadius;
+                break;
         }
-        else
+        Collider[] hitZombies = Physics.OverlapSphere(transform.position, noiseSphereRadius, 1 << LayerMask.NameToLayer("Zombie"));
+        if (hitZombies.Length > 0)
         {
-            if (Input.GetKey(pickUpKey) || Input.GetKey(pickUpButton))
-            {
-                GetNearestInteraction();
-                if (nearestPickUp)
-                {
-                    if (nearestPickUp.name != "Door")
-                        pickingUp = nearestPickUp;
-                }
-                if (pickingUp)
-                    navMeshAgent.destination = pickingUp.transform.position;
-            }
-        }
-
-        if (Input.GetKeyDown(pickUpKey) || Input.GetKeyDown(pickUpButton))
-        {
-            GetNearestInteraction();
-            if (nearestPickUp)
-            {
-                if (nearestPickUp.name == "Door")
-                {
-                    if (Vector3.Distance(transform.position, nearestPickUp.transform.position) < grabDistance)
-                        nearestPickUp.GetComponent<Door>().Interact();
-                }
-                else
-                    pickingUp = nearestPickUp;
-            }
-        }
-
-        if (pickingUp)
-        {
-            if (Vector3.Distance(transform.position, pickingUp.transform.position) < grabDistance)
-            {
-                Destroy(pickingUp);
-                pickingUp = null;
-                float cals = 10;
-                if (vitals.calories < vitals.maxCalories - cals)
-                    vitals.Eat(cals);
-            }
+            foreach (Collider zombie in hitZombies)
+                zombie.gameObject.GetComponent<Zombie>().StartChase(gameObject);
         }
     }
 
-
-    private void GetNearestInteraction()
+    private GameObject NearestInteraction()
     {
-        Collider[] hitPickUps = Physics.OverlapSphere(transform.position, 5, 1 << LayerMask.NameToLayer("Interactable"));
-        if (hitPickUps.Length > 0)
+        Collider[] hitInteractions = Physics.OverlapSphere(transform.position, 5, 1 << LayerMask.NameToLayer("Interactable"));
+        if (hitInteractions.Length > 0)
         {
-            Transform tMin = null;
-            float minDist = Mathf.Infinity;
-            foreach (Collider pickUp in hitPickUps)
+            Collider closest = null;
+            float closestDist = Mathf.Infinity;
+            foreach (Collider interaction in hitInteractions)
             {
-                float dist = Vector3.Distance(pickUp.transform.position, transform.position);
-                if (dist < minDist)
+                float dist = Vector3.Distance(interaction.transform.position, transform.position);
+                if (dist < closestDist)
                 {
-                    tMin = pickUp.transform;
-                    minDist = dist;
+                    closest = interaction;
+                    closestDist = dist;
                 }
-                nearestPickUp = tMin.gameObject;
             }
+            return closest.gameObject;
         }
         else
-            nearestPickUp = null;
+            return null;
     }
 
     private void CaptureInput()
@@ -202,6 +250,21 @@ public class PlayerController : MonoBehaviour
         camRight.y = 0;
         camForward = camForward.normalized;
         camRight = camRight.normalized;
+    }
+
+    public void Die()
+    {
+        Destroy(gameObject);
+    }
+
+    public void Eat(float cals)
+    {
+        vitals.calories += cals;
+    }
+
+    public void TakeDamage(float damage)
+    {
+        vitals.health -= damage;
     }
 
 }

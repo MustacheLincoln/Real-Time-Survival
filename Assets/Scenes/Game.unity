@@ -1793,8 +1793,6 @@ GameObject:
   - component: {fileID: 538592299}
   - component: {fileID: 538592298}
   - component: {fileID: 538592300}
-  - component: {fileID: 538592302}
-  - component: {fileID: 538592301}
   - component: {fileID: 538592303}
   m_Layer: 0
   m_Name: Player
@@ -1892,7 +1890,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: db7568dd297ed79459578cf2b5e38fc4, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  nearestPickUp: {fileID: 0}
   state: 0
 --- !u!195 &538592299
 NavMeshAgent:
@@ -1940,31 +1937,6 @@ MonoBehaviour:
   baseExertion: 1
   healthExertion: 1
   staminaExertion: 1
---- !u!135 &538592301
-SphereCollider:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 538592293}
-  m_Material: {fileID: 0}
-  m_IsTrigger: 0
-  m_Enabled: 1
-  serializedVersion: 2
-  m_Radius: 0.5
-  m_Center: {x: 0, y: 0, z: 0}
---- !u!114 &538592302
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 538592293}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: a1dd6f6331e340d4aad956c4c104d02b, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
 --- !u!54 &538592303
 Rigidbody:
   m_ObjectHideFlags: 0

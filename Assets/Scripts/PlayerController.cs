@@ -81,8 +81,13 @@ public class PlayerController : MonoBehaviour
         {
             if (Input.GetKey(runKey) || Input.GetKey(runButton))
             {
-                speed = runSpeed;
-                state = State.Running;
+                if (vitals.stamina > 1)
+                {
+                    speed = runSpeed;
+                    state = State.Running;
+                }
+                else
+                    return;
             }
             else if (Input.GetKey(crouchKey) || Input.GetKey(crouchButton))
             {
@@ -137,7 +142,10 @@ public class PlayerController : MonoBehaviour
             if (nearestPickUp)
             {
                 if (nearestPickUp.name == "Door")
-                    nearestPickUp.GetComponent<Door>().Interact();
+                {
+                    if (Vector3.Distance(transform.position, nearestPickUp.transform.position) < grabDistance)
+                        nearestPickUp.GetComponent<Door>().Interact();
+                }
                 else
                     pickingUp = nearestPickUp;
             }

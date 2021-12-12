@@ -156,7 +156,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ac44154fa2bb12844afbf6c63bb91ade, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  player: {fileID: 538592293}
 --- !u!195 &151588063
 NavMeshAgent:
   m_ObjectHideFlags: 0
@@ -289,7 +288,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ac44154fa2bb12844afbf6c63bb91ade, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  player: {fileID: 538592293}
 --- !u!195 &162047238
 NavMeshAgent:
   m_ObjectHideFlags: 0
@@ -518,7 +516,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ac44154fa2bb12844afbf6c63bb91ade, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  player: {fileID: 538592293}
 --- !u!195 &348623888
 NavMeshAgent:
   m_ObjectHideFlags: 0
@@ -708,7 +705,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 357357862}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -3.42, y: -0.75, z: -0.08}
+  m_LocalPosition: {x: -3.42, y: -0.75, z: -2.37}
   m_LocalScale: {x: 0.25, y: 0.2, z: 0.25}
   m_Children: []
   m_Father: {fileID: 0}
@@ -747,7 +744,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ac44154fa2bb12844afbf6c63bb91ade, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  player: {fileID: 538592293}
 --- !u!195 &370871459
 NavMeshAgent:
   m_ObjectHideFlags: 0
@@ -880,7 +876,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ac44154fa2bb12844afbf6c63bb91ade, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  player: {fileID: 538592293}
 --- !u!195 &491091936
 NavMeshAgent:
   m_ObjectHideFlags: 0
@@ -1094,6 +1089,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: db7568dd297ed79459578cf2b5e38fc4, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  nearestPickUp: {fileID: 0}
   state: 0
 --- !u!195 &538592299
 NavMeshAgent:
@@ -1215,7 +1211,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ac44154fa2bb12844afbf6c63bb91ade, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  player: {fileID: 538592293}
 --- !u!195 &559374543
 NavMeshAgent:
   m_ObjectHideFlags: 0
@@ -1348,7 +1343,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ac44154fa2bb12844afbf6c63bb91ade, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  player: {fileID: 538592293}
 --- !u!195 &583545750
 NavMeshAgent:
   m_ObjectHideFlags: 0
@@ -1481,7 +1475,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ac44154fa2bb12844afbf6c63bb91ade, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  player: {fileID: 538592293}
 --- !u!195 &596735724
 NavMeshAgent:
   m_ObjectHideFlags: 0
@@ -1898,7 +1891,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ac44154fa2bb12844afbf6c63bb91ade, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  player: {fileID: 538592293}
 --- !u!195 &914149998
 NavMeshAgent:
   m_ObjectHideFlags: 0
@@ -2255,7 +2247,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ac44154fa2bb12844afbf6c63bb91ade, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  player: {fileID: 538592293}
 --- !u!195 &1109594079
 NavMeshAgent:
   m_ObjectHideFlags: 0
@@ -2483,7 +2474,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ac44154fa2bb12844afbf6c63bb91ade, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  player: {fileID: 538592293}
 --- !u!195 &1415923020
 NavMeshAgent:
   m_ObjectHideFlags: 0
@@ -2807,7 +2797,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ac44154fa2bb12844afbf6c63bb91ade, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  player: {fileID: 538592293}
 --- !u!195 &1475247472
 NavMeshAgent:
   m_ObjectHideFlags: 0
@@ -2940,7 +2929,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ac44154fa2bb12844afbf6c63bb91ade, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  player: {fileID: 538592293}
 --- !u!195 &1563998230
 NavMeshAgent:
   m_ObjectHideFlags: 0
@@ -3052,10 +3040,10 @@ GameObject:
   - component: {fileID: 1726103631}
   - component: {fileID: 1726103630}
   - component: {fileID: 1726103629}
-  - component: {fileID: 1726103633}
   - component: {fileID: 1726103634}
   - component: {fileID: 1726103635}
-  m_Layer: 0
+  - component: {fileID: 1726103633}
+  m_Layer: 3
   m_Name: Door
   m_TagString: Destructable
   m_Icon: {fileID: 0}
@@ -3183,6 +3171,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   health: 0
+  state: 0
 --- !u!1 &1853827635
 GameObject:
   m_ObjectHideFlags: 0
@@ -3216,7 +3205,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ac44154fa2bb12844afbf6c63bb91ade, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  player: {fileID: 538592293}
 --- !u!195 &1853827637
 NavMeshAgent:
   m_ObjectHideFlags: 0
@@ -3448,7 +3436,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ac44154fa2bb12844afbf6c63bb91ade, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  player: {fileID: 538592293}
 --- !u!1 &1952872479
 GameObject:
   m_ObjectHideFlags: 0
@@ -3672,7 +3659,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ac44154fa2bb12844afbf6c63bb91ade, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  player: {fileID: 538592293}
 --- !u!195 &2077047499
 NavMeshAgent:
   m_ObjectHideFlags: 0

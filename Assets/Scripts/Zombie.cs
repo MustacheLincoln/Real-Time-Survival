@@ -16,7 +16,7 @@ public class Zombie : MonoBehaviour, IDamageable<float>
     float attackDamage = 10;
 
     //Temp
-    public GameObject player;
+    //public GameObject player;
 
 
     private void Start()
@@ -30,8 +30,8 @@ public class Zombie : MonoBehaviour, IDamageable<float>
     private void Update()
     {
         //Temp
-        if(player)
-            navMeshAgent.destination = player.transform.position;
+        //if(player)
+            //navMeshAgent.destination = player.transform.position;
     }
 
     public void ChaseTarget(GameObject target)

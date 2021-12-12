@@ -10,7 +10,7 @@ TagManager:
   - Default
   - TransparentFX
   - Ignore Raycast
-  - Pick Upable
+  - Interactable
   - Water
   - UI
   - Zombie

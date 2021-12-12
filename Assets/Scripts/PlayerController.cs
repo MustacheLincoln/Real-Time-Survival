@@ -17,7 +17,9 @@ public class PlayerController : MonoBehaviour
     float acceleration = 50;
     float turnSpeedLow = 7;
     float turnSpeedHigh = 15;
-    float grabDistance = 1.2f;
+    float grabDistance = 1.5f;
+    float tick = .5f;
+    float t;
 
     Vector2 input;
     Vector3 camForward;
@@ -28,6 +30,7 @@ public class PlayerController : MonoBehaviour
     Vector3 currentPos;
     Vector3 lastPos;
     bool isMoving;
+    public GameObject nearestPickUp;
     GameObject pickingUp;
 
     KeyCode pickUpKey;
@@ -51,7 +54,9 @@ public class PlayerController : MonoBehaviour
         pickUpKey = KeyCode.Space;
         pickUpButton = KeyCode.Joystick1Button0;
         runKey = KeyCode.LeftShift;
+        runButton = KeyCode.Joystick1Button5;
         crouchKey = KeyCode.LeftControl;
+        crouchButton = KeyCode.Joystick1Button1;
 
         state = State.Idle;
     }
@@ -61,18 +66,25 @@ public class PlayerController : MonoBehaviour
         CaptureInput();
         CalculateCamera();
 
+        t -= Time.deltaTime;
+        if (t <= 0)
+        {
+            GetNearestInteraction();
+            t = tick;
+        }
+
         currentPos = transform.position;
         isMoving = (currentPos != lastPos);
         lastPos = currentPos;
 
         if (isMoving)
         {
-            if (Input.GetKey(runKey))
+            if (Input.GetKey(runKey) || Input.GetKey(runButton))
             {
                 speed = runSpeed;
                 state = State.Running;
             }
-            else if (Input.GetKey(crouchKey))
+            else if (Input.GetKey(crouchKey) || Input.GetKey(crouchButton))
             {
                 speed = crouchSpeed;
                 state = State.Crouching;
@@ -95,6 +107,8 @@ public class PlayerController : MonoBehaviour
 
         turnSpeed = Mathf.Lerp(turnSpeedHigh, turnSpeedLow, velocity.magnitude / 5);
 
+        navMeshAgent.speed = speed;
+
         if (input.magnitude > 0)
         {
             navMeshAgent.ResetPath();
@@ -102,30 +116,31 @@ public class PlayerController : MonoBehaviour
             intent = camForward * input.y + camRight * input.x;
             transform.rotation = Quaternion.Lerp(transform.rotation, Quaternion.LookRotation(intent), turnSpeed * Time.deltaTime);
         }
-
-        navMeshAgent.speed = speed;
-
-        if (Input.GetKey(pickUpKey) || Input.GetKey(pickUpButton))
+        else
         {
-            Collider[] hitPickUps = Physics.OverlapSphere(transform.position, 5, 1 << LayerMask.NameToLayer("Pick Upable"));
-            if (hitPickUps.Length > 0)
+            if (Input.GetKey(pickUpKey) || Input.GetKey(pickUpButton))
             {
-                Transform tMin = null;
-                float minDist = Mathf.Infinity;
-                foreach (Collider pickUp in hitPickUps)
+                GetNearestInteraction();
+                if (nearestPickUp)
                 {
-                    float dist = Vector3.Distance(pickUp.transform.position, transform.position);
-                    if (dist < minDist)
-                    {
-                        tMin = pickUp.transform;
-                        minDist = dist;
-                    }
-                    pickingUp = tMin.gameObject;
-                    navMeshAgent.destination = pickingUp.transform.position;
+                    if (nearestPickUp.name != "Door")
+                        pickingUp = nearestPickUp;
                 }
+                if (pickingUp)
+                    navMeshAgent.destination = pickingUp.transform.position;
             }
-            else
-                pickingUp = null;
+        }
+
+        if (Input.GetKeyDown(pickUpKey) || Input.GetKeyDown(pickUpButton))
+        {
+            GetNearestInteraction();
+            if (nearestPickUp)
+            {
+                if (nearestPickUp.name == "Door")
+                    nearestPickUp.GetComponent<Door>().Interact();
+                else
+                    pickingUp = nearestPickUp;
+            }
         }
 
         if (pickingUp)
@@ -139,6 +154,29 @@ public class PlayerController : MonoBehaviour
                     vitals.Eat(cals);
             }
         }
+    }
+
+
+    private void GetNearestInteraction()
+    {
+        Collider[] hitPickUps = Physics.OverlapSphere(transform.position, 5, 1 << LayerMask.NameToLayer("Interactable"));
+        if (hitPickUps.Length > 0)
+        {
+            Transform tMin = null;
+            float minDist = Mathf.Infinity;
+            foreach (Collider pickUp in hitPickUps)
+            {
+                float dist = Vector3.Distance(pickUp.transform.position, transform.position);
+                if (dist < minDist)
+                {
+                    tMin = pickUp.transform;
+                    minDist = dist;
+                }
+                nearestPickUp = tMin.gameObject;
+            }
+        }
+        else
+            nearestPickUp = null;
     }
 
     private void CaptureInput()

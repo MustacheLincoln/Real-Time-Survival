@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.AI;
 
-public class Zombie : MonoBehaviour, IDamageable<float>, INoiseEmittable
+public class Zombie : MonoBehaviour, IDamageable<float>
 {
     NavMeshAgent navMeshAgent;
     FieldOfView fov;
@@ -23,7 +23,7 @@ public class Zombie : MonoBehaviour, IDamageable<float>, INoiseEmittable
     float chaseTime = 10;
     float chasing;
     float noiseCooldown = 15;
-    float noiseCooldownRemaining;
+    bool coolingDown;
 
     float fovRadius = 8;
     float fovAngle = 120;
@@ -31,10 +31,6 @@ public class Zombie : MonoBehaviour, IDamageable<float>, INoiseEmittable
     Quaternion newRotation;
     public enum State { Wander, Chase, Investigate }
     public State state;
-
-    //Temp
-    //public GameObject player;
-
 
     private void Start()
     {
@@ -52,8 +48,6 @@ public class Zombie : MonoBehaviour, IDamageable<float>, INoiseEmittable
 
     private void Update()
     {
-        noiseCooldownRemaining -= Time.deltaTime;
-
         switch (state)
         {
             case State.Wander:
@@ -92,7 +86,7 @@ public class Zombie : MonoBehaviour, IDamageable<float>, INoiseEmittable
 
     private void Chase()
     {
-        EmitNoise();
+        StartCoroutine(EmitNoise());
         chasing -= Time.deltaTime;
         if (chasing <= 0)
         {
@@ -102,7 +96,7 @@ public class Zombie : MonoBehaviour, IDamageable<float>, INoiseEmittable
 
     private void Investigate()
     {
-        EmitNoise();
+        StartCoroutine(EmitNoise());
         chasing -= Time.deltaTime;
         if (chasing <= 0)
         {
@@ -151,10 +145,11 @@ public class Zombie : MonoBehaviour, IDamageable<float>, INoiseEmittable
         health -= damage;
     }
 
-    public void EmitNoise()
+    private IEnumerator EmitNoise()
     {
-        if (noiseCooldownRemaining <= 0)
+        if (coolingDown == false)
         {
+            coolingDown = true;
             Collider[] hitZombies = Physics.OverlapSphere(transform.position, noiseSphereRadius, 1 << LayerMask.NameToLayer("Zombie"));
             if (hitZombies.Length > 0)
             {
@@ -162,7 +157,8 @@ public class Zombie : MonoBehaviour, IDamageable<float>, INoiseEmittable
                     if (zombie.gameObject != this.gameObject)
                         zombie.gameObject.GetComponent<Zombie>().StartInvestigating(navMeshAgent.destination);
             }
-            noiseCooldownRemaining = noiseCooldown;
+            yield return new WaitForSeconds(noiseCooldown);
+            coolingDown = false;
         }
     }
 }

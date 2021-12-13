@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.AI;
 
-public class PlayerController : MonoBehaviour, IDamageable<float>, INoiseEmittable
+public class PlayerController : MonoBehaviour, IDamageable<float>
 {
     NavMeshAgent navMeshAgent;
     PlayerVitals vitals;
@@ -32,7 +32,8 @@ public class PlayerController : MonoBehaviour, IDamageable<float>, INoiseEmittab
     int magazineSize = 5;
     int inMagazine;
     float reloadTime = 2;
-    float reloadTimeRemaining;
+    public float reloadTimeRemaining;
+    bool reloading;
     bool chambered;
 
 
@@ -89,6 +90,7 @@ public class PlayerController : MonoBehaviour, IDamageable<float>, INoiseEmittab
         reloadButton = KeyCode.Joystick1Button0;
 
         state = State.Idle;
+        StartCoroutine(EmitNoise());
     }
 
     private void Update()
@@ -191,7 +193,8 @@ public class PlayerController : MonoBehaviour, IDamageable<float>, INoiseEmittab
                 chambered = true;
 
             if (Input.GetKeyDown(reloadKey) || Input.GetKeyDown(reloadButton))
-                Reload();
+                if (inMagazine < magazineSize)
+                    StartCoroutine(Reload());
         }
         else
         {
@@ -209,18 +212,32 @@ public class PlayerController : MonoBehaviour, IDamageable<float>, INoiseEmittab
         {
             if (inMagazine > 0)
             {
-                target.GetComponent<IDamageable<float>>().TakeDamage(attackDamage);
-                inMagazine -= 1;
-                attackCooldown = attackSpeed;
+                if (reloading == false)
+                {
+                    target.GetComponent<IDamageable<float>>().TakeDamage(attackDamage);
+                    inMagazine -= 1;
+                    attackCooldown = attackSpeed;
+                }
             }
             else
-                Reload(); //Or Click??
+                StartCoroutine(Reload()); //Or Click??
         }
     }
 
-    private void Reload()
+    private IEnumerator Reload()
     {
-        inMagazine = magazineSize;
+        if (reloading == false)
+        {
+            reloading = true;
+            reloadTimeRemaining = reloadTime;
+            while(reloadTimeRemaining > 0)
+            {
+                reloadTimeRemaining -= Time.deltaTime;
+                yield return null;
+            }
+            inMagazine = magazineSize;
+            reloading = false;
+        }
     }
 
     private void MovementType()
@@ -266,7 +283,7 @@ public class PlayerController : MonoBehaviour, IDamageable<float>, INoiseEmittab
         return isMoving;
     }
 
-    public void EmitNoise()
+    public IEnumerator EmitNoise()
     {
         switch (state)
         {
@@ -289,6 +306,8 @@ public class PlayerController : MonoBehaviour, IDamageable<float>, INoiseEmittab
             foreach (Collider zombie in hitZombies)
                     zombie.gameObject.GetComponent<Zombie>().StartChase(gameObject);
         }
+        yield return new WaitForSeconds(pulseTime);
+        StartCoroutine(EmitNoise());
     }
 
     private void CaptureInput()

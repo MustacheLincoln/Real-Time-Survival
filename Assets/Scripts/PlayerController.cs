@@ -28,6 +28,7 @@ public class PlayerController : MonoBehaviour, IDamageable<float>
     bool isAiming;
     float attackDamage = 100;
     float attackSpeed = .01f;
+    float attackVolume = 20;
     float attackCooldown;
     int magazineSize = 5;
     int inMagazine;
@@ -142,8 +143,7 @@ public class PlayerController : MonoBehaviour, IDamageable<float>
                 {
                     if (fov.target.name == "Door")
                     {
-                        if (Vector3.Distance(transform.position, fov.target.transform.position) < grabDistance)
-                            fov.target.GetComponent<Door>().Interact();
+                        fov.target.GetComponent<Door>().Interact();
                     }
                     else
                         pickingUp = fov.target;
@@ -182,12 +182,11 @@ public class PlayerController : MonoBehaviour, IDamageable<float>
             target = fov.target;
             if (Input.GetMouseButton(0) || Input.GetAxis("Fire") > 0)
             {
-                if (target)
-                    if (chambered)
-                    {
-                        Attack(target);
-                        chambered = false;
-                    }
+                if (target && chambered)
+                {
+                    Attack(target);
+                    chambered = false;
+                }
             }
             else
                 chambered = true;
@@ -215,6 +214,7 @@ public class PlayerController : MonoBehaviour, IDamageable<float>
                 if (reloading == false)
                 {
                     target.GetComponent<IDamageable<float>>().TakeDamage(attackDamage);
+                    EmitUniqueNoise(attackVolume);
                     inMagazine -= 1;
                     attackCooldown = attackSpeed;
                 }
@@ -308,6 +308,16 @@ public class PlayerController : MonoBehaviour, IDamageable<float>
         }
         yield return new WaitForSeconds(pulseTime);
         StartCoroutine(EmitNoise());
+    }
+
+    private void EmitUniqueNoise(float volume)
+    {
+        Collider[] hitZombies = Physics.OverlapSphere(transform.position, volume, 1 << LayerMask.NameToLayer("Zombie"));
+        if (hitZombies.Length > 0)
+        {
+            foreach (Collider zombie in hitZombies)
+                zombie.gameObject.GetComponent<Zombie>().StartChase(gameObject);
+        }
     }
 
     private void CaptureInput()

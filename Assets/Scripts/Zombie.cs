@@ -122,15 +122,18 @@ public class Zombie : MonoBehaviour, IDamageable<float>
 
     private void OnTriggerStay(Collider other)
     {
-        if (other.gameObject.tag == "Destructable" || other.gameObject.name == "Player")
+        if (state == State.Chase)
         {
-            attackCooldown -= Time.deltaTime;
-            if (attackCooldown <= 0)
+            if (other.gameObject.tag == "Destructable" || other.gameObject.name == "Player")
             {
-                other.GetComponent<IDamageable<float>>().TakeDamage(attackDamage);
-                attackCooldown = attackSpeed;
-            }
+                attackCooldown -= Time.deltaTime;
+                if (attackCooldown <= 0)
+                {
+                    other.GetComponent<IDamageable<float>>().TakeDamage(attackDamage);
+                    attackCooldown = attackSpeed;
+                }
 
+            }
         }
     }
 

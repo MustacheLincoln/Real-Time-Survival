@@ -52,7 +52,12 @@ public class FieldOfView : MonoBehaviour
 
             }
             if (closest)
-                target = closest.gameObject;
+            {
+                if (target != closest.gameObject)
+                {
+                    target = closest.gameObject;
+                }
+            }
         }
         else
             target = null;

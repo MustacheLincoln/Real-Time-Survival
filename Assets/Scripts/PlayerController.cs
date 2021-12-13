@@ -25,6 +25,13 @@ public class PlayerController : MonoBehaviour, IDamageable<float>, INoiseEmittab
     float crouchRadius = 3;
     float noiseSphereRadius;
 
+    bool isAiming;
+    float attackDamage = 100;
+    float attackSpeed = .01f;
+    float attackCooldown;
+    bool chambered;
+
+
     Vector2 input;
     Vector3 camForward;
     Vector3 camRight;
@@ -34,8 +41,12 @@ public class PlayerController : MonoBehaviour, IDamageable<float>, INoiseEmittab
     Vector3 currentPos;
     Vector3 lastPos;
     GameObject pickingUp;
+    GameObject target;
     float pulseTime = .5f;
     float pulse;
+
+    float fovRadius = 4;
+    float fovAngle = 200;
 
     KeyCode pickUpKey;
     KeyCode pickUpButton;
@@ -52,9 +63,14 @@ public class PlayerController : MonoBehaviour, IDamageable<float>, INoiseEmittab
         navMeshAgent = GetComponent<NavMeshAgent>();
         vitals = GetComponent<PlayerVitals>();
         fov = GetComponent<FieldOfView>();
+        fov.radius = fovRadius;
+        fov.angle = fovAngle;
+        fov.targetMask = LayerMask.GetMask("Interactable");
         cam = Camera.main;
         navMeshAgent.speed = walkSpeed;
         navMeshAgent.acceleration = acceleration;
+        isAiming = false;
+        chambered = true;
 
         pickUpKey = KeyCode.Space;
         pickUpButton = KeyCode.Joystick1Button0;
@@ -70,6 +86,8 @@ public class PlayerController : MonoBehaviour, IDamageable<float>, INoiseEmittab
     {
         CaptureInput();
         CalculateCamera();
+
+        attackCooldown -= Time.deltaTime;
 
         MovementType();
 
@@ -137,7 +155,39 @@ public class PlayerController : MonoBehaviour, IDamageable<float>, INoiseEmittab
 
         if (Input.GetMouseButton(1) || Input.GetAxis("Aim") > 0)
         {
-            //target = NearestVisibleTarget();
+            isAiming = true;
+            fov.radius = 20;
+            fov.angle = 120;
+            fov.targetMask = LayerMask.GetMask("Zombie");
+            target = fov.target;
+            if (Input.GetMouseButton(0) || Input.GetAxis("Fire") > 0)
+            {
+                if (target)
+                    if (chambered)
+                    {
+                        Attack(target);
+                        chambered = false;
+                    }
+            }
+            else
+                chambered = true;
+        }
+        else
+        {
+            isAiming = false;
+            fov.radius = fovRadius;
+            fov.angle = fovAngle;
+            fov.targetMask = LayerMask.GetMask("Interactable");
+            target = null;
+        }
+    }
+
+    private void Attack(GameObject target)
+    {
+        if (attackCooldown <= 0)
+        {
+            target.GetComponent<IDamageable<float>>().TakeDamage(attackDamage);
+            attackCooldown = attackSpeed;
         }
     }
 
@@ -205,7 +255,7 @@ public class PlayerController : MonoBehaviour, IDamageable<float>, INoiseEmittab
         if (hitZombies.Length > 0)
         {
             foreach (Collider zombie in hitZombies)
-                zombie.gameObject.GetComponent<Zombie>().StartChase(gameObject);
+                    zombie.gameObject.GetComponent<Zombie>().StartChase(gameObject);
         }
     }
 

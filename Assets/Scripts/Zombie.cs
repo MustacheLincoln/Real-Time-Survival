@@ -3,25 +3,33 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.AI;
 
-public class Zombie : MonoBehaviour, IDamageable<float>
+public class Zombie : MonoBehaviour, IDamageable<float>, INoiseEmittable
 {
     NavMeshAgent navMeshAgent;
     FieldOfView fov;
 
     float walkSpeed = 1;
+    float investigateSpeed = 2;
     float runSpeed = 3;
     float turnSpeed = 1;
     float attackSpeed = .5f;
-    float windUp;
+    float attackCooldown;
     float maxHealth = 100;
     float health;
     float attackDamage = 5;
+    float noiseSphereRadius = 5;
     float wanderTime = 20;
     float wandering;
     float chaseTime = 10;
     float chasing;
+    float noiseCooldown = 15;
+    float noiseCooldownRemaining;
+
+    float fovRadius = 8;
+    float fovAngle = 120;
+
     Quaternion newRotation;
-    public enum State { Wander, Chase }
+    public enum State { Wander, Chase, Investigate }
     public State state;
 
     //Temp
@@ -32,7 +40,10 @@ public class Zombie : MonoBehaviour, IDamageable<float>
     {
         navMeshAgent = GetComponent<NavMeshAgent>();
         fov = GetComponent<FieldOfView>();
-        windUp = attackSpeed;
+        fov.radius = fovRadius;
+        fov.angle = fovAngle;
+        fov.targetMask = LayerMask.GetMask("Player");
+        attackCooldown = attackSpeed;
         health = maxHealth;
         navMeshAgent.speed = runSpeed;
         state = State.Wander;
@@ -41,6 +52,8 @@ public class Zombie : MonoBehaviour, IDamageable<float>
 
     private void Update()
     {
+        noiseCooldownRemaining -= Time.deltaTime;
+
         switch (state)
         {
             case State.Wander:
@@ -48,6 +61,9 @@ public class Zombie : MonoBehaviour, IDamageable<float>
                 break;
             case State.Chase:
                 Chase();
+                break;
+            case State.Investigate:
+                Investigate();
                 break;
         }
 
@@ -76,6 +92,17 @@ public class Zombie : MonoBehaviour, IDamageable<float>
 
     private void Chase()
     {
+        EmitNoise();
+        chasing -= Time.deltaTime;
+        if (chasing <= 0)
+        {
+            state = State.Wander;
+        }
+    }
+
+    private void Investigate()
+    {
+        EmitNoise();
         chasing -= Time.deltaTime;
         if (chasing <= 0)
         {
@@ -85,19 +112,29 @@ public class Zombie : MonoBehaviour, IDamageable<float>
 
     public void StartChase(GameObject target)
     {
+        navMeshAgent.speed = runSpeed;
         navMeshAgent.destination = target.transform.position;
         state = State.Chase;
-        chasing = chaseTime + Random.Range(-3, 3); ;
+        chasing = chaseTime + Random.Range(-3, 3);
     }
+
+    public void StartInvestigating(Vector3 pointOfInterest)
+    {
+        navMeshAgent.speed = investigateSpeed;
+        navMeshAgent.destination = pointOfInterest;
+        state = State.Investigate;
+        chasing = chaseTime + Random.Range(-3, 3);
+    }
+
     private void OnTriggerStay(Collider other)
     {
         if (other.gameObject.tag == "Destructable" || other.gameObject.name == "Player")
         {
-            windUp -= 1 * Time.deltaTime;
-            if (windUp <= 0)
+            attackCooldown -= Time.deltaTime;
+            if (attackCooldown <= 0)
             {
                 other.GetComponent<IDamageable<float>>().TakeDamage(attackDamage);
-                windUp = attackSpeed;
+                attackCooldown = attackSpeed;
             }
 
         }
@@ -106,11 +143,26 @@ public class Zombie : MonoBehaviour, IDamageable<float>
     private void OnTriggerExit(Collider other)
     {
         if (other.gameObject.tag == "Destructable" || other.gameObject.name == "Player")
-            windUp = attackSpeed;
+            attackCooldown = attackSpeed;
     }
 
     public void TakeDamage(float damage)
     {
         health -= damage;
+    }
+
+    public void EmitNoise()
+    {
+        if (noiseCooldownRemaining <= 0)
+        {
+            Collider[] hitZombies = Physics.OverlapSphere(transform.position, noiseSphereRadius, 1 << LayerMask.NameToLayer("Zombie"));
+            if (hitZombies.Length > 0)
+            {
+                foreach (Collider zombie in hitZombies)
+                    if (zombie.gameObject != this.gameObject)
+                        zombie.gameObject.GetComponent<Zombie>().StartInvestigating(navMeshAgent.destination);
+            }
+            noiseCooldownRemaining = noiseCooldown;
+        }
     }
 }

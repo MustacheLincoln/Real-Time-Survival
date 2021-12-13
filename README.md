@@ -1,1 +1,1 @@
-Real Time Survival
+Survival Village: Real Time Apocalypse

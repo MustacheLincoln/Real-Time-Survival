@@ -48,6 +48,7 @@ public class CameraController : MonoBehaviour
 
     void HandleCameraInput()
     {
+        newRotation *= Quaternion.Euler(Vector3.up * Input.GetAxis("RightHorizontal") * -rotationSpeed * Time.deltaTime);
         if (Input.GetKey(KeyCode.Q))
             newRotation *= Quaternion.Euler(Vector3.up * rotationSpeed * Time.deltaTime);
         if (Input.GetKey(KeyCode.E))
@@ -68,6 +69,7 @@ public class CameraController : MonoBehaviour
             newZoom -= zoomSpeed * Time.deltaTime;
         if (Input.mouseScrollDelta.y != 0)
             newZoom += Input.mouseScrollDelta.y * zoomSpeed * Time.deltaTime * 5;
+        newZoom += Input.GetAxis("RightVertical") * zoomSpeed * Time.deltaTime;
         newZoom.y = Mathf.Clamp(newZoom.y, maxZoomIn, maxZoomOut);
         newZoom.z = Mathf.Clamp(newZoom.z, -maxZoomOut, -maxZoomIn);
     }

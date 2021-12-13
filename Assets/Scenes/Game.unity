@@ -3031,6 +3031,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: db7568dd297ed79459578cf2b5e38fc4, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  reloadTimeRemaining: 0
   state: 0
 --- !u!195 &538592299
 NavMeshAgent:
@@ -3098,7 +3099,7 @@ MonoBehaviour:
     m_Bits: 8
   obstructionMask:
     serializedVersion: 2
-    m_Bits: 256
+    m_Bits: 264
 --- !u!54 &538592303
 Rigidbody:
   m_ObjectHideFlags: 0

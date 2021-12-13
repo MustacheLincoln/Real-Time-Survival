@@ -48,7 +48,7 @@ public class CameraController : MonoBehaviour
 
     void HandleCameraInput()
     {
-        newRotation *= Quaternion.Euler(Vector3.up * Input.GetAxis("RightHorizontal") * -rotationSpeed * Time.deltaTime);
+        newRotation *= Quaternion.Euler(Vector3.up * Input.GetAxis("RightHorizontal") * rotationSpeed * Time.deltaTime);
         if (Input.GetKey(KeyCode.Q))
             newRotation *= Quaternion.Euler(Vector3.up * rotationSpeed * Time.deltaTime);
         if (Input.GetKey(KeyCode.E))

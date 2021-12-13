@@ -19,10 +19,10 @@ public class PlayerController : MonoBehaviour, IDamageable<float>
     float turnSpeedLow = 7;
     float turnSpeedHigh = 15;
     float grabDistance = 1.5f;
-    float idleRadius = 2;
+    float idleRadius = 1;
     float walkRadius = 5;
     float runRadius = 10;
-    float crouchRadius = 3;
+    float crouchRadius = 2;
     float noiseSphereRadius;
 
     bool isAiming;

@@ -29,6 +29,10 @@ public class PlayerController : MonoBehaviour, IDamageable<float>, INoiseEmittab
     float attackDamage = 100;
     float attackSpeed = .01f;
     float attackCooldown;
+    int magazineSize = 5;
+    int inMagazine;
+    float reloadTime = 2;
+    float reloadTimeRemaining;
     bool chambered;
 
 
@@ -54,6 +58,8 @@ public class PlayerController : MonoBehaviour, IDamageable<float>, INoiseEmittab
     KeyCode runButton;
     KeyCode crouchKey;
     KeyCode crouchButton;
+    KeyCode reloadKey;
+    KeyCode reloadButton;
 
     public enum State { Idle, Walking, Running, Crouching }
     public State state;
@@ -71,6 +77,7 @@ public class PlayerController : MonoBehaviour, IDamageable<float>, INoiseEmittab
         navMeshAgent.acceleration = acceleration;
         isAiming = false;
         chambered = true;
+        inMagazine = magazineSize;
 
         pickUpKey = KeyCode.Space;
         pickUpButton = KeyCode.Joystick1Button0;
@@ -78,6 +85,8 @@ public class PlayerController : MonoBehaviour, IDamageable<float>, INoiseEmittab
         runButton = KeyCode.Joystick1Button5;
         crouchKey = KeyCode.LeftControl;
         crouchButton = KeyCode.Joystick1Button4;
+        reloadKey = KeyCode.Space;
+        reloadButton = KeyCode.Joystick1Button0;
 
         state = State.Idle;
     }
@@ -110,39 +119,48 @@ public class PlayerController : MonoBehaviour, IDamageable<float>, INoiseEmittab
         {
             if (Input.GetKey(pickUpKey) || Input.GetKey(pickUpButton))
             {
-                if (fov.target)
+                if (isAiming == false)
                 {
-                    if (fov.target.name != "Door")
-                        pickingUp = fov.target;
+                    if (fov.target)
+                    {
+                        if (fov.target.name != "Door")
+                            pickingUp = fov.target;
+                    }
+                    if (pickingUp)
+                        navMeshAgent.destination = pickingUp.transform.position;
                 }
-                if (pickingUp)
-                    navMeshAgent.destination = pickingUp.transform.position;
             }
         }
 
         if (Input.GetKeyDown(pickUpKey) || Input.GetKeyDown(pickUpButton))
         {
-            if (fov.target)
+            if (isAiming == false)
             {
-                if (fov.target.name == "Door")
+                if (fov.target)
                 {
-                    if (Vector3.Distance(transform.position, fov.target.transform.position) < grabDistance)
-                        fov.target.GetComponent<Door>().Interact();
+                    if (fov.target.name == "Door")
+                    {
+                        if (Vector3.Distance(transform.position, fov.target.transform.position) < grabDistance)
+                            fov.target.GetComponent<Door>().Interact();
+                    }
+                    else
+                        pickingUp = fov.target;
                 }
-                else
-                    pickingUp = fov.target;
             }
         }
 
         if (pickingUp)
         {
-            if (Vector3.Distance(transform.position, pickingUp.transform.position) < grabDistance)
+            if (isAiming == false)
             {
-                Destroy(pickingUp);
-                pickingUp = null;
-                float cals = 10;
-                if (vitals.calories < vitals.maxCalories - cals)
-                    Eat(cals);
+                if (Vector3.Distance(transform.position, pickingUp.transform.position) < grabDistance)
+                {
+                    Destroy(pickingUp);
+                    pickingUp = null;
+                    float cals = 10;
+                    if (vitals.calories < vitals.maxCalories - cals)
+                        Eat(cals);
+                }
             }
         }
 
@@ -171,6 +189,9 @@ public class PlayerController : MonoBehaviour, IDamageable<float>, INoiseEmittab
             }
             else
                 chambered = true;
+
+            if (Input.GetKeyDown(reloadKey) || Input.GetKeyDown(reloadButton))
+                Reload();
         }
         else
         {
@@ -186,9 +207,20 @@ public class PlayerController : MonoBehaviour, IDamageable<float>, INoiseEmittab
     {
         if (attackCooldown <= 0)
         {
-            target.GetComponent<IDamageable<float>>().TakeDamage(attackDamage);
-            attackCooldown = attackSpeed;
+            if (inMagazine > 0)
+            {
+                target.GetComponent<IDamageable<float>>().TakeDamage(attackDamage);
+                inMagazine -= 1;
+                attackCooldown = attackSpeed;
+            }
+            else
+                Reload(); //Or Click??
         }
+    }
+
+    private void Reload()
+    {
+        inMagazine = magazineSize;
     }
 
     private void MovementType()

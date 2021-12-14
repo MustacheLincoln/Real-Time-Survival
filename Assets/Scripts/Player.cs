@@ -6,8 +6,10 @@ using UnityEngine.AI;
 using UnityEngine.UI;
 using TMPro;
 
-public class PlayerController : MonoBehaviour, IDamageable<float>
+public class Player : MonoBehaviour, IDamageable<float>
 {
+    public static Player Instance { get; private set; }
+
     public Image reloadProgressBar;
     public Image aimProgressBar;
     public TMP_Text targetLabel;
@@ -15,6 +17,9 @@ public class PlayerController : MonoBehaviour, IDamageable<float>
     PlayerVitals vitals;
     FieldOfView fov;
     Camera cam;
+
+    float pickUpTime = .25f;
+    float pickUpTimeElapsed;
 
     float speed;
     float walkSpeed = 3;
@@ -47,6 +52,7 @@ public class PlayerController : MonoBehaviour, IDamageable<float>
     public float aimTimeElapsed;
     bool reloading;
     bool chambered;
+    public GameObject rangedWeaponEquipped;
 
     public bool hasMeleeWeapon;
     public float meleeAttackDamage = 50;
@@ -55,9 +61,10 @@ public class PlayerController : MonoBehaviour, IDamageable<float>
     public float meleeAttackRange = .5f;
     public float meleeKnockback = .5f;
     float meleeAttackCooldown;
+    public GameObject meleeWeaponEquipped;
 
-    public List<RangedWeapon> rangedWeapons;
-    public List<MeleeWeapon> meleeWeapons;
+    public List<GameObject> rangedWeapons;
+    public List<GameObject> meleeWeapons;
 
     Vector2 input;
     Vector3 camForward;
@@ -88,6 +95,11 @@ public class PlayerController : MonoBehaviour, IDamageable<float>
 
     public enum State { Idle, Walking, Running, Crouching }
     public State state;
+
+    private void Awake()
+    {
+        Instance = this;
+    }
 
     private void Start()
     {
@@ -181,6 +193,22 @@ public class PlayerController : MonoBehaviour, IDamageable<float>
             pickingUp = null;
             intent = camForward * input.y + camRight * input.x;
             transform.rotation = Quaternion.Lerp(transform.rotation, Quaternion.LookRotation(intent), turnSpeed * Time.deltaTime);
+
+            if (Input.GetKeyDown(pickUpKey) || Input.GetKeyDown(pickUpButton))
+            {
+                if (isAiming == false)
+                {
+                    if (fov.target)
+                    {
+                        if (fov.target.name == "Door")
+                        {
+                            fov.target.GetComponent<Door>().Interact();
+                        }
+                        else
+                            pickingUp = fov.target;
+                    }
+                }
+            }
         }
         else
         {
@@ -199,42 +227,37 @@ public class PlayerController : MonoBehaviour, IDamageable<float>
             }
         }
 
-        if (Input.GetKeyDown(pickUpKey) || Input.GetKeyDown(pickUpButton))
-        {
-            if (isAiming == false)
-            {
-                if (fov.target)
-                {
-                    if (fov.target.name == "Door")
-                    {
-                        fov.target.GetComponent<Door>().Interact();
-                    }
-                    else
-                        pickingUp = fov.target;
-                }
-            }
-        }
-
         if (pickingUp)
         {
             if (isAiming == false)
             {
-                if (Vector3.Distance(transform.position, pickingUp.transform.position) < grabDistance)
+                if (reloading == false)
                 {
-                    Destroy(pickingUp);
-                    pickingUp = null;
-                    float cals = 10;
-                    if (vitals.calories < vitals.maxCalories - cals)
-                        Eat(cals);
+                    if (Vector3.Distance(transform.position, pickingUp.transform.position) < grabDistance)
+                    {
+                        speed = 0;
+                        pickUpTimeElapsed += Time.deltaTime;
+                        if (pickUpTimeElapsed >= pickUpTime)
+                        {
+                            pickingUp.GetComponent<IPickUpable>().PickUp();
+                            pickingUp = null;
+                            pickUpTimeElapsed = 0;
+                            //float cals = 10;
+                            //if (vitals.calories < vitals.maxCalories - cals)
+                            //Eat(cals);
+                        }
+                    }
                 }
             }
         }
+        else
+            pickUpTimeElapsed = 0;
 
-        pulse -= 1 * Time.deltaTime;
-        if (pulse <= 0)
+        if (Input.GetAxis("ChangeWeapon") > 0)
         {
-            EmitNoise();
-            pulse = pulseTime;
+            if (hasRangedWeapon)
+                if (rangedWeaponEquipped != rangedWeapons[0])
+                    rangedWeapons[0].GetComponent<RangedWeapon>().Equip();
         }
 
         if (Input.GetMouseButton(1) || Input.GetAxis("Aim") > 0)
@@ -242,6 +265,7 @@ public class PlayerController : MonoBehaviour, IDamageable<float>
             if (hasRangedWeapon)
             {
                 isAiming = true;
+                pickingUp = null;
                 fov.radius = rangedAttackRange;
                 fov.angle = 45;
 
@@ -320,7 +344,7 @@ public class PlayerController : MonoBehaviour, IDamageable<float>
                     if (reloading == false)
                     {
                         target.GetComponent<IDamageable<float>>().TakeDamage(rangedAttackDamage);
-                        target.gameObject.GetComponent<NavMeshAgent>().Move((target.transform.position - transform.position).normalized * rangedKnockback);
+                        target.GetComponent<NavMeshAgent>().Move((target.transform.position - transform.position).normalized * rangedKnockback);
                         EmitUniqueNoise(rangedAttackNoise);
                         inMagazine -= 1;
                         rangedAttackCooldown = rangedAttackSpeed;
@@ -490,5 +514,4 @@ public class PlayerController : MonoBehaviour, IDamageable<float>
     {
         vitals.health -= damage;
     }
-
 }

@@ -2,9 +2,9 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class MeleeWeapon : MonoBehaviour
+public class MeleeWeapon : MonoBehaviour, IPickUpable
 {
-    PlayerController player;
+    Player player;
 
     float meleeAttackDamage = 50;
     float meleeAttackSpeed = .5f;
@@ -17,7 +17,7 @@ public class MeleeWeapon : MonoBehaviour
 
     private void Start()
     {
-        player = GameObject.FindGameObjectWithTag("Player").GetComponent<PlayerController>();
+        player = Player.Instance;
 
         switch (type)
         {
@@ -57,18 +57,40 @@ public class MeleeWeapon : MonoBehaviour
         meleeKnockback = .1f;
     }
 
-    private void OnDestroy()
+    public void Equip()
     {
-        if (!player.meleeWeapons.Contains(this))
-        {
-            player.meleeWeapons.Add(this);
-
+        player.meleeWeaponEquipped = gameObject;
         player.hasMeleeWeapon = true;
         player.meleeAttackDamage = meleeAttackDamage;
         player.meleeAttackSpeed = meleeAttackSpeed;
         player.meleeAttackNoise = meleeAttackNoise;
         player.meleeAttackRange = meleeAttackRange;
         player.meleeKnockback = meleeKnockback;
+    }
+
+    public void PickUp()
+    {
+        bool dupe = false;
+        if (!player.meleeWeapons.Contains(gameObject))
+        {
+            player.meleeWeapons.Add(gameObject);
+            gameObject.SetActive(false);
         }
+
+        foreach (GameObject weapon in player.meleeWeapons)
+        {
+            if (weapon.name == name)
+            {
+                if (weapon != gameObject)
+                {
+                    player.meleeWeapons.Remove(gameObject);
+                    Destroy(gameObject);
+                    dupe = true;
+                    break;
+                }
+            }
+        }
+        if (dupe == false)
+            Equip();
     }
 }

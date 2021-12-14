@@ -5,8 +5,6 @@ using UnityEngine;
 
 public class CameraController : MonoBehaviour
 {
-    public static CameraController instance;
-
     public Transform cameraTransform;
     public Transform followTransform;
 
@@ -25,10 +23,6 @@ public class CameraController : MonoBehaviour
 
     private void Start()
     {
-        if (instance && instance != this)
-            Destroy(this.gameObject);
-        else
-            instance = this;
         newPosition = transform.position;
         newRotation = transform.rotation;
         newZoom = cameraTransform.localPosition;
@@ -72,12 +66,6 @@ public class CameraController : MonoBehaviour
         newZoom += Input.GetAxis("RightVertical") * zoomSpeed * Time.deltaTime;
         newZoom.y = Mathf.Clamp(newZoom.y, maxZoomIn, maxZoomOut);
         newZoom.z = Mathf.Clamp(newZoom.z, -maxZoomOut, -maxZoomIn);
-    }
-
-    private void OnDestroy()
-    {
-        if (this == instance)
-            instance = null;
     }
 }
 

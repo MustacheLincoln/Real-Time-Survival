@@ -2,9 +2,9 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class RangedWeapon : MonoBehaviour
+public class RangedWeapon : MonoBehaviour, IPickUpable
 {
-    PlayerController player;
+    Player player;
 
     float rangedAttackDamage;
     float rangedAttackSpeed;
@@ -21,7 +21,7 @@ public class RangedWeapon : MonoBehaviour
 
     private void Start()
     {
-        player = GameObject.FindGameObjectWithTag("Player").GetComponent<PlayerController>();
+        player = Player.Instance;
 
         switch (type)
         {
@@ -70,22 +70,44 @@ public class RangedWeapon : MonoBehaviour
         aimTime = 1;
     }
 
-    private void OnDestroy()
+    public void Equip()
     {
-        if (!player.rangedWeapons.Contains(this))
-        {
-            player.rangedWeapons.Add(this);
+        player.rangedWeaponEquipped = gameObject;
+        player.hasRangedWeapon = true;
+        player.rangedAttackDamage = rangedAttackDamage;
+        player.rangedAttackSpeed = rangedAttackSpeed;
+        player.rangedAttackNoise = rangedAttackNoise;
+        player.rangedAttackRange = rangedAttackRange;
+        player.rangedKnockback = rangedKnockback;
+        player.rangedAttackAutomatic = rangedAttackAutomatic;
+        player.magazineSize = magazineSize;
+        player.reloadTime = reloadTime;
+        player.aimTime = aimTime;
+    }
 
-            player.hasRangedWeapon = true;
-            player.rangedAttackDamage = rangedAttackDamage;
-            player.rangedAttackSpeed = rangedAttackSpeed;
-            player.rangedAttackNoise = rangedAttackNoise;
-            player.rangedAttackRange = rangedAttackRange;
-            player.rangedKnockback = rangedKnockback;
-            player.rangedAttackAutomatic = rangedAttackAutomatic;
-            player.magazineSize = magazineSize;
-            player.reloadTime = reloadTime;
-            player.aimTime = aimTime;
+    public void PickUp()
+    {
+        bool dupe = false;
+        if (!player.rangedWeapons.Contains(gameObject))
+        {
+            player.rangedWeapons.Add(gameObject);
+            gameObject.SetActive(false);
         }
+
+        foreach (GameObject weapon in player.rangedWeapons)
+        {
+            if (weapon.name == name)
+            {
+                if (weapon != gameObject)
+                {
+                    player.rangedWeapons.Remove(gameObject);
+                    Destroy(gameObject);
+                    dupe = true;
+                    break;
+                }
+            }
+        }
+        if (dupe == false)
+            Equip();
     }
 }

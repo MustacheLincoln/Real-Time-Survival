@@ -5,7 +5,7 @@ using UnityEngine;
 
 public class PlayerVitals : MonoBehaviour
 {
-    PlayerController player;
+    Player player;
     public float maxMaxHealth = 100;
     public float maxHealth;
     public float health;
@@ -23,7 +23,7 @@ public class PlayerVitals : MonoBehaviour
 
     private void Start()
     {
-        player = GetComponent<PlayerController>();
+        player = Player.Instance;
         maxHealth = maxMaxHealth;
         health = maxHealth;
         maxStamina = maxMaxStamina;
@@ -35,15 +35,15 @@ public class PlayerVitals : MonoBehaviour
     {
         switch (player.state)
         {
-            case PlayerController.State.Idle:
+            case Player.State.Idle:
                 break;
-            case PlayerController.State.Walking:
+            case Player.State.Walking:
                 break;
-            case PlayerController.State.Running:
+            case Player.State.Running:
                 stamina -= 10 * Time.deltaTime;
                 maxStamina -= .1f * Time.deltaTime;
                 break;
-            case PlayerController.State.Crouching:
+            case Player.State.Crouching:
                 break;
         }
 
@@ -58,7 +58,7 @@ public class PlayerVitals : MonoBehaviour
 
         if (stamina < maxStamina)
         {
-            if (player.state != PlayerController.State.Running)
+            if (player.state != Player.State.Running)
             {
                 stamina += (calories / maxCalories) * Time.deltaTime;
                 staminaExertion = 1;

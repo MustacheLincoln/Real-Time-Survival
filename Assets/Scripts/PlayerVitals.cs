@@ -19,6 +19,8 @@ public class PlayerVitals : MonoBehaviour
     public float healthExertion = 1;
     public float staminaExertion = 1;
 
+    public bool starving;
+
     private void Start()
     {
         player = GetComponent<PlayerController>();
@@ -73,8 +75,10 @@ public class PlayerVitals : MonoBehaviour
             calories -= exertion * Time.deltaTime;
             calories = Mathf.Clamp(calories, 0, maxCalories);
         }
-        else
-            health -= 1;
+
+        starving = (calories <= 0);
+        if (starving)
+            health -= Time.deltaTime;
 
         if (health <= 0)
         {

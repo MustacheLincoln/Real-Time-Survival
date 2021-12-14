@@ -13,6 +13,7 @@ public class Door : MonoBehaviour, IDamageable<float>
 
     private void Start()
     {
+        name = "Door";
         navMeshObstacle = GetComponent<NavMeshObstacle>();
         health = maxHealth;
         state = State.Closed;

@@ -20,7 +20,7 @@ public class FieldOfView : MonoBehaviour
 
     private IEnumerator FOVCheck()
     {
-        yield return new WaitForSeconds(0.2f);
+        yield return new WaitForSeconds(0.1f);
         Collider[] rangeChecks = Physics.OverlapSphere(transform.position, radius, targetMask);
 
         if (rangeChecks.Length > 0)

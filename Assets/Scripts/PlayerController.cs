@@ -4,11 +4,13 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.AI;
 using UnityEngine.UI;
+using TMPro;
 
 public class PlayerController : MonoBehaviour, IDamageable<float>
 {
     public Image reloadProgressBar;
     public Image aimProgressBar;
+    public TMP_Text targetLabel;
     NavMeshAgent navMeshAgent;
     PlayerVitals vitals;
     FieldOfView fov;
@@ -29,29 +31,33 @@ public class PlayerController : MonoBehaviour, IDamageable<float>
     float noiseSphereRadius;
 
     bool isAiming;
-    float rangedAttackDamage = 100;
-    float rangedAttackSpeed = .01f;
-    float rangedAttackNoise = 20;
+    public bool hasRangedWeapon;
+    public float rangedAttackDamage = 100;
+    public float rangedAttackSpeed = .01f;
+    public float rangedAttackNoise = 20;
+    public float rangedAttackRange = 20;
+    public float rangedKnockback = .25f;
+    public bool rangedAttackAutomatic = false;
+    public int magazineSize = 5;
+    public float reloadTime = 2;
+    public float aimTime = 1;
     float rangedAttackCooldown;
-    float rangedAttackRange = 20;
-    float rangedKnockback = .25f;
-    bool rangedAttackAutomatic;
-    int magazineSize = 5;
     int inMagazine;
-    float reloadTime = 2;
     float reloadTimeElapsed;
-    float aimTime = 1;
     public float aimTimeElapsed;
     bool reloading;
     bool chambered;
 
-    float meleeAttackDamage = 50;
-    float meleeAttackSpeed = .5f;
-    float meleeAttackNoise = 6;
+    public bool hasMeleeWeapon;
+    public float meleeAttackDamage = 50;
+    public float meleeAttackSpeed = .5f;
+    public float meleeAttackNoise = 6;
+    public float meleeAttackRange = .5f;
+    public float meleeKnockback = .5f;
     float meleeAttackCooldown;
-    float meleeAttackRange = .5f;
-    float meleeKnockback = .5f;
 
+    public List<RangedWeapon> rangedWeapons;
+    public List<MeleeWeapon> meleeWeapons;
 
     Vector2 input;
     Vector3 camForward;
@@ -67,7 +73,7 @@ public class PlayerController : MonoBehaviour, IDamageable<float>
     float pulse;
 
     float fovRadius = 4;
-    float fovAngle = 200;
+    float fovAngle = 250;
 
     KeyCode pickUpKey;
     KeyCode pickUpButton;
@@ -98,6 +104,8 @@ public class PlayerController : MonoBehaviour, IDamageable<float>
         chambered = true;
         reloading = false;
         inMagazine = magazineSize;
+        hasMeleeWeapon = false;
+        hasRangedWeapon = false;
 
         pickUpKey = KeyCode.Space;
         pickUpButton = KeyCode.Joystick1Button0;
@@ -127,16 +135,22 @@ public class PlayerController : MonoBehaviour, IDamageable<float>
             }
         }
 
-        var pos = transform.position;
-        reloadProgressBar.transform.position = pos;
+        reloadProgressBar.transform.position = transform.position;
         reloadProgressBar.fillAmount = reloadTimeElapsed/reloadTime;
+
+        if (fov.target)
+        {
+            targetLabel.text = fov.target.name;
+            targetLabel.transform.position = fov.target.transform.position;
+        }
+        else
+            targetLabel.text = null;
 
         if (isAiming)
         {
             if (target)
             {
-                var targetPos = target.transform.position;
-                aimProgressBar.transform.position = targetPos;
+                aimProgressBar.transform.position = target.transform.position;
                 aimProgressBar.fillAmount = aimTimeElapsed / aimTime;
             }
             else
@@ -144,7 +158,6 @@ public class PlayerController : MonoBehaviour, IDamageable<float>
         }
         else
             aimProgressBar.fillAmount = 0;
-
 
         CaptureInput();
         CalculateCamera();
@@ -226,30 +239,37 @@ public class PlayerController : MonoBehaviour, IDamageable<float>
 
         if (Input.GetMouseButton(1) || Input.GetAxis("Aim") > 0)
         {
-            isAiming = true;
-            fov.radius = rangedAttackRange;
-            fov.angle = 45;
-            fov.targetMask = LayerMask.GetMask("Zombie");
-
-            target = fov.target;
-
-            if (target)
-                if (reloading == false)
-                    Aim();
-            if (Input.GetMouseButton(0) || Input.GetAxis("Fire") > 0)
+            if (hasRangedWeapon)
             {
-                if (target && chambered)
-                {
-                    RangedAttack(target);
-                    chambered = false;
-                }
-            }
-            else
-                chambered = true;
+                isAiming = true;
+                fov.radius = rangedAttackRange;
+                fov.angle = 45;
 
-            if (Input.GetKeyDown(reloadKey) || Input.GetKeyDown(reloadButton))
-                if (inMagazine < magazineSize)
-                    reload = StartCoroutine(Reload());
+                if (fov.target)
+                    if (fov.target.name != "Zombie")
+                        fov.target = null;
+                fov.targetMask = LayerMask.GetMask("Zombie");
+
+                target = fov.target;
+
+                if (target)
+                    if (reloading == false)
+                        Aim();
+                if (Input.GetMouseButton(0) || Input.GetAxis("Fire") > 0)
+                {
+                    if (target && chambered)
+                    {
+                        RangedAttack(target);
+                        chambered = false;
+                    }
+                }
+                else
+                    chambered = true;
+
+                if (Input.GetKeyDown(reloadKey) || Input.GetKeyDown(reloadButton))
+                    if (inMagazine < magazineSize)
+                        reload = StartCoroutine(Reload());
+            }
         }
         else
         {
@@ -258,6 +278,7 @@ public class PlayerController : MonoBehaviour, IDamageable<float>
             fov.angle = fovAngle;
             fov.targetMask = LayerMask.GetMask("Interactable");
             target = null;
+            aimTimeElapsed = 0;
 
             if (Input.GetMouseButton(0) || Input.GetAxis("Fire") > 0)
             {
@@ -268,20 +289,23 @@ public class PlayerController : MonoBehaviour, IDamageable<float>
 
     private void MeleeAttack()
     {
-        if (meleeAttackCooldown <= 0)
+        if (hasMeleeWeapon)
         {
-            InterruptReload();
-            Collider[] hitZombies = Physics.OverlapSphere(transform.position + transform.forward, meleeAttackRange, 1 << LayerMask.NameToLayer("Zombie"));
-            if (hitZombies.Length > 0)
+            if (meleeAttackCooldown <= 0)
             {
-                foreach (Collider zombie in hitZombies)
+                InterruptReload();
+                Collider[] hitZombies = Physics.OverlapSphere(transform.position + transform.forward, meleeAttackRange, 1 << LayerMask.NameToLayer("Zombie"));
+                if (hitZombies.Length > 0)
                 {
-                    zombie.gameObject.GetComponent<IDamageable<float>>().TakeDamage(meleeAttackDamage);
-                    zombie.gameObject.GetComponent<NavMeshAgent>().Move((zombie.transform.position - transform.position).normalized * meleeKnockback);
+                    foreach (Collider zombie in hitZombies)
+                    {
+                        zombie.gameObject.GetComponent<IDamageable<float>>().TakeDamage(meleeAttackDamage);
+                        zombie.gameObject.GetComponent<NavMeshAgent>().Move((zombie.transform.position - transform.position).normalized * meleeKnockback);
+                    }
                 }
+                EmitUniqueNoise(meleeAttackNoise);
+                meleeAttackCooldown = meleeAttackSpeed;
             }
-            EmitUniqueNoise(meleeAttackNoise);
-            meleeAttackCooldown = meleeAttackSpeed;
         }
     }
 
@@ -341,9 +365,12 @@ public class PlayerController : MonoBehaviour, IDamageable<float>
 
     private void Aim()
     {
-        if (aimTimeElapsed < aimTime)
+        if (hasRangedWeapon)
         {
-            aimTimeElapsed += Time.deltaTime;
+            if (aimTimeElapsed < aimTime)
+            {
+                aimTimeElapsed += Time.deltaTime;
+            }
         }
     }
 
@@ -403,13 +430,13 @@ public class PlayerController : MonoBehaviour, IDamageable<float>
                 noiseSphereRadius = idleRadius;
                 break;
             case State.Walking:
-                noiseSphereRadius = walkRadius;
+                noiseSphereRadius = idleRadius + walkRadius * input.magnitude;
                 break;
             case State.Running:
-                noiseSphereRadius = runRadius;
+                noiseSphereRadius = idleRadius + runRadius * input.magnitude;
                 break;
             case State.Crouching:
-                noiseSphereRadius = crouchRadius;
+                noiseSphereRadius = idleRadius + crouchRadius * input.magnitude;
                 break;
         }
         Collider[] hitZombies = Physics.OverlapSphere(transform.position, noiseSphereRadius, 1 << LayerMask.NameToLayer("Zombie"));

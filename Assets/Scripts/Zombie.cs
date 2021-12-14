@@ -34,6 +34,7 @@ public class Zombie : MonoBehaviour, IDamageable<float>
 
     private void Start()
     {
+        name = "Zombie";
         navMeshAgent = GetComponent<NavMeshAgent>();
         fov = GetComponent<FieldOfView>();
         fov.radius = fovRadius;

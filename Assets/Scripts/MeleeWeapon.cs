@@ -12,21 +12,23 @@ public class MeleeWeapon : MonoBehaviour, IPickUpable
     float meleeAttackRange = .5f;
     float meleeKnockback = .5f;
 
-    public enum Type { Random, Crobar, Knife }
-    public Type type;
+    public enum Type { Crobar, Knife, Random }
+    public Type type = Type.Random;
 
     private void Start()
     {
         player = Player.Instance;
+        Initialize();
+    }
 
+    private void Initialize()
+    {
         switch (type)
         {
             case Type.Random:
-                int rand = Random.Range((int)Type.Crobar, (int)Type.Knife + 1);
-                if (rand == (int)Type.Crobar)
-                    CrobarSetup();
-                if (rand == (int)Type.Knife)
-                    KnifeSetup();
+                int rand = Random.Range(0, (int)Type.Random);
+                type = (Type)rand;
+                Initialize();
                 break;
             case Type.Crobar:
                 CrobarSetup();

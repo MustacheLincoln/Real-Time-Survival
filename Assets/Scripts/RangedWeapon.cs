@@ -16,21 +16,23 @@ public class RangedWeapon : MonoBehaviour, IPickUpable
     float reloadTime;
     float aimTime;
 
-    public enum Type { Random, Pistol, Rifle }
-    public Type type;
+    public enum Type { Pistol, Rifle, Random }
+    public Type type = Type.Random;
 
     private void Start()
     {
         player = Player.Instance;
+        Initialize();
+    }
 
+    private void Initialize()
+    {
         switch (type)
         {
             case Type.Random:
-                int rand = Random.Range((int)Type.Pistol, (int)Type.Rifle + 1);
-                if (rand == (int)Type.Pistol)
-                    PistolSetup();
-                if (rand == (int)Type.Rifle)
-                    RifleSetup();
+                int rand = Random.Range(0, (int)Type.Random);
+                type = (Type)rand;
+                Initialize();
                 break;
             case Type.Pistol:
                 PistolSetup();
@@ -39,7 +41,6 @@ public class RangedWeapon : MonoBehaviour, IPickUpable
                 RifleSetup();
                 break;
         }
-
     }
 
     private void PistolSetup()

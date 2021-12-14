@@ -14,12 +14,15 @@ public class PlayerVitals : MonoBehaviour
     public float stamina;
     public float maxCalories = 2000;
     public float calories;
+    public float maxMilliliters = 2000;
+    public float milliliters;
     public float exertion;
     public float baseExertion = 1;
     public float healthExertion = 1;
     public float staminaExertion = 1;
 
     public bool starving;
+    public bool dehydrated;
 
     private void Start()
     {
@@ -75,14 +78,31 @@ public class PlayerVitals : MonoBehaviour
             calories -= exertion * Time.deltaTime;
             calories = Mathf.Clamp(calories, 0, maxCalories);
         }
-
         starving = (calories <= 0);
         if (starving)
-            health -= Time.deltaTime;
+            Starving();
+
+        if (milliliters > 0)
+        {
+            exertion = (baseExertion + healthExertion + staminaExertion);
+            milliliters -= exertion * Time.deltaTime;
+            milliliters = Mathf.Clamp(milliliters, 0, maxMilliliters);
+        }
+        dehydrated = (milliliters <= 0);
+        if (dehydrated)
+            Dehydrated();
 
         if (health <= 0)
         {
             player.Die();
         }
+    }
+    void Starving()
+    {
+        health -= Time.deltaTime;
+    }
+    void Dehydrated()
+    {
+        health -= Time.deltaTime;
     }
 }

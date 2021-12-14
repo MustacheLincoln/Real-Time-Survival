@@ -10,7 +10,7 @@ public class Player : MonoBehaviour, IDamageable<float>
 {
     public static Player Instance { get; private set; }
     NavMeshAgent navMeshAgent;
-    PlayerVitals vitals;
+    public PlayerVitals vitals;
     public FieldOfView fov;
     Camera cam;
 
@@ -26,7 +26,7 @@ public class Player : MonoBehaviour, IDamageable<float>
     float acceleration = 50;
     float turnSpeedLow = 7;
     float turnSpeedHigh = 15;
-    float grabDistance = 1.5f;
+    float grabDistance = 1.25f;
     float idleRadius = 1;
     float walkRadius = 5;
     float runRadius = 10;
@@ -63,6 +63,7 @@ public class Player : MonoBehaviour, IDamageable<float>
 
     public List<GameObject> rangedWeapons;
     public List<GameObject> meleeWeapons;
+    public List<GameObject> food;
 
     Vector2 input;
     Vector3 camForward;
@@ -333,9 +334,6 @@ public class Player : MonoBehaviour, IDamageable<float>
                     pickUpTarget = null;
                     pickUpTimeElapsed = 0;
                     actionState = ActionState.Idle;
-                    //float cals = 10;
-                    //if (vitals.calories < vitals.maxCalories - cals)
-                    //Eat(cals);
                 }
                 break;
         }

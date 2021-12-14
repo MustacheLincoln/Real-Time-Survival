@@ -9,19 +9,15 @@ using TMPro;
 public class Player : MonoBehaviour, IDamageable<float>
 {
     public static Player Instance { get; private set; }
-
-    public Image reloadProgressBar;
-    public Image aimProgressBar;
-    public TMP_Text targetLabel;
     NavMeshAgent navMeshAgent;
     PlayerVitals vitals;
-    FieldOfView fov;
+    public FieldOfView fov;
     Camera cam;
 
     float pickUpTime = .25f;
     float pickUpTimeElapsed;
     public GameObject pickUpTarget;
-    GameObject target;
+    public GameObject target;
 
     float speed;
     float walkSpeed = 3;
@@ -49,7 +45,7 @@ public class Player : MonoBehaviour, IDamageable<float>
     public float aimTime = 1;
     float rangedAttackCooldown;
     int inMagazine;
-    float reloadTimeElapsed;
+    public float reloadTimeElapsed;
     public float aimTimeElapsed;
     public GameObject rangedWeaponEquipped;
     bool roundChambered;
@@ -140,7 +136,6 @@ public class Player : MonoBehaviour, IDamageable<float>
             }
         }
 
-        UI();
         CaptureInput();
         CalculateCamera();
 
@@ -368,33 +363,6 @@ public class Player : MonoBehaviour, IDamageable<float>
             rangedWeapons[i + 1].GetComponent<RangedWeapon>().Equip();
             rangedWeaponChanged = true;
         }
-    }
-
-    private void UI()
-    {
-        reloadProgressBar.transform.position = transform.position;
-        reloadProgressBar.fillAmount = reloadTimeElapsed / reloadTime;
-
-        if (fov.target)
-        {
-            targetLabel.text = fov.target.name;
-            targetLabel.transform.position = fov.target.transform.position;
-        }
-        else
-            targetLabel.text = null;
-
-        if (actionState == ActionState.Aiming)
-        {
-            if (target)
-            {
-                aimProgressBar.transform.position = target.transform.position;
-                aimProgressBar.fillAmount = aimTimeElapsed / aimTime;
-            }
-            else
-                aimProgressBar.fillAmount = 0;
-        }
-        else
-            aimProgressBar.fillAmount = 0;
     }
 
     private void MeleeAttack()

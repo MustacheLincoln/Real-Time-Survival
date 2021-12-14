@@ -33,17 +33,17 @@ public class PlayerVitals : MonoBehaviour
 
     private void Update()
     {
-        switch (player.state)
+        switch (player.movementState)
         {
-            case Player.State.Idle:
+            case Player.MovementState.Idle:
                 break;
-            case Player.State.Walking:
+            case Player.MovementState.Walking:
                 break;
-            case Player.State.Running:
+            case Player.MovementState.Running:
                 stamina -= 10 * Time.deltaTime;
                 maxStamina -= .1f * Time.deltaTime;
                 break;
-            case Player.State.Crouching:
+            case Player.MovementState.Crouching:
                 break;
         }
 
@@ -58,7 +58,7 @@ public class PlayerVitals : MonoBehaviour
 
         if (stamina < maxStamina)
         {
-            if (player.state != Player.State.Running)
+            if (player.movementState != Player.MovementState.Running)
             {
                 stamina += (calories / maxCalories) * Time.deltaTime;
                 staminaExertion = 1;

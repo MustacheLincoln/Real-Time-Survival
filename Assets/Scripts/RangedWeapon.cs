@@ -92,6 +92,7 @@ public class RangedWeapon : MonoBehaviour, IPickUpable
         {
             player.rangedWeapons.Add(gameObject);
             gameObject.SetActive(false);
+            transform.parent = player.transform;
         }
 
         foreach (GameObject weapon in player.rangedWeapons)

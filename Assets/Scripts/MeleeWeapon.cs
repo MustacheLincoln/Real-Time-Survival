@@ -75,6 +75,7 @@ public class MeleeWeapon : MonoBehaviour, IPickUpable
         {
             player.meleeWeapons.Add(gameObject);
             gameObject.SetActive(false);
+            transform.parent = player.transform;
         }
 
         foreach (GameObject weapon in player.meleeWeapons)

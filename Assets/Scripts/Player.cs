@@ -66,8 +66,8 @@ public class Player : MonoBehaviour, IDamageable<float>
     public List<GameObject> items;
 
     public GameObject itemSelected;
-    float eatingTime = 1;
-    float eatingTimeElapsed;
+    public float eatingTime = 1;
+    public float eatingTimeElapsed;
 
     Vector2 input;
     Vector3 camForward;

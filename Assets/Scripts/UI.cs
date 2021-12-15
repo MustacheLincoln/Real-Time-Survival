@@ -9,6 +9,7 @@ public class UI : MonoBehaviour
 {
     Player player;
 
+    public Image eatingProgressBar;
     public Image reloadProgressBar;
     public Image aimProgressBar;
     public TMP_Text targetLabel;
@@ -27,6 +28,9 @@ public class UI : MonoBehaviour
     {
         reloadProgressBar.transform.position = player.transform.position;
         reloadProgressBar.fillAmount = player.reloadTimeElapsed / player.reloadTime;
+
+        eatingProgressBar.transform.position = player.transform.position;
+        eatingProgressBar.fillAmount = player.eatingTimeElapsed / player.eatingTime;
 
         if (player.fov.target)
         {

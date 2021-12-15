@@ -72,9 +72,11 @@ public class Food : MonoBehaviour, IPickUpable
 
     public void PickUp()
     {
-        if (!player.food.Contains(gameObject))
+        if (!player.items.Contains(gameObject))
         {
-            player.food.Add(gameObject);
+            player.items.Add(gameObject);
+            if (player.itemSelected == null)
+                player.itemSelected = gameObject;
             gameObject.SetActive(false);
             transform.parent = player.transform;
         }

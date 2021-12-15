@@ -31,7 +31,8 @@ public class PlayerVitals : MonoBehaviour
         health = maxHealth;
         maxStamina = maxMaxStamina;
         stamina = maxStamina;
-        calories = maxCalories;
+        calories = maxCalories / 2;
+        milliliters = maxMilliliters / 2;
     }
 
     private void Update()

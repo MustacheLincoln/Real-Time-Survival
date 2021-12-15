@@ -25,7 +25,7 @@ public class UI : MonoBehaviour
 
     private void WorldSpaceUI()
     {
-        reloadProgressBar.transform.position = transform.position;
+        reloadProgressBar.transform.position = player.transform.position;
         reloadProgressBar.fillAmount = player.reloadTimeElapsed / player.reloadTime;
 
         if (player.fov.target)

@@ -63,7 +63,11 @@ public class Player : MonoBehaviour, IDamageable<float>
 
     public List<GameObject> rangedWeapons;
     public List<GameObject> meleeWeapons;
-    public List<GameObject> food;
+    public List<GameObject> items;
+
+    public GameObject itemSelected;
+    float eatingTime = 1;
+    float eatingTimeElapsed;
 
     Vector2 input;
     Vector3 camForward;
@@ -78,18 +82,9 @@ public class Player : MonoBehaviour, IDamageable<float>
     float fovRadius = 4;
     float fovAngle = 250;
 
-    KeyCode pickUpKey;
-    KeyCode pickUpButton;
-    KeyCode runKey;
-    KeyCode runButton;
-    KeyCode crouchKey;
-    KeyCode crouchButton;
-    KeyCode reloadKey;
-    KeyCode reloadButton;
-
     public enum MovementState { Idle, Walking, Running, Crouching }
     public MovementState movementState;
-    public enum ActionState { Idle, Reloading, Aiming, PickingUp }
+    public enum ActionState { Idle, Reloading, Aiming, PickingUp, Eating }
     public ActionState actionState;
 
     private void Awake() { Instance = this; }
@@ -109,34 +104,12 @@ public class Player : MonoBehaviour, IDamageable<float>
         hasMeleeWeapon = false;
         hasRangedWeapon = false;
 
-        pickUpKey = KeyCode.Space;
-        pickUpButton = KeyCode.Joystick1Button0;
-        runKey = KeyCode.LeftShift;
-        runButton = KeyCode.Joystick1Button5;
-        crouchKey = KeyCode.LeftControl;
-        crouchButton = KeyCode.Joystick1Button4;
-        reloadKey = KeyCode.Space;
-        reloadButton = KeyCode.Joystick1Button0;
-
         movementState = MovementState.Idle;
         StartCoroutine(EmitNoisePulse());
     }
 
     private void Update()
     {
-        for (int action = (int)KeyCode.Backspace; action <= (int)KeyCode.Joystick8Button19; action++)
-        {
-            if (Input.GetKeyDown((KeyCode)action) && ((KeyCode)action).ToString().Contains("Joystick"))
-            {
-                string controllerNumber = ((KeyCode)action).ToString().Substring(8, 2);
-                if (controllerNumber.EndsWith("B"))
-                {
-                    controllerNumber = controllerNumber.Substring(0, 1);
-                }
-                Debug.Log("This is Joystick Number " + controllerNumber);
-            }
-        }
-
         CaptureInput();
         CalculateCamera();
 
@@ -163,7 +136,7 @@ public class Player : MonoBehaviour, IDamageable<float>
         }
         else
         {
-            if (Input.GetKey(pickUpKey) || Input.GetKey(pickUpButton))
+            if (Input.GetButton("PickUp"))
             {
                 if (fov.target && actionState != ActionState.Aiming)
                 {
@@ -176,7 +149,7 @@ public class Player : MonoBehaviour, IDamageable<float>
             }
         }
 
-        if (Input.GetKeyDown(pickUpKey) || Input.GetKeyDown(pickUpButton))
+        if (Input.GetButtonDown("PickUp"))
             if (fov.target)
                 if (fov.target.name == "Door")
                 {
@@ -187,52 +160,6 @@ public class Player : MonoBehaviour, IDamageable<float>
         if (pickUpTarget)
             if (Vector3.Distance(transform.position, pickUpTarget.transform.position) < grabDistance)
                 actionState = ActionState.PickingUp;
-
-
-        if (Input.GetMouseButton(1) || Input.GetAxis("Aim") > 0)
-        {
-            speed = 0;
-            if (hasRangedWeapon)
-                if (actionState != ActionState.Reloading)
-                    actionState = ActionState.Aiming;
-        }
-        else
-        {
-            if (actionState == ActionState.Aiming)
-                actionState = ActionState.Idle;
-            if (IsMoving())
-            {
-                if (Input.GetKey(runKey) || Input.GetKey(runButton))
-                {
-                    if (vitals.stamina > 1)
-                    {
-                        speed = runSpeed;
-                        movementState = MovementState.Running;
-                    }
-                    else
-                    {
-                        speed = walkSpeed;
-                        movementState = MovementState.Walking;
-                    }
-                    actionState = ActionState.Idle;
-                }
-                else if (Input.GetKey(crouchKey) || Input.GetKey(crouchButton))
-                {
-                    speed = crouchSpeed;
-                    movementState = MovementState.Crouching;
-                }
-                else
-                {
-                    speed = walkSpeed;
-                    movementState = MovementState.Walking;
-                }
-            }
-            else
-            {
-                speed = walkSpeed;
-                movementState = MovementState.Idle;
-            }
-        }
     }
 
     private void MovementStateMachine()
@@ -282,6 +209,10 @@ public class Player : MonoBehaviour, IDamageable<float>
                 }
                 else
                     rangedWeaponChanged = false;
+                if (Input.GetButtonDown("Eat"))
+                    if (itemSelected)
+                        if (itemSelected.GetComponent<Food>() != null)
+                            actionState = ActionState.Eating;
                 break;
             case ActionState.Reloading:
                 aimTimeElapsed = 0;
@@ -299,7 +230,7 @@ public class Player : MonoBehaviour, IDamageable<float>
                 pickUpTimeElapsed = 0;
                 fov.radius = rangedAttackRange;
                 fov.angle = 45;
-                if (Input.GetKeyDown(reloadKey) || Input.GetKeyDown(reloadButton))
+                if (Input.GetButtonDown("Reload"))
                     if (inMagazine < magazineSize)
                     {
                         actionState = ActionState.Reloading;
@@ -320,7 +251,6 @@ public class Player : MonoBehaviour, IDamageable<float>
                 }
                 else
                     roundChambered = true;
-
                 break;
             case ActionState.PickingUp:
                 aimTimeElapsed = 0;
@@ -333,6 +263,30 @@ public class Player : MonoBehaviour, IDamageable<float>
                         pickUpTarget.GetComponent<IPickUpable>().PickUp();
                     pickUpTarget = null;
                     pickUpTimeElapsed = 0;
+                    actionState = ActionState.Idle;
+                }
+                break;
+            case ActionState.Eating:
+                aimTimeElapsed = 0;
+                reloadTimeElapsed = 0;
+                speed = 0;
+                pickUpTarget = null;
+                target = null;
+                eatingTimeElapsed += Time.deltaTime;
+                if (eatingTimeElapsed >= eatingTime)
+                {
+                    if (itemSelected)
+                    {
+                        itemSelected.GetComponent<Food>().Eat();
+                        int index = items.IndexOf(itemSelected);
+                        items.Remove(itemSelected);
+                        if (items.Count > 0)
+                            itemSelected = items[0];
+                        if (items.Count <= 0)
+                            itemSelected = null;
+
+                    }
+                    eatingTimeElapsed = 0;
                     actionState = ActionState.Idle;
                 }
                 break;
@@ -434,6 +388,51 @@ public class Player : MonoBehaviour, IDamageable<float>
     {
         input = new Vector2(Input.GetAxis("Horizontal"), Input.GetAxis("Vertical"));
         input = Vector2.ClampMagnitude(input, 1);
+
+        if (Input.GetMouseButton(1) || Input.GetAxis("Aim") > 0)
+        {
+            speed = 0;
+            if (hasRangedWeapon)
+                if (actionState != ActionState.Reloading)
+                    actionState = ActionState.Aiming;
+        }
+        else
+        {
+            if (actionState == ActionState.Aiming)
+                actionState = ActionState.Idle;
+            if (IsMoving())
+            {
+                if (Input.GetButton("Run"))
+                {
+                    if (vitals.stamina > 1)
+                    {
+                        speed = runSpeed;
+                        movementState = MovementState.Running;
+                    }
+                    else
+                    {
+                        speed = walkSpeed;
+                        movementState = MovementState.Walking;
+                    }
+                    actionState = ActionState.Idle;
+                }
+                else if (Input.GetButton("Crouch"))
+                {
+                    speed = crouchSpeed;
+                    movementState = MovementState.Crouching;
+                }
+                else
+                {
+                    speed = walkSpeed;
+                    movementState = MovementState.Walking;
+                }
+            }
+            else
+            {
+                speed = walkSpeed;
+                movementState = MovementState.Idle;
+            }
+        }
     }
 
     private void CalculateCamera()

@@ -9,48 +9,109 @@ public class UI : MonoBehaviour
 {
     Player player;
 
-    public Image eatingProgressBar;
-    public Image reloadProgressBar;
-    public Image aimProgressBar;
+    public TMP_Text timeSurvivedLabel;
+    public TMP_Text realTimeLabel;
+    public TMP_Text rangedWeaponLabel;
+    public TMP_Text meleeWeaponLabel;
+    public TMP_Text itemLabel;
+    public Image healthRadial;
+    public Image staminaRadial;
+    public Image hungerRadial;
+    public Image thirstRadial;
+    public Image burnedHealthRadial;
+    public Image burnedStaminaRadial;
+
+    public Image eatingProgressRadial;
+    public Image reloadProgressRadial;
+    public Image aimProgressRadial;
     public TMP_Text targetLabel;
+
+    DateTime startTime;
 
     private void Start()
     {
         player = Player.Instance;
+        startTime = DateTime.Now;
     }
 
     private void Update()
     {
+        ScreenSpaceUI();
         WorldSpaceUI();
+    }
+
+    private void ScreenSpaceUI()
+    {
+        DateTime time = DateTime.Now;
+        realTimeLabel.text = time.Hour.ToString().PadLeft(2, '0') + ":" + time.Minute.ToString().PadLeft(2, '0');
+
+        if (player)
+        {
+            TimeSpan timeSurvived = DateTime.Now - startTime;
+            timeSurvivedLabel.text = timeSurvived.Hours.ToString().PadLeft(2, '0') + ":" + timeSurvived.Minutes.ToString().PadLeft(2, '0') + ":" + timeSurvived.Seconds.ToString().PadLeft(2, '0');
+
+            healthRadial.fillAmount = player.vitals.health / player.vitals.maxMaxHealth;
+            staminaRadial.fillAmount = player.vitals.stamina / player.vitals.maxMaxStamina;
+            hungerRadial.fillAmount = player.vitals.calories / player.vitals.maxCalories;
+            thirstRadial.fillAmount = player.vitals.milliliters / player.vitals.maxMilliliters;
+
+            burnedHealthRadial.fillAmount = (player.vitals.maxMaxHealth - player.vitals.maxHealth) / player.vitals.maxMaxHealth;
+            burnedStaminaRadial.fillAmount = (player.vitals.maxMaxStamina - player.vitals.maxStamina) / player.vitals.maxMaxStamina;
+
+            if (player.rangedWeaponEquipped)
+                rangedWeaponLabel.text = player.rangedWeaponEquipped.name;
+            else
+                rangedWeaponLabel.text = "-----";
+            if (player.meleeWeaponEquipped)
+                meleeWeaponLabel.text = player.meleeWeaponEquipped.name;
+            else
+                meleeWeaponLabel.text = "-----";
+            if (player.itemSelected)
+                itemLabel.text = player.itemSelected.name;
+            else
+                itemLabel.text = "-----";
+        }
+
     }
 
     private void WorldSpaceUI()
     {
-        reloadProgressBar.transform.position = player.transform.position;
-        reloadProgressBar.fillAmount = player.reloadTimeElapsed / player.reloadTime;
-
-        eatingProgressBar.transform.position = player.transform.position;
-        eatingProgressBar.fillAmount = player.eatingTimeElapsed / player.eatingTime;
-
-        if (player.fov.target)
+        if (player)
         {
-            targetLabel.text = player.fov.target.name;
-            targetLabel.transform.position = player.fov.target.transform.position;
-        }
-        else
-            targetLabel.text = null;
+            reloadProgressRadial.transform.position = player.transform.position;
+            reloadProgressRadial.fillAmount = player.reloadTimeElapsed / player.reloadTime;
 
-        if (player.actionState == Player.ActionState.Aiming)
-        {
-            if (player.target)
+            eatingProgressRadial.transform.position = player.transform.position;
+            eatingProgressRadial.fillAmount = player.eatingTimeElapsed / player.eatingTime;
+
+            if (player.fov.target)
             {
-                aimProgressBar.transform.position = player.target.transform.position;
-                aimProgressBar.fillAmount = player.aimTimeElapsed / player.aimTime;
+                targetLabel.text = player.fov.target.name;
+                targetLabel.transform.position = player.fov.target.transform.position;
             }
             else
-                aimProgressBar.fillAmount = 0;
+                targetLabel.text = null;
+
+            if (player.actionState == Player.ActionState.Aiming)
+            {
+                targetLabel.text = null;
+                if (player.target)
+                {
+                    aimProgressRadial.transform.position = player.target.transform.position;
+                    aimProgressRadial.fillAmount = player.aimTimeElapsed / player.aimTime;
+                }
+                else
+                    aimProgressRadial.fillAmount = 0;
+            }
+            else
+                aimProgressRadial.fillAmount = 0;
         }
         else
-            aimProgressBar.fillAmount = 0;
+        {
+            reloadProgressRadial.enabled = false;
+            eatingProgressRadial.enabled = false;
+            targetLabel.enabled = false;
+            aimProgressRadial.enabled = false;
+        }
     }
 }

@@ -20,6 +20,7 @@ public class PlayerVitals : MonoBehaviour
     public float baseExertion = 1;
     public float healthExertion = 1;
     public float staminaExertion = 1;
+    public float recuperation = 1;
 
     public bool starving;
     public bool dehydrated;
@@ -40,21 +41,25 @@ public class PlayerVitals : MonoBehaviour
         switch (player.movementState)
         {
             case Player.MovementState.Idle:
+                recuperation = 2;
                 break;
             case Player.MovementState.Walking:
+                recuperation = 1;
                 break;
             case Player.MovementState.Running:
+                recuperation = 0;
                 stamina -= 10 * Time.deltaTime;
                 maxStamina -= .1f * Time.deltaTime;
                 break;
             case Player.MovementState.Crouching:
+                recuperation = 1.5f;
                 break;
         }
 
         if (health < maxHealth)
         {
-            health += (calories / maxCalories) * Time.deltaTime;
-            healthExertion = 1;
+            health += ((calories + milliliters) / (maxCalories + maxMilliliters)) * recuperation * Time.deltaTime;
+            healthExertion = 1 * recuperation;
             health = Mathf.Clamp(health, 0, maxHealth);
         }
         else
@@ -64,8 +69,8 @@ public class PlayerVitals : MonoBehaviour
         {
             if (player.movementState != Player.MovementState.Running)
             {
-                stamina += (calories / maxCalories) * Time.deltaTime;
-                staminaExertion = 1;
+                stamina += ((calories+milliliters) / (maxCalories+maxMilliliters)) * recuperation * Time.deltaTime;
+                staminaExertion = 1 * recuperation;
             }
             stamina = Mathf.Clamp(stamina, 0, maxStamina);
 

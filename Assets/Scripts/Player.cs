@@ -459,5 +459,6 @@ public class Player : MonoBehaviour, IDamageable<float>
     public void TakeDamage(float damage)
     {
         vitals.health -= damage;
+        vitals.maxHealth -= damage / 10;
     }
 }

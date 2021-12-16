@@ -46,12 +46,13 @@ public class Player : MonoBehaviour, IDamageable<float>
     public float reloadTime = 1;
     public float aimTime;
     float rangedAttackCooldown;
-    public int inMagazine;
     public float reloadTimeElapsed;
     public float aimTimeElapsed;
     public GameObject rangedWeaponEquipped;
     bool roundChambered;
     bool rangedWeaponChanged = false;
+    public int pistolAmmo;
+    public int rifleAmmo;
 
     public bool hasMeleeWeapon;
     public float meleeAttackDamage;
@@ -102,7 +103,6 @@ public class Player : MonoBehaviour, IDamageable<float>
         cam = Camera.main;
         navMeshAgent.speed = walkSpeed;
         navMeshAgent.acceleration = acceleration;
-        inMagazine = magazineSize;
         hasMeleeWeapon = false;
         hasRangedWeapon = false;
 
@@ -229,7 +229,26 @@ public class Player : MonoBehaviour, IDamageable<float>
                 reloadTimeElapsed += Time.deltaTime;
                 if (reloadTimeElapsed >= reloadTime)
                 {
-                    inMagazine = magazineSize;
+                    if (rangedWeaponEquipped.name == "Pistol" && pistolAmmo >= magazineSize)
+                    {
+                        pistolAmmo -= magazineSize;
+                        rangedWeaponEquipped.GetComponent<RangedWeapon>().inMagazine = magazineSize;
+                    }
+                    else if (rangedWeaponEquipped.name == "Pistol" && pistolAmmo < magazineSize)
+                    {
+                        pistolAmmo -= magazineSize;
+                        rangedWeaponEquipped.GetComponent<RangedWeapon>().inMagazine = pistolAmmo;
+                    }
+                    if (rangedWeaponEquipped.name == "Rifle" && rifleAmmo >= magazineSize)
+                    {
+                        rifleAmmo -= magazineSize;
+                        rangedWeaponEquipped.GetComponent<RangedWeapon>().inMagazine = magazineSize;
+                    }
+                    else if (rangedWeaponEquipped.name == "Rifle" && rifleAmmo < magazineSize)
+                    {
+                        rifleAmmo -= magazineSize;
+                        rangedWeaponEquipped.GetComponent<RangedWeapon>().inMagazine = rifleAmmo;
+                    }
                     reloadTimeElapsed = 0;
                     actionState = ActionState.Idle;
                 }
@@ -241,18 +260,33 @@ public class Player : MonoBehaviour, IDamageable<float>
                 fov.radius = rangedAttackRange;
                 fov.angle = 45;
                 if (Input.GetButtonDown("Reload"))
-                    if (inMagazine < magazineSize)
+                    if (rangedWeaponEquipped.GetComponent<RangedWeapon>().inMagazine < magazineSize)
                     {
-                        actionState = ActionState.Reloading;
+                        if (rangedWeaponEquipped.name == "Pistol" && pistolAmmo > 0)
+                            actionState = ActionState.Reloading;
+                        else if (rangedWeaponEquipped.name == "Rifle" && rifleAmmo > 0)
+                            actionState = ActionState.Reloading;
                     }
                 if (fov.target)
                     if (fov.target.name != "Zombie")
                         fov.target = null;
                 fov.targetMask = LayerMask.GetMask("Zombie");
                 target = fov.target;
-                if (target)
-                    if (aimTimeElapsed < aimTime)
-                        aimTimeElapsed += Time.deltaTime;
+                if (rangedWeaponEquipped.GetComponent<RangedWeapon>().inMagazine > 0)
+                {
+                    if (target)
+                        if (aimTimeElapsed < aimTime)
+                            aimTimeElapsed += Time.deltaTime;
+                }
+                else
+                {
+                    aimTimeElapsed = 0;
+                    if (Input.GetMouseButton(0) || Input.GetAxis("Fire") > 0)
+                        if (rangedWeaponEquipped.name == "Pistol" && pistolAmmo > 0)
+                            actionState = ActionState.Reloading;
+                        else if (rangedWeaponEquipped.name == "Rifle" && rifleAmmo > 0)
+                            actionState = ActionState.Reloading;
+                }
                 if (Input.GetMouseButton(0) || Input.GetAxis("Fire") > 0)
                 {
                     if (target)
@@ -266,7 +300,7 @@ public class Player : MonoBehaviour, IDamageable<float>
                     input = Vector2.zero;
                     RaycastHit hit;
                     Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
-                    if (Physics.Raycast(ray, out hit, Mathf.Infinity, 1 << LayerMask.NameToLayer("Ground")))
+                    if (Physics.Raycast(ray, out hit, int.MaxValue, 1 << LayerMask.NameToLayer("Ground")))
                         transform.LookAt(new Vector3(hit.point.x, transform.position.y, hit.point.z));
                 }
                 break;
@@ -274,8 +308,6 @@ public class Player : MonoBehaviour, IDamageable<float>
                 aimTimeElapsed = 0;
                 reloadTimeElapsed = 0;
                 movementState = MovementState.Holding;
-                if (pickUpTarget)
-                    transform.LookAt(new Vector3(pickUpTarget.transform.position.x, transform.position.y, pickUpTarget.transform.position.z));
                 pickUpTimeElapsed += Time.deltaTime;
                 if (pickUpTimeElapsed >= pickUpTime)
                 {
@@ -358,18 +390,17 @@ public class Player : MonoBehaviour, IDamageable<float>
     {
         if (aimTimeElapsed >= aimTime && rangedAttackCooldown <= 0)
         {
-            if (inMagazine > 0)
+            if (rangedWeaponEquipped.GetComponent<RangedWeapon>().inMagazine > 0)
             {
                 roundChambered = false;
                 target.GetComponent<IDamageable<float>>().TakeDamage(rangedAttackDamage);
                 target.GetComponent<NavMeshAgent>().Move((target.transform.position - transform.position).normalized * rangedKnockback);
                 EmitNoiseUnique(rangedAttackNoise);
-                inMagazine -= 1;
+                rangedWeaponEquipped.GetComponent<RangedWeapon>().inMagazine -= 1;
                 rangedAttackCooldown = rangedAttackSpeed;
-                aimTimeElapsed = 0;
+                if (boltAction)
+                    aimTimeElapsed = 0;
             }
-            else
-                actionState = ActionState.Reloading;
         }
     }
 

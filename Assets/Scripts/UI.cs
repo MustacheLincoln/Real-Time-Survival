@@ -59,7 +59,12 @@ public class UI : MonoBehaviour
             burnedStaminaRadial.fillAmount = (player.vitals.maxMaxStamina - player.vitals.maxStamina) / player.vitals.maxMaxStamina;
 
             if (player.rangedWeaponEquipped)
-                rangedWeaponLabel.text = player.rangedWeaponEquipped.name;
+            {
+                if (player.rangedWeaponEquipped.name == "Pistol")
+                    rangedWeaponLabel.text = "Pistol " + player.rangedWeaponEquipped.GetComponent<RangedWeapon>().inMagazine + "/" + player.pistolAmmo;
+                if (player.rangedWeaponEquipped.name == "Rifle")
+                    rangedWeaponLabel.text = "Rifle " + player.rangedWeaponEquipped.GetComponent<RangedWeapon>().inMagazine + "/" + player.rifleAmmo;
+            }
             else
                 rangedWeaponLabel.text = "-----";
             if (player.meleeWeaponEquipped)
@@ -88,13 +93,14 @@ public class UI : MonoBehaviour
             {
                 targetLabel.text = player.fov.target.name;
                 targetLabel.transform.position = player.fov.target.transform.position;
+                if (player.fov.target.name == "Zombie")
+                    targetLabel.text = null;
             }
             else
                 targetLabel.text = null;
 
             if (player.actionState == Player.ActionState.Aiming)
             {
-                targetLabel.text = null;
                 if (player.target)
                 {
                     aimProgressRadial.transform.position = player.target.transform.position;

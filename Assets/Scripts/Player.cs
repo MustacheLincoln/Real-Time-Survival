@@ -26,7 +26,7 @@ public class Player : MonoBehaviour, IDamageable<float>
     float acceleration = 50;
     float turnSpeedLow = 7;
     float turnSpeedHigh = 15;
-    float grabDistance = 1.25f;
+    float grabDistance = 1.4f;
     float idleRadius = 1;
     float walkRadius = 5;
     float runRadius = 10;
@@ -39,7 +39,9 @@ public class Player : MonoBehaviour, IDamageable<float>
     public float rangedAttackNoise;
     public float rangedAttackRange;
     public float rangedKnockback;
-    public bool rangedAttackAutomatic;
+    public bool fullAuto;
+    public bool semiAuto;
+    public bool boltAction;
     public int magazineSize;
     public float reloadTime = 1;
     public float aimTime;
@@ -254,7 +256,7 @@ public class Player : MonoBehaviour, IDamageable<float>
                 if (Input.GetMouseButton(0) || Input.GetAxis("Fire") > 0)
                 {
                     if (target)
-                        if (roundChambered || rangedAttackAutomatic)
+                        if (roundChambered || fullAuto)
                             RangedAttack(target);
                 }
                 else

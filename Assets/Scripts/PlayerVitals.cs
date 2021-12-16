@@ -41,7 +41,7 @@ public class PlayerVitals : MonoBehaviour
         switch (player.movementState)
         {
             case Player.MovementState.Idle:
-                recuperation = 2;
+                recuperation = 3;
                 break;
             case Player.MovementState.Walking:
                 recuperation = 1;
@@ -52,7 +52,7 @@ public class PlayerVitals : MonoBehaviour
                 maxStamina -= .1f * Time.deltaTime;
                 break;
             case Player.MovementState.Crouching:
-                recuperation = 1.5f;
+                recuperation = 2;
                 break;
         }
 

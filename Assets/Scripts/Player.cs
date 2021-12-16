@@ -19,7 +19,7 @@ public class Player : MonoBehaviour, IDamageable<float>
     public GameObject pickUpTarget;
     public GameObject target;
 
-    float speed;
+    public float speed;
     float walkSpeed = 3;
     float runSpeed = 6;
     float crouchSpeed = 1.5f;
@@ -34,17 +34,17 @@ public class Player : MonoBehaviour, IDamageable<float>
     float noiseSphereRadius;
 
     public bool hasRangedWeapon;
-    public float rangedAttackDamage = 100;
-    public float rangedAttackSpeed = .01f;
-    public float rangedAttackNoise = 20;
-    public float rangedAttackRange = 20;
-    public float rangedKnockback = .25f;
-    public bool rangedAttackAutomatic = false;
-    public int magazineSize = 5;
-    public float reloadTime = 2;
-    public float aimTime = 1;
+    public float rangedAttackDamage;
+    public float rangedAttackSpeed;
+    public float rangedAttackNoise;
+    public float rangedAttackRange;
+    public float rangedKnockback;
+    public bool rangedAttackAutomatic;
+    public int magazineSize;
+    public float reloadTime = 1;
+    public float aimTime;
     float rangedAttackCooldown;
-    int inMagazine;
+    public int inMagazine;
     public float reloadTimeElapsed;
     public float aimTimeElapsed;
     public GameObject rangedWeaponEquipped;
@@ -52,11 +52,11 @@ public class Player : MonoBehaviour, IDamageable<float>
     bool rangedWeaponChanged = false;
 
     public bool hasMeleeWeapon;
-    public float meleeAttackDamage = 50;
-    public float meleeAttackSpeed = .5f;
-    public float meleeAttackNoise = 6;
-    public float meleeAttackRange = .5f;
-    public float meleeKnockback = .5f;
+    public float meleeAttackDamage;
+    public float meleeAttackSpeed;
+    public float meleeAttackNoise;
+    public float meleeAttackRange;
+    public float meleeKnockback;
     float meleeAttackCooldown;
     public GameObject meleeWeaponEquipped;
     bool meleeWeaponChanged = false;
@@ -82,7 +82,7 @@ public class Player : MonoBehaviour, IDamageable<float>
     float fovRadius = 4;
     float fovAngle = 250;
 
-    public enum MovementState { Idle, Walking, Running, Crouching }
+    public enum MovementState { Idle, Walking, Running, Crouching, Holding }
     public MovementState movementState;
     public enum ActionState { Idle, Reloading, Aiming, PickingUp, Eating }
     public ActionState actionState;
@@ -112,12 +112,11 @@ public class Player : MonoBehaviour, IDamageable<float>
     {
         CaptureInput();
         CalculateCamera();
+        MovementStateMachine();
+        ActionStateMachine();
 
         rangedAttackCooldown -= Time.deltaTime;
         meleeAttackCooldown -= Time.deltaTime;
-
-        MovementStateMachine();
-        ActionStateMachine();
 
         velocity = Vector3.Lerp(velocity, transform.forward * input.magnitude * speed, acceleration * Time.deltaTime);
 
@@ -167,16 +166,24 @@ public class Player : MonoBehaviour, IDamageable<float>
         switch (movementState)
         {
             case MovementState.Idle:
+                speed = walkSpeed;
                 noiseSphereRadius = idleRadius;
                 break;
             case MovementState.Walking:
+                speed = walkSpeed;
                 noiseSphereRadius = idleRadius + walkRadius * input.magnitude;
                 break;
             case MovementState.Running:
+                speed = runSpeed;
                 noiseSphereRadius = idleRadius + runRadius * input.magnitude;
                 break;
             case MovementState.Crouching:
+                speed = crouchSpeed;
                 noiseSphereRadius = idleRadius + crouchRadius * input.magnitude;
+                break;
+            case MovementState.Holding:
+                speed = 0;
+                noiseSphereRadius = idleRadius;
                 break;
         }
     }
@@ -226,6 +233,7 @@ public class Player : MonoBehaviour, IDamageable<float>
                 }
                 break;
             case ActionState.Aiming:
+                movementState = MovementState.Holding;
                 pickUpTarget = null;
                 pickUpTimeElapsed = 0;
                 fov.radius = rangedAttackRange;
@@ -251,11 +259,21 @@ public class Player : MonoBehaviour, IDamageable<float>
                 }
                 else
                     roundChambered = true;
+                if (Input.GetMouseButton(1))
+                {
+                    input = Vector2.zero;
+                    RaycastHit hit;
+                    Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
+                    if (Physics.Raycast(ray, out hit, Mathf.Infinity, 1 << LayerMask.NameToLayer("Ground")))
+                        transform.LookAt(new Vector3(hit.point.x, transform.position.y, hit.point.z));
+                }
                 break;
             case ActionState.PickingUp:
                 aimTimeElapsed = 0;
                 reloadTimeElapsed = 0;
-                speed = 0;
+                movementState = MovementState.Holding;
+                if (pickUpTarget)
+                    transform.LookAt(new Vector3(pickUpTarget.transform.position.x, transform.position.y, pickUpTarget.transform.position.z));
                 pickUpTimeElapsed += Time.deltaTime;
                 if (pickUpTimeElapsed >= pickUpTime)
                 {
@@ -269,7 +287,7 @@ public class Player : MonoBehaviour, IDamageable<float>
             case ActionState.Eating:
                 aimTimeElapsed = 0;
                 reloadTimeElapsed = 0;
-                speed = 0;
+                movementState = MovementState.Holding;
                 pickUpTarget = null;
                 target = null;
                 eatingTimeElapsed += Time.deltaTime;
@@ -284,7 +302,6 @@ public class Player : MonoBehaviour, IDamageable<float>
                             itemSelected = items[0];
                         if (items.Count <= 0)
                             itemSelected = null;
-
                     }
                     eatingTimeElapsed = 0;
                     actionState = ActionState.Idle;
@@ -391,8 +408,7 @@ public class Player : MonoBehaviour, IDamageable<float>
 
         if (Input.GetMouseButton(1) || Input.GetAxis("Aim") > 0)
         {
-            speed = 0;
-            if (hasRangedWeapon)
+            movementState = MovementState.Holding;
                 if (actionState != ActionState.Reloading)
                     actionState = ActionState.Aiming;
         }
@@ -405,33 +421,18 @@ public class Player : MonoBehaviour, IDamageable<float>
                 if (Input.GetButton("Run"))
                 {
                     if (vitals.stamina > 1)
-                    {
-                        speed = runSpeed;
                         movementState = MovementState.Running;
-                    }
                     else
-                    {
-                        speed = walkSpeed;
                         movementState = MovementState.Walking;
-                    }
                     actionState = ActionState.Idle;
                 }
                 else if (Input.GetButton("Crouch"))
-                {
-                    speed = crouchSpeed;
                     movementState = MovementState.Crouching;
-                }
                 else
-                {
-                    speed = walkSpeed;
                     movementState = MovementState.Walking;
-                }
             }
             else
-            {
-                speed = walkSpeed;
                 movementState = MovementState.Idle;
-            }
         }
     }
 

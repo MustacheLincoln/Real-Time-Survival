@@ -13,6 +13,7 @@ public class RangedWeapon : MonoBehaviour, IPickUpable
     float rangedKnockback;
     bool rangedAttackAutomatic;
     int magazineSize;
+    int inMagazine;
     float reloadTime;
     float aimTime;
 
@@ -53,6 +54,7 @@ public class RangedWeapon : MonoBehaviour, IPickUpable
         rangedKnockback = .1f;
         rangedAttackAutomatic = false;
         magazineSize = 10;
+        inMagazine = 10;
         reloadTime = 1;
         aimTime = .5f;
     }
@@ -67,6 +69,7 @@ public class RangedWeapon : MonoBehaviour, IPickUpable
         rangedKnockback = .25f;
         rangedAttackAutomatic = false;
         magazineSize = 5;
+        inMagazine = 5;
         reloadTime = 2;
         aimTime = 1;
     }
@@ -82,6 +85,7 @@ public class RangedWeapon : MonoBehaviour, IPickUpable
         player.rangedKnockback = rangedKnockback;
         player.rangedAttackAutomatic = rangedAttackAutomatic;
         player.magazineSize = magazineSize;
+        player.inMagazine = inMagazine;
         player.reloadTime = reloadTime;
         player.aimTime = aimTime;
     }

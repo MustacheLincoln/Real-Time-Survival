@@ -1497,7 +1497,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 519145554}
   m_LocalRotation: {x: 0.7071068, y: 0, z: 0, w: 0.7071068}
-  m_LocalPosition: {x: 0, y: 1.75, z: 4.75}
+  m_LocalPosition: {x: 0, y: 1.75, z: 2.25}
   m_LocalScale: {x: 10, y: 3, z: 0.5}
   m_Children: []
   m_Father: {fileID: 0}
@@ -1620,25 +1620,27 @@ MonoBehaviour:
   fov: {fileID: 0}
   pickUpTarget: {fileID: 0}
   target: {fileID: 0}
+  speed: 0
   hasRangedWeapon: 0
-  rangedAttackDamage: 100
-  rangedAttackSpeed: 0.01
-  rangedAttackNoise: 20
-  rangedAttackRange: 20
-  rangedKnockback: 0.25
+  rangedAttackDamage: 0
+  rangedAttackSpeed: 0
+  rangedAttackNoise: 0
+  rangedAttackRange: 0
+  rangedKnockback: 0
   rangedAttackAutomatic: 0
-  magazineSize: 5
-  reloadTime: 2
-  aimTime: 1
+  magazineSize: 0
+  reloadTime: 1
+  aimTime: 0
+  inMagazine: 0
   reloadTimeElapsed: 0
   aimTimeElapsed: 0
   rangedWeaponEquipped: {fileID: 0}
   hasMeleeWeapon: 0
-  meleeAttackDamage: 50
-  meleeAttackSpeed: 0.5
-  meleeAttackNoise: 6
-  meleeAttackRange: 0.5
-  meleeKnockback: 0.5
+  meleeAttackDamage: 0
+  meleeAttackSpeed: 0
+  meleeAttackNoise: 0
+  meleeAttackRange: 0
+  meleeKnockback: 0
   meleeWeaponEquipped: {fileID: 0}
   rangedWeapons: []
   meleeWeapons: []
@@ -2882,7 +2884,7 @@ GameObject:
   - component: {fileID: 896600706}
   - component: {fileID: 896600705}
   - component: {fileID: 896600704}
-  m_Layer: 0
+  m_Layer: 9
   m_Name: Ground
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -2960,7 +2962,7 @@ Transform:
   m_GameObject: {fileID: 896600703}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: -1.5, z: 0}
-  m_LocalScale: {x: 100, y: 1, z: 100}
+  m_LocalScale: {x: 1000, y: 1, z: 1000}
   m_Children: []
   m_Father: {fileID: 0}
   m_RootOrder: 13
@@ -3337,7 +3339,7 @@ Camera:
   m_Depth: -1
   m_CullingMask:
     serializedVersion: 2
-    m_Bits: 479
+    m_Bits: 991
   m_RenderingPath: -1
   m_TargetTexture: {fileID: 0}
   m_TargetDisplay: 0
@@ -3615,7 +3617,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1024945627}
   m_LocalRotation: {x: 0.44619772, y: 0, z: 0, w: 0.89493436}
-  m_LocalPosition: {x: -3.5, y: 0, z: 1}
+  m_LocalPosition: {x: -3.5, y: 0, z: -1.5}
   m_LocalScale: {x: 2, y: 6, z: 0.5}
   m_Children: []
   m_Father: {fileID: 0}

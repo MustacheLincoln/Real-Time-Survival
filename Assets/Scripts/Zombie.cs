@@ -66,7 +66,13 @@ public class Zombie : MonoBehaviour, IDamageable<float>
             StartChase(fov.target);
 
         if (health <= 0)
-            Destroy(gameObject);
+            Die();
+    }
+
+    private void Die()
+    {
+        navMeshAgent.enabled = false;
+        Destroy(gameObject);
     }
 
     private void Wander()

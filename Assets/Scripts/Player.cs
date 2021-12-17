@@ -229,25 +229,25 @@ public class Player : MonoBehaviour, IDamageable<float>
                 reloadTimeElapsed += Time.deltaTime;
                 if (reloadTimeElapsed >= reloadTime)
                 {
-                    if (rangedWeaponEquipped.name == "Pistol" && pistolAmmo >= magazineSize)
+                    if (rangedWeaponEquipped.name == "Pistol" && pistolAmmo >= magazineSize - rangedWeaponEquipped.GetComponent<RangedWeapon>().inMagazine)
                     {
-                        pistolAmmo -= magazineSize;
+                        pistolAmmo -= magazineSize - rangedWeaponEquipped.GetComponent<RangedWeapon>().inMagazine;
                         rangedWeaponEquipped.GetComponent<RangedWeapon>().inMagazine = magazineSize;
                     }
-                    else if (rangedWeaponEquipped.name == "Pistol" && pistolAmmo < magazineSize)
+                    else if (rangedWeaponEquipped.name == "Pistol" && pistolAmmo < magazineSize - rangedWeaponEquipped.GetComponent<RangedWeapon>().inMagazine)
                     {
-                        pistolAmmo -= magazineSize;
-                        rangedWeaponEquipped.GetComponent<RangedWeapon>().inMagazine = pistolAmmo;
+                        rangedWeaponEquipped.GetComponent<RangedWeapon>().inMagazine += pistolAmmo;
+                        pistolAmmo = 0;
                     }
-                    if (rangedWeaponEquipped.name == "Rifle" && rifleAmmo >= magazineSize)
+                    if (rangedWeaponEquipped.name == "Rifle" && rifleAmmo >= magazineSize - rangedWeaponEquipped.GetComponent<RangedWeapon>().inMagazine)
                     {
-                        rifleAmmo -= magazineSize;
+                        rifleAmmo -= magazineSize - rangedWeaponEquipped.GetComponent<RangedWeapon>().inMagazine;
                         rangedWeaponEquipped.GetComponent<RangedWeapon>().inMagazine = magazineSize;
                     }
-                    else if (rangedWeaponEquipped.name == "Rifle" && rifleAmmo < magazineSize)
+                    else if (rangedWeaponEquipped.name == "Rifle" && rifleAmmo < magazineSize - rangedWeaponEquipped.GetComponent<RangedWeapon>().inMagazine)
                     {
-                        rifleAmmo -= magazineSize;
-                        rangedWeaponEquipped.GetComponent<RangedWeapon>().inMagazine = rifleAmmo;
+                        rangedWeaponEquipped.GetComponent<RangedWeapon>().inMagazine += rifleAmmo;
+                        rifleAmmo = 0;
                     }
                     reloadTimeElapsed = 0;
                     actionState = ActionState.Idle;

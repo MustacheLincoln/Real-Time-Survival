@@ -43,14 +43,14 @@ public class Door : MonoBehaviour, IDamageable<float>
                 case State.Closed:
                     state = State.Open;
                     newRotation = transform.rotation * Quaternion.Euler(0, 90, 0);
-                    newPosition = transform.position + new Vector3(.75f, 0, .75f);
-                    navMeshObstacle.enabled = false;
+                    newPosition = transform.position + new Vector3(1.25f, 0, 1.25f);
+                    //navMeshObstacle.enabled = false;
                     break;
                 case State.Open:
                     state = State.Closed;
                     newRotation = transform.rotation * Quaternion.Euler(0, -90, 0);
-                    newPosition = transform.position + new Vector3(-.75f, 0, -.75f);
-                    navMeshObstacle.enabled = true;
+                    newPosition = transform.position + new Vector3(-1.25f, 0, -1.25f);
+                    //navMeshObstacle.enabled = true;
                     break;
             }
     }

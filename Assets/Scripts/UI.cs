@@ -61,14 +61,14 @@ public class UI : MonoBehaviour
             if (player.rangedWeaponEquipped)
             {
                 if (player.rangedWeaponEquipped.name == "Pistol")
-                    rangedWeaponLabel.text = "Pistol " + player.rangedWeaponEquipped.GetComponent<RangedWeapon>().inMagazine + "/" + player.pistolAmmo;
+                    rangedWeaponLabel.text = "Pistol " + player.rangedWeaponEquipped.inMagazine + "/" + player.pistolAmmo;
                 if (player.rangedWeaponEquipped.name == "Rifle")
-                    rangedWeaponLabel.text = "Rifle " + player.rangedWeaponEquipped.GetComponent<RangedWeapon>().inMagazine + "/" + player.rifleAmmo;
+                    rangedWeaponLabel.text = "Rifle " + player.rangedWeaponEquipped.inMagazine + "/" + player.rifleAmmo;
             }
             else
                 rangedWeaponLabel.text = "-----";
             if (player.meleeWeaponEquipped)
-                meleeWeaponLabel.text = player.meleeWeaponEquipped.name + player.meleeWeaponEquipped.GetComponent<MeleeWeapon>().durability + "/" + player.meleeWeaponEquipped.GetComponent<MeleeWeapon>().maxDurability;
+                meleeWeaponLabel.text = player.meleeWeaponEquipped.name + " " + player.meleeWeaponEquipped.durability + "/" + player.meleeWeaponEquipped.maxDurability;
             else
                 meleeWeaponLabel.text = "-----";
             if (player.itemSelected)
@@ -84,10 +84,16 @@ public class UI : MonoBehaviour
         if (player)
         {
             reloadProgressRadial.transform.position = player.transform.position;
-            reloadProgressRadial.fillAmount = player.reloadTimeElapsed / player.reloadTime;
+            if (player.rangedWeaponEquipped)
+                reloadProgressRadial.fillAmount = player.reloadTimeElapsed / player.rangedWeaponEquipped.reloadTime;
+            else
+                reloadProgressRadial.fillAmount = 0;
 
             eatingProgressRadial.transform.position = player.transform.position;
-            eatingProgressRadial.fillAmount = player.eatingTimeElapsed / player.eatingTime;
+            if (player.itemSelected)
+                eatingProgressRadial.fillAmount = player.eatingTimeElapsed / player.itemSelected.eatingTime;
+            else
+                eatingProgressRadial.fillAmount = 0;
 
             if (player.fov.target)
             {
@@ -104,7 +110,10 @@ public class UI : MonoBehaviour
                 if (player.target)
                 {
                     aimProgressRadial.transform.position = player.target.transform.position;
-                    aimProgressRadial.fillAmount = player.aimTimeElapsed / player.aimTime;
+                    if (player.rangedWeaponEquipped)
+                        aimProgressRadial.fillAmount = player.aimTimeElapsed / player.rangedWeaponEquipped.aimTime;
+                    else
+                        aimProgressRadial.fillAmount = 0;
                 }
                 else
                     aimProgressRadial.fillAmount = 0;

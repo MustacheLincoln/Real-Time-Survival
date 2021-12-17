@@ -6,11 +6,11 @@ public class MeleeWeapon : MonoBehaviour, IPickUpable
 {
     Player player;
 
-    float meleeAttackDamage;
-    float meleeAttackSpeed;
-    float meleeAttackNoise;
-    float meleeAttackRange;
-    float meleeKnockback;
+    public float meleeAttackDamage;
+    public float meleeAttackSpeed;
+    public float meleeAttackNoise;
+    public float meleeAttackRange;
+    public float meleeKnockback;
     public int maxDurability;
     public int durability;
 
@@ -65,25 +65,15 @@ public class MeleeWeapon : MonoBehaviour, IPickUpable
         durability = maxDurability / 2 + Random.Range(0, maxDurability / 2 + 1);
     }
 
-    public void Equip()
-    {
-        player.meleeWeaponEquipped = gameObject;
-        player.meleeAttackDamage = meleeAttackDamage;
-        player.meleeAttackSpeed = meleeAttackSpeed;
-        player.meleeAttackNoise = meleeAttackNoise;
-        player.meleeAttackRange = meleeAttackRange;
-        player.meleeKnockback = meleeKnockback;
-    }
-
     public void PickUp()
     {
-        if (!player.meleeWeapons.Contains(gameObject))
+        if (!player.meleeWeapons.Contains(this))
         {
-            player.meleeWeapons.Add(gameObject);
+            player.meleeWeapons.Add(this);
             gameObject.SetActive(false);
             transform.parent = player.transform;
         }
         if (player.meleeWeaponEquipped == null)
-            Equip();
+            player.meleeWeaponEquipped = this;
     }
 }

@@ -33,42 +33,25 @@ public class Player : MonoBehaviour, IDamageable<float>
     float crouchRadius = 2;
     float noiseSphereRadius;
 
-    public float rangedAttackDamage;
-    public float rangedAttackSpeed;
-    public float rangedAttackNoise;
-    public float rangedAttackRange;
-    public float rangedKnockback;
-    public bool fullAuto;
-    public bool semiAuto;
-    public bool boltAction;
-    public int magazineSize;
-    public float reloadTime = 1;
-    public float aimTime;
     float rangedAttackCooldown;
     public float reloadTimeElapsed;
     public float aimTimeElapsed;
-    public GameObject rangedWeaponEquipped;
+    public RangedWeapon rangedWeaponEquipped;
     bool roundChambered;
     public bool weaponChanged = false;
     public int pistolAmmo;
     public int rifleAmmo;
 
-    public float meleeAttackDamage;
-    public float meleeAttackSpeed;
-    public float meleeAttackNoise;
-    public float meleeAttackRange;
-    public float meleeKnockback;
     float meleeAttackCooldown;
-    public GameObject meleeWeaponEquipped;
+    public MeleeWeapon meleeWeaponEquipped;
 
-    public List<GameObject> rangedWeapons;
-    public List<GameObject> meleeWeapons;
-    public List<GameObject> items;
+    public List<RangedWeapon> rangedWeapons;
+    public List<MeleeWeapon> meleeWeapons;
+    public List<Food> items; //Make Food inherit Item class?
 
     public bool itemSelectionChanged;
 
-    public GameObject itemSelected;
-    public float eatingTime = 1;
+    public Food itemSelected;
     public float eatingTimeElapsed;
 
     Vector2 input;
@@ -111,8 +94,8 @@ public class Player : MonoBehaviour, IDamageable<float>
     {
         CaptureInput();
         CalculateCamera();
-        MovementStateMachine();
         ActionStateMachine();
+        MovementStateMachine();
 
         rangedAttackCooldown -= Time.deltaTime;
         meleeAttackCooldown -= Time.deltaTime;
@@ -234,26 +217,26 @@ public class Player : MonoBehaviour, IDamageable<float>
                 aimTimeElapsed = 0;
                 target = null;
                 reloadTimeElapsed += Time.deltaTime;
-                if (reloadTimeElapsed >= reloadTime)
+                if (reloadTimeElapsed >= rangedWeaponEquipped.reloadTime)
                 {
-                    if (rangedWeaponEquipped.name == "Pistol" && pistolAmmo >= magazineSize - rangedWeaponEquipped.GetComponent<RangedWeapon>().inMagazine)
+                    if (rangedWeaponEquipped.name == "Pistol" && pistolAmmo >= rangedWeaponEquipped.magazineSize - rangedWeaponEquipped.inMagazine)
                     {
-                        pistolAmmo -= magazineSize - rangedWeaponEquipped.GetComponent<RangedWeapon>().inMagazine;
-                        rangedWeaponEquipped.GetComponent<RangedWeapon>().inMagazine = magazineSize;
+                        pistolAmmo -= rangedWeaponEquipped.magazineSize - rangedWeaponEquipped.inMagazine;
+                        rangedWeaponEquipped.inMagazine = rangedWeaponEquipped.magazineSize;
                     }
-                    else if (rangedWeaponEquipped.name == "Pistol" && pistolAmmo < magazineSize - rangedWeaponEquipped.GetComponent<RangedWeapon>().inMagazine)
+                    else if (rangedWeaponEquipped.name == "Pistol" && pistolAmmo < rangedWeaponEquipped.magazineSize - rangedWeaponEquipped.inMagazine)
                     {
-                        rangedWeaponEquipped.GetComponent<RangedWeapon>().inMagazine += pistolAmmo;
+                        rangedWeaponEquipped.inMagazine += pistolAmmo;
                         pistolAmmo = 0;
                     }
-                    if (rangedWeaponEquipped.name == "Rifle" && rifleAmmo >= magazineSize - rangedWeaponEquipped.GetComponent<RangedWeapon>().inMagazine)
+                    if (rangedWeaponEquipped.name == "Rifle" && rifleAmmo >= rangedWeaponEquipped.magazineSize - rangedWeaponEquipped.inMagazine)
                     {
-                        rifleAmmo -= magazineSize - rangedWeaponEquipped.GetComponent<RangedWeapon>().inMagazine;
-                        rangedWeaponEquipped.GetComponent<RangedWeapon>().inMagazine = magazineSize;
+                        rifleAmmo -= rangedWeaponEquipped.magazineSize - rangedWeaponEquipped.inMagazine;
+                        rangedWeaponEquipped.inMagazine = rangedWeaponEquipped.magazineSize;
                     }
-                    else if (rangedWeaponEquipped.name == "Rifle" && rifleAmmo < magazineSize - rangedWeaponEquipped.GetComponent<RangedWeapon>().inMagazine)
+                    else if (rangedWeaponEquipped.name == "Rifle" && rifleAmmo < rangedWeaponEquipped.magazineSize - rangedWeaponEquipped.inMagazine)
                     {
-                        rangedWeaponEquipped.GetComponent<RangedWeapon>().inMagazine += rifleAmmo;
+                        rangedWeaponEquipped.inMagazine += rifleAmmo;
                         rifleAmmo = 0;
                     }
                     reloadTimeElapsed = 0;
@@ -264,10 +247,11 @@ public class Player : MonoBehaviour, IDamageable<float>
                 movementState = MovementState.Holding;
                 pickUpTarget = null;
                 pickUpTimeElapsed = 0;
-                fov.radius = rangedAttackRange;
+                if (rangedWeaponEquipped)
+                    fov.radius = rangedWeaponEquipped.rangedAttackRange;
                 fov.angle = 45;
                 if (Input.GetButtonDown("Reload"))
-                    if (rangedWeaponEquipped.GetComponent<RangedWeapon>().inMagazine < magazineSize)
+                    if (rangedWeaponEquipped.inMagazine < rangedWeaponEquipped.magazineSize)
                     {
                         if (rangedWeaponEquipped.name == "Pistol" && pistolAmmo > 0)
                             actionState = ActionState.Reloading;
@@ -281,10 +265,10 @@ public class Player : MonoBehaviour, IDamageable<float>
                 target = fov.target;
                 if (rangedWeaponEquipped == null)
                     break;
-                if (rangedWeaponEquipped.GetComponent<RangedWeapon>().inMagazine > 0)
+                if (rangedWeaponEquipped.inMagazine > 0)
                 {
                     if (target)
-                        if (aimTimeElapsed < aimTime)
+                        if (aimTimeElapsed < rangedWeaponEquipped.aimTime)
                             aimTimeElapsed += Time.deltaTime;
                 }
                 else
@@ -299,7 +283,7 @@ public class Player : MonoBehaviour, IDamageable<float>
                 if (Input.GetMouseButton(0) || Input.GetAxis("Fire") > 0)
                 {
                     if (target)
-                        if (roundChambered || fullAuto)
+                        if (roundChambered || rangedWeaponEquipped.fullAuto)
                             RangedAttack(target);
                 }
                 else
@@ -334,7 +318,7 @@ public class Player : MonoBehaviour, IDamageable<float>
                 pickUpTarget = null;
                 target = null;
                 eatingTimeElapsed += Time.deltaTime;
-                if (eatingTimeElapsed >= eatingTime)
+                if (eatingTimeElapsed >= itemSelected.eatingTime)
                 {
                     if (itemSelected)
                     {
@@ -360,7 +344,7 @@ public class Player : MonoBehaviour, IDamageable<float>
             int i = meleeWeapons.IndexOf(meleeWeaponEquipped);
             if (i == meleeWeapons.Count - 1)
                 i = -1;
-            meleeWeapons[i + 1].GetComponent<MeleeWeapon>().Equip();
+            meleeWeaponEquipped = meleeWeapons[i + 1];
             weaponChanged = true;
         }
     }
@@ -372,7 +356,7 @@ public class Player : MonoBehaviour, IDamageable<float>
             int i = rangedWeapons.IndexOf(rangedWeaponEquipped);
             if (i == rangedWeapons.Count - 1)
                 i = -1;
-            rangedWeapons[i + 1].GetComponent<RangedWeapon>().Equip();
+            rangedWeaponEquipped = rangedWeapons[i + 1];
             weaponChanged = true;
         }
     }
@@ -405,16 +389,16 @@ public class Player : MonoBehaviour, IDamageable<float>
     {
         if (meleeWeaponEquipped && meleeAttackCooldown <= 0)
         {
-            Collider[] hitZombies = Physics.OverlapSphere(transform.position + transform.forward, meleeAttackRange, 1 << LayerMask.NameToLayer("Zombie"));
+            Collider[] hitZombies = Physics.OverlapSphere(transform.position + transform.forward, meleeWeaponEquipped.meleeAttackRange, 1 << LayerMask.NameToLayer("Zombie"));
             if (hitZombies.Length > 0)
             {
                 foreach (Collider zombie in hitZombies)
                 {
-                    zombie.gameObject.GetComponent<IDamageable<float>>().TakeDamage(meleeAttackDamage);
-                    zombie.gameObject.GetComponent<NavMeshAgent>().Move((zombie.transform.position - transform.position).normalized * meleeKnockback);
+                    zombie.gameObject.GetComponent<IDamageable<float>>().TakeDamage(meleeWeaponEquipped.meleeAttackDamage);
+                    zombie.gameObject.GetComponent<NavMeshAgent>().Move((zombie.transform.position - transform.position).normalized * meleeWeaponEquipped.meleeKnockback);
                 }
-                if (meleeWeaponEquipped.GetComponent<MeleeWeapon>().durability > 0)
-                    meleeWeaponEquipped.GetComponent<MeleeWeapon>().durability -= 1;
+                if (meleeWeaponEquipped.durability > 0)
+                    meleeWeaponEquipped.durability -= 1;
                 else
                 {
                     meleeWeapons.Remove(meleeWeaponEquipped);
@@ -423,24 +407,24 @@ public class Player : MonoBehaviour, IDamageable<float>
                     Destroy(meleeWeaponEquipped);
                 }
             }
-            EmitNoiseUnique(meleeAttackNoise);
-            meleeAttackCooldown = meleeAttackSpeed;
+            EmitNoiseUnique(meleeWeaponEquipped.meleeAttackNoise);
+            meleeAttackCooldown = meleeWeaponEquipped.meleeAttackSpeed;
         }
     }
 
     private void RangedAttack(GameObject target)
     {
-        if (aimTimeElapsed >= aimTime && rangedAttackCooldown <= 0)
+        if (aimTimeElapsed >= rangedWeaponEquipped.aimTime && rangedAttackCooldown <= 0)
         {
             if (rangedWeaponEquipped.GetComponent<RangedWeapon>().inMagazine > 0)
             {
                 roundChambered = false;
-                target.GetComponent<IDamageable<float>>().TakeDamage(rangedAttackDamage);
-                target.GetComponent<NavMeshAgent>().Move((target.transform.position - transform.position).normalized * rangedKnockback);
-                EmitNoiseUnique(rangedAttackNoise);
-                rangedWeaponEquipped.GetComponent<RangedWeapon>().inMagazine -= 1;
-                rangedAttackCooldown = rangedAttackSpeed;
-                if (boltAction)
+                target.GetComponent<IDamageable<float>>().TakeDamage(rangedWeaponEquipped.rangedAttackDamage);
+                target.GetComponent<NavMeshAgent>().Move((target.transform.position - transform.position).normalized * rangedWeaponEquipped.rangedKnockback);
+                EmitNoiseUnique(rangedWeaponEquipped.rangedAttackNoise);
+                rangedWeaponEquipped.inMagazine -= 1;
+                rangedAttackCooldown = rangedWeaponEquipped.rangedAttackSpeed;
+                if (rangedWeaponEquipped.boltAction)
                     aimTimeElapsed = 0;
             }
         }

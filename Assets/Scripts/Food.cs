@@ -8,6 +8,7 @@ public class Food : MonoBehaviour, IPickUpable
 
     float calories;
     float milliliters;
+    public float eatingTime;
 
     public enum Type { Beans, Soda, Random }
     public Type type = Type.Random;
@@ -41,6 +42,7 @@ public class Food : MonoBehaviour, IPickUpable
         name = "Beans";
         calories = 350;
         milliliters = 150f;
+        eatingTime = 2;
     }
 
     private void SodaSetup()
@@ -48,6 +50,7 @@ public class Food : MonoBehaviour, IPickUpable
         name = "Soda";
         calories = 150;
         milliliters = 350;
+        eatingTime = 1;
     }
 
     public void Eat()
@@ -72,11 +75,11 @@ public class Food : MonoBehaviour, IPickUpable
 
     public void PickUp()
     {
-        if (!player.items.Contains(gameObject))
+        if (!player.items.Contains(this))
         {
-            player.items.Add(gameObject);
+            player.items.Add(this);
             if (player.itemSelected == null)
-                player.itemSelected = gameObject;
+                player.itemSelected = this;
             gameObject.SetActive(false);
             transform.parent = player.transform;
         }

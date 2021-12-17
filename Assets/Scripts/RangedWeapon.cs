@@ -6,18 +6,18 @@ public class RangedWeapon : MonoBehaviour, IPickUpable
 {
     Player player;
 
-    float rangedAttackDamage;
-    float rangedAttackSpeed;
-    float rangedAttackNoise;
-    float rangedAttackRange;
-    float rangedKnockback;
-    bool fullAuto;
-    bool semiAuto;
-    bool boltAction;
-    int magazineSize;
+    public float rangedAttackDamage;
+    public float rangedAttackSpeed;
+    public float rangedAttackNoise;
+    public float rangedAttackRange;
+    public float rangedKnockback;
+    public bool fullAuto;
+    public bool semiAuto;
+    public bool boltAction;
+    public int magazineSize;
     public int inMagazine;
-    float reloadTime;
-    float aimTime;
+    public float reloadTime;
+    public float aimTime;
 
     public enum Type { Pistol, Rifle, Random }
     public Type type = Type.Random;
@@ -80,39 +80,23 @@ public class RangedWeapon : MonoBehaviour, IPickUpable
         aimTime = 1;
     }
 
-    public void Equip()
-    {
-        player.rangedWeaponEquipped = gameObject;
-        player.rangedAttackDamage = rangedAttackDamage;
-        player.rangedAttackSpeed = rangedAttackSpeed;
-        player.rangedAttackNoise = rangedAttackNoise;
-        player.rangedAttackRange = rangedAttackRange;
-        player.rangedKnockback = rangedKnockback;
-        player.fullAuto = fullAuto;
-        player.semiAuto = semiAuto;
-        player.boltAction = boltAction;
-        player.magazineSize = magazineSize;
-        player.reloadTime = reloadTime;
-        player.aimTime = aimTime;
-    }
-
     public void PickUp()
     {
         bool dupe = false;
-        if (!player.rangedWeapons.Contains(gameObject))
+        if (!player.rangedWeapons.Contains(this))
         {
-            player.rangedWeapons.Add(gameObject);
+            player.rangedWeapons.Add(this);
             gameObject.SetActive(false);
             transform.parent = player.transform;
         }
 
-        foreach (GameObject weapon in player.rangedWeapons)
+        foreach (RangedWeapon weapon in player.rangedWeapons)
         {
             if (weapon.name == name)
             {
-                if (weapon != gameObject)
+                if (weapon != this)
                 {
-                    player.rangedWeapons.Remove(gameObject);
+                    player.rangedWeapons.Remove(this);
                     Destroy(gameObject);
                     dupe = true;
                     break;
@@ -120,6 +104,7 @@ public class RangedWeapon : MonoBehaviour, IPickUpable
             }
         }
         if (dupe == false)
-            Equip();
+            if (player.rangedWeaponEquipped == null)
+                player.rangedWeaponEquipped = this;
     }
 }

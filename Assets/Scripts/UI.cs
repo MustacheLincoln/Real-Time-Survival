@@ -68,7 +68,7 @@ public class UI : MonoBehaviour
             else
                 rangedWeaponLabel.text = "-----";
             if (player.meleeWeaponEquipped)
-                meleeWeaponLabel.text = player.meleeWeaponEquipped.name;
+                meleeWeaponLabel.text = player.meleeWeaponEquipped.name + player.meleeWeaponEquipped.GetComponent<MeleeWeapon>().durability + "/" + player.meleeWeaponEquipped.GetComponent<MeleeWeapon>().maxDurability;
             else
                 meleeWeaponLabel.text = "-----";
             if (player.itemSelected)

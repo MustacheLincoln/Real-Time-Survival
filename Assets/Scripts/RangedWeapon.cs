@@ -83,7 +83,6 @@ public class RangedWeapon : MonoBehaviour, IPickUpable
     public void Equip()
     {
         player.rangedWeaponEquipped = gameObject;
-        player.hasRangedWeapon = true;
         player.rangedAttackDamage = rangedAttackDamage;
         player.rangedAttackSpeed = rangedAttackSpeed;
         player.rangedAttackNoise = rangedAttackNoise;

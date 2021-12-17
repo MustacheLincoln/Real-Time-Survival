@@ -33,7 +33,6 @@ public class Player : MonoBehaviour, IDamageable<float>
     float crouchRadius = 2;
     float noiseSphereRadius;
 
-    public bool hasRangedWeapon;
     public float rangedAttackDamage;
     public float rangedAttackSpeed;
     public float rangedAttackNoise;
@@ -54,7 +53,6 @@ public class Player : MonoBehaviour, IDamageable<float>
     public int pistolAmmo;
     public int rifleAmmo;
 
-    public bool hasMeleeWeapon;
     public float meleeAttackDamage;
     public float meleeAttackSpeed;
     public float meleeAttackNoise;
@@ -104,8 +102,6 @@ public class Player : MonoBehaviour, IDamageable<float>
         cam = Camera.main;
         navMeshAgent.speed = walkSpeed;
         navMeshAgent.acceleration = acceleration;
-        hasMeleeWeapon = false;
-        hasRangedWeapon = false;
 
         movementState = MovementState.Idle;
         StartCoroutine(EmitNoisePulse());
@@ -283,7 +279,7 @@ public class Player : MonoBehaviour, IDamageable<float>
                         fov.target = null;
                 fov.targetMask = LayerMask.GetMask("Zombie");
                 target = fov.target;
-                if (hasRangedWeapon == false)
+                if (rangedWeaponEquipped == null)
                     break;
                 if (rangedWeaponEquipped.GetComponent<RangedWeapon>().inMagazine > 0)
                 {
@@ -359,7 +355,7 @@ public class Player : MonoBehaviour, IDamageable<float>
 
     private void ChangeMeleeWeapon()
     {
-        if (hasMeleeWeapon)
+        if (meleeWeaponEquipped)
         {
             int i = meleeWeapons.IndexOf(meleeWeaponEquipped);
             if (i == meleeWeapons.Count - 1)
@@ -371,7 +367,7 @@ public class Player : MonoBehaviour, IDamageable<float>
 
     private void ChangeRangedWeapon()
     {
-        if (hasRangedWeapon)
+        if (rangedWeaponEquipped)
         {
             int i = rangedWeapons.IndexOf(rangedWeaponEquipped);
             if (i == rangedWeapons.Count - 1)
@@ -407,7 +403,7 @@ public class Player : MonoBehaviour, IDamageable<float>
 
     private void MeleeAttack()
     {
-        if (hasMeleeWeapon && meleeAttackCooldown <= 0)
+        if (meleeWeaponEquipped && meleeAttackCooldown <= 0)
         {
             Collider[] hitZombies = Physics.OverlapSphere(transform.position + transform.forward, meleeAttackRange, 1 << LayerMask.NameToLayer("Zombie"));
             if (hitZombies.Length > 0)
@@ -416,6 +412,15 @@ public class Player : MonoBehaviour, IDamageable<float>
                 {
                     zombie.gameObject.GetComponent<IDamageable<float>>().TakeDamage(meleeAttackDamage);
                     zombie.gameObject.GetComponent<NavMeshAgent>().Move((zombie.transform.position - transform.position).normalized * meleeKnockback);
+                }
+                if (meleeWeaponEquipped.GetComponent<MeleeWeapon>().durability > 0)
+                    meleeWeaponEquipped.GetComponent<MeleeWeapon>().durability -= 1;
+                else
+                {
+                    meleeWeapons.Remove(meleeWeaponEquipped);
+                    if (meleeWeapons.Count > 0)
+                        meleeWeaponEquipped = meleeWeapons[0];
+                    Destroy(meleeWeaponEquipped);
                 }
             }
             EmitNoiseUnique(meleeAttackNoise);

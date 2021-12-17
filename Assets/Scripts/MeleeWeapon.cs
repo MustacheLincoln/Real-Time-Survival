@@ -6,11 +6,13 @@ public class MeleeWeapon : MonoBehaviour, IPickUpable
 {
     Player player;
 
-    float meleeAttackDamage = 50;
-    float meleeAttackSpeed = .5f;
-    float meleeAttackNoise = 6;
-    float meleeAttackRange = .5f;
-    float meleeKnockback = .5f;
+    float meleeAttackDamage;
+    float meleeAttackSpeed;
+    float meleeAttackNoise;
+    float meleeAttackRange;
+    float meleeKnockback;
+    public int maxDurability;
+    public int durability;
 
     public enum Type { Crobar, Knife, Random }
     public Type type = Type.Random;
@@ -47,6 +49,8 @@ public class MeleeWeapon : MonoBehaviour, IPickUpable
         meleeAttackNoise = 6;
         meleeAttackRange = .5f;
         meleeKnockback = .5f;
+        maxDurability = 200;
+        durability = maxDurability / 2 + Random.Range(0, maxDurability / 2);
     }
 
     private void KnifeSetup()
@@ -57,12 +61,13 @@ public class MeleeWeapon : MonoBehaviour, IPickUpable
         meleeAttackNoise = 3;
         meleeAttackRange = .4f;
         meleeKnockback = .1f;
+        maxDurability = 100;
+        durability = maxDurability / 2 + Random.Range(0, maxDurability / 2 + 1);
     }
 
     public void Equip()
     {
         player.meleeWeaponEquipped = gameObject;
-        player.hasMeleeWeapon = true;
         player.meleeAttackDamage = meleeAttackDamage;
         player.meleeAttackSpeed = meleeAttackSpeed;
         player.meleeAttackNoise = meleeAttackNoise;
@@ -72,28 +77,13 @@ public class MeleeWeapon : MonoBehaviour, IPickUpable
 
     public void PickUp()
     {
-        bool dupe = false;
         if (!player.meleeWeapons.Contains(gameObject))
         {
             player.meleeWeapons.Add(gameObject);
             gameObject.SetActive(false);
             transform.parent = player.transform;
         }
-
-        foreach (GameObject weapon in player.meleeWeapons)
-        {
-            if (weapon.name == name)
-            {
-                if (weapon != gameObject)
-                {
-                    player.meleeWeapons.Remove(gameObject);
-                    Destroy(gameObject);
-                    dupe = true;
-                    break;
-                }
-            }
-        }
-        if (dupe == false)
+        if (player.meleeWeaponEquipped == null)
             Equip();
     }
 }

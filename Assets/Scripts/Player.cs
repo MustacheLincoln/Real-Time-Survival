@@ -283,6 +283,8 @@ public class Player : MonoBehaviour, IDamageable<float>
                         fov.target = null;
                 fov.targetMask = LayerMask.GetMask("Zombie");
                 target = fov.target;
+                if (hasRangedWeapon == false)
+                    break;
                 if (rangedWeaponEquipped.GetComponent<RangedWeapon>().inMagazine > 0)
                 {
                     if (target)

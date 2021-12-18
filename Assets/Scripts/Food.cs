@@ -2,12 +2,12 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class Food : MonoBehaviour, IPickUpable
+public class Food : Item
 {
     Player player;
 
-    float calories;
-    float milliliters;
+    public float calories;
+    public float milliliters;
     public float eatingTime;
 
     public enum Type { Beans, Soda, Random }
@@ -55,25 +55,11 @@ public class Food : MonoBehaviour, IPickUpable
 
     public void Eat()
     {
-        if(calories > milliliters)
-        {
-            if (player.vitals.calories < player.vitals.maxCalories - calories)
-            {
-                player.vitals.calories += calories;
-                player.vitals.milliliters += milliliters;
-            }
-        }
-        else
-        {
-            if (player.vitals.milliliters < player.vitals.maxMilliliters - milliliters)
-            {
-                player.vitals.milliliters += milliliters;
-                player.vitals.calories += calories;
-            }
-        }
+        player.vitals.calories += calories;
+        player.vitals.milliliters += milliliters;
     }
 
-    public void PickUp()
+    public override void PickUp()
     {
         if (!player.items.Contains(this))
         {

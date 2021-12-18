@@ -47,11 +47,11 @@ public class Player : MonoBehaviour, IDamageable<float>
 
     public List<RangedWeapon> rangedWeapons;
     public List<MeleeWeapon> meleeWeapons;
-    public List<Food> items; //Make Food inherit Item class?
+    public List<Item> items; //Make Food inherit Item class?
 
     public bool itemSelectionChanged;
 
-    public Food itemSelected;
+    public Item itemSelected;
     public float eatingTimeElapsed;
 
     Vector2 input;
@@ -312,13 +312,21 @@ public class Player : MonoBehaviour, IDamageable<float>
                 }
                 break;
             case ActionState.Eating:
+                Food food = itemSelected as Food;
+                bool edible;
+                if (food.calories > food.milliliters)
+                    edible = (vitals.calories < vitals.maxCalories - food.calories);
+                else
+                    edible = (vitals.milliliters < vitals.maxMilliliters - food.milliliters);
+                if (edible == false)
+                    break;
                 aimTimeElapsed = 0;
                 reloadTimeElapsed = 0;
                 movementState = MovementState.Holding;
                 pickUpTarget = null;
                 target = null;
                 eatingTimeElapsed += Time.deltaTime;
-                if (eatingTimeElapsed >= itemSelected.eatingTime)
+                if (eatingTimeElapsed >= food.eatingTime)
                 {
                     if (itemSelected)
                     {

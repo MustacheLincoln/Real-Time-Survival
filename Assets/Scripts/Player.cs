@@ -81,7 +81,7 @@ public class Player : MonoBehaviour, IDamageable<float>
         navMeshAgent = GetComponent<NavMeshAgent>();
         vitals = GetComponent<PlayerVitals>();
         fov = GetComponent<FieldOfView>();
-        animator = GetComponent<Animator>();
+        animator = GetComponentInChildren<Animator>();
         fov.radius = fovRadius;
         fov.angle = fovAngle;
         fov.targetMask = LayerMask.GetMask("Interactable");

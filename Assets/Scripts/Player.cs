@@ -13,6 +13,7 @@ public class Player : MonoBehaviour, IDamageable<float>
     public PlayerVitals vitals;
     public FieldOfView fov;
     Camera cam;
+    Animator animator;
 
     float pickUpTime = .25f;
     float pickUpTimeElapsed;
@@ -61,6 +62,7 @@ public class Player : MonoBehaviour, IDamageable<float>
     Vector3 velocity;
     float turnSpeed;
     Vector3 currentPos;
+    private bool isMoving = false;
     Vector3 lastPos;
     float pulseTime = .5f;
 
@@ -79,6 +81,7 @@ public class Player : MonoBehaviour, IDamageable<float>
         navMeshAgent = GetComponent<NavMeshAgent>();
         vitals = GetComponent<PlayerVitals>();
         fov = GetComponent<FieldOfView>();
+        animator = GetComponent<Animator>();
         fov.radius = fovRadius;
         fov.angle = fovAngle;
         fov.targetMask = LayerMask.GetMask("Interactable");
@@ -92,10 +95,12 @@ public class Player : MonoBehaviour, IDamageable<float>
 
     private void Update()
     {
+        CalculateIsMoving();
         CaptureInput();
         CalculateCamera();
         ActionStateMachine();
         MovementStateMachine();
+        Animate();
 
         rangedAttackCooldown -= Time.deltaTime;
         meleeAttackCooldown -= Time.deltaTime;
@@ -141,6 +146,11 @@ public class Player : MonoBehaviour, IDamageable<float>
         if (pickUpTarget)
             if (Vector3.Distance(transform.position, pickUpTarget.transform.position) < grabDistance)
                 actionState = ActionState.PickingUp;
+    }
+
+    private void Animate()
+    {
+        animator.SetBool("isMoving", isMoving);
     }
 
     private void MovementStateMachine()
@@ -438,12 +448,11 @@ public class Player : MonoBehaviour, IDamageable<float>
         }
     }
 
-    private bool IsMoving()
+    private void CalculateIsMoving()
     {
         currentPos = transform.position;
-        bool isMoving = (currentPos != lastPos);
+        isMoving = (currentPos != lastPos);
         lastPos = currentPos;
-        return isMoving;
     }
 
     public IEnumerator EmitNoisePulse()
@@ -483,7 +492,7 @@ public class Player : MonoBehaviour, IDamageable<float>
         {
             if (actionState == ActionState.Aiming)
                 actionState = ActionState.Idle;
-            if (IsMoving())
+            if (isMoving)
             {
                 if (Input.GetButton("Run"))
                 {

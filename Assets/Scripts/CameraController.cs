@@ -11,7 +11,7 @@ public class CameraController : MonoBehaviour
     float movementTime = 10;
     float rotationSpeed = 100;
     Vector3 zoomSpeed = new Vector3(0, -200, 200);
-    float maxZoomIn = 25;
+    float maxZoomIn = 20;
     float maxZoomOut = 100;
 
     Vector3 newPosition;

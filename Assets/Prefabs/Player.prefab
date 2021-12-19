@@ -17,7 +17,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 9edfabd27371cee4e934dcf52de34dea, type: 3}
       propertyPath: m_LocalPosition.y
-      value: -0.9999999
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 9edfabd27371cee4e934dcf52de34dea, type: 3}
       propertyPath: m_LocalPosition.z
@@ -67,6 +67,10 @@ PrefabInstance:
       propertyPath: m_Layer
       value: 7
       objectReference: {fileID: 0}
+    - target: {fileID: -7585137530864180097, guid: 9edfabd27371cee4e934dcf52de34dea, type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: -7334165322850233344, guid: 9edfabd27371cee4e934dcf52de34dea, type: 3}
       propertyPath: m_Layer
       value: 7
@@ -74,6 +78,14 @@ PrefabInstance:
     - target: {fileID: -6417182470135639417, guid: 9edfabd27371cee4e934dcf52de34dea, type: 3}
       propertyPath: m_Layer
       value: 7
+      objectReference: {fileID: 0}
+    - target: {fileID: -6407437734326242537, guid: 9edfabd27371cee4e934dcf52de34dea, type: 3}
+      propertyPath: m_Materials.Array.data[0]
+      value: 
+      objectReference: {fileID: 2100000, guid: 93363195aaa838b4d9f0bd3371dae30c, type: 2}
+    - target: {fileID: -5992493290509360457, guid: 9edfabd27371cee4e934dcf52de34dea, type: 3}
+      propertyPath: m_IsActive
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: -5786221428441701212, guid: 9edfabd27371cee4e934dcf52de34dea, type: 3}
       propertyPath: m_Layer
@@ -127,6 +139,10 @@ PrefabInstance:
       propertyPath: m_Layer
       value: 7
       objectReference: {fileID: 0}
+    - target: {fileID: -1523549327189046830, guid: 9edfabd27371cee4e934dcf52de34dea, type: 3}
+      propertyPath: m_Materials.Array.data[0]
+      value: 
+      objectReference: {fileID: 2100000, guid: 93363195aaa838b4d9f0bd3371dae30c, type: 2}
     - target: {fileID: -1013611186653188199, guid: 9edfabd27371cee4e934dcf52de34dea, type: 3}
       propertyPath: m_Layer
       value: 7
@@ -147,13 +163,17 @@ PrefabInstance:
       propertyPath: m_IsActive
       value: 1
       objectReference: {fileID: 0}
+    - target: {fileID: 312525608215765288, guid: 9edfabd27371cee4e934dcf52de34dea, type: 3}
+      propertyPath: m_Materials.Array.data[0]
+      value: 
+      objectReference: {fileID: 2100000, guid: 93363195aaa838b4d9f0bd3371dae30c, type: 2}
     - target: {fileID: 843034221715485725, guid: 9edfabd27371cee4e934dcf52de34dea, type: 3}
       propertyPath: m_Layer
       value: 7
       objectReference: {fileID: 0}
     - target: {fileID: 919132149155446097, guid: 9edfabd27371cee4e934dcf52de34dea, type: 3}
       propertyPath: m_Name
-      value: PlayerRig Variant
+      value: Player
       objectReference: {fileID: 0}
     - target: {fileID: 919132149155446097, guid: 9edfabd27371cee4e934dcf52de34dea, type: 3}
       propertyPath: m_Layer
@@ -163,9 +183,21 @@ PrefabInstance:
       propertyPath: m_TagString
       value: Player
       objectReference: {fileID: 0}
+    - target: {fileID: 1625828973891692264, guid: 9edfabd27371cee4e934dcf52de34dea, type: 3}
+      propertyPath: m_Materials.Array.data[0]
+      value: 
+      objectReference: {fileID: 2100000, guid: 93363195aaa838b4d9f0bd3371dae30c, type: 2}
     - target: {fileID: 1731848804039054943, guid: 9edfabd27371cee4e934dcf52de34dea, type: 3}
       propertyPath: m_Layer
       value: 7
+      objectReference: {fileID: 0}
+    - target: {fileID: 1731848804039054943, guid: 9edfabd27371cee4e934dcf52de34dea, type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1751279442514836573, guid: 9edfabd27371cee4e934dcf52de34dea, type: 3}
+      propertyPath: m_IsActive
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 2183579042194945256, guid: 9edfabd27371cee4e934dcf52de34dea, type: 3}
       propertyPath: m_Layer
@@ -191,9 +223,25 @@ PrefabInstance:
       propertyPath: m_Layer
       value: 7
       objectReference: {fileID: 0}
+    - target: {fileID: 3316995184112538127, guid: 9edfabd27371cee4e934dcf52de34dea, type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3519014435693850495, guid: 9edfabd27371cee4e934dcf52de34dea, type: 3}
+      propertyPath: m_Materials.Array.data[0]
+      value: 
+      objectReference: {fileID: 2100000, guid: 93363195aaa838b4d9f0bd3371dae30c, type: 2}
+    - target: {fileID: 4039695506858935391, guid: 9edfabd27371cee4e934dcf52de34dea, type: 3}
+      propertyPath: m_Materials.Array.data[0]
+      value: 
+      objectReference: {fileID: 2100000, guid: 93363195aaa838b4d9f0bd3371dae30c, type: 2}
     - target: {fileID: 4099538688480648052, guid: 9edfabd27371cee4e934dcf52de34dea, type: 3}
       propertyPath: m_Layer
       value: 7
+      objectReference: {fileID: 0}
+    - target: {fileID: 4192405652792865326, guid: 9edfabd27371cee4e934dcf52de34dea, type: 3}
+      propertyPath: m_IsActive
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 4667584366855560965, guid: 9edfabd27371cee4e934dcf52de34dea, type: 3}
       propertyPath: m_Layer
@@ -215,6 +263,18 @@ PrefabInstance:
       propertyPath: m_Layer
       value: 7
       objectReference: {fileID: 0}
+    - target: {fileID: 7758258551673005700, guid: 9edfabd27371cee4e934dcf52de34dea, type: 3}
+      propertyPath: m_Materials.Array.data[0]
+      value: 
+      objectReference: {fileID: 2100000, guid: 93363195aaa838b4d9f0bd3371dae30c, type: 2}
+    - target: {fileID: 8417262354622646315, guid: 9edfabd27371cee4e934dcf52de34dea, type: 3}
+      propertyPath: m_Materials.Array.data[0]
+      value: 
+      objectReference: {fileID: 2100000, guid: 93363195aaa838b4d9f0bd3371dae30c, type: 2}
+    - target: {fileID: 8986749332821267311, guid: 9edfabd27371cee4e934dcf52de34dea, type: 3}
+      propertyPath: m_Materials.Array.data[0]
+      value: 
+      objectReference: {fileID: 2100000, guid: 93363195aaa838b4d9f0bd3371dae30c, type: 2}
     - target: {fileID: 9097807637585015383, guid: 9edfabd27371cee4e934dcf52de34dea, type: 3}
       propertyPath: m_Layer
       value: 7
@@ -226,6 +286,22 @@ GameObject:
   m_CorrespondingSourceObject: {fileID: 919132149155446097, guid: 9edfabd27371cee4e934dcf52de34dea, type: 3}
   m_PrefabInstance: {fileID: 2869372744955296044}
   m_PrefabAsset: {fileID: 0}
+--- !u!54 &-1963674856917871646
+Rigidbody:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3103937401059427453}
+  serializedVersion: 2
+  m_Mass: 1
+  m_Drag: 0
+  m_AngularDrag: 0.05
+  m_UseGravity: 0
+  m_IsKinematic: 1
+  m_Interpolate: 0
+  m_Constraints: 0
+  m_CollisionDetection: 0
 --- !u!136 &892589148440755969
 CapsuleCollider:
   m_ObjectHideFlags: 0
@@ -239,7 +315,7 @@ CapsuleCollider:
   m_Radius: 0.5
   m_Height: 2
   m_Direction: 1
-  m_Center: {x: 0, y: 1, z: 0}
+  m_Center: {x: 0, y: 0, z: 0}
 --- !u!114 &-8102890361150225520
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -291,7 +367,7 @@ NavMeshAgent:
   m_AutoBraking: 1
   m_AutoRepath: 1
   m_Height: 2
-  m_BaseOffset: 0
+  m_BaseOffset: 1
   m_WalkableMask: 4294967295
   m_ObstacleAvoidanceType: 4
 --- !u!114 &-1708848294228825453
@@ -344,19 +420,22 @@ MonoBehaviour:
   recuperation: 1
   starving: 0
   dehydrated: 0
---- !u!54 &-1963674856917871646
-Rigidbody:
+--- !u!95 &1237142445
+Animator:
+  serializedVersion: 3
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 3103937401059427453}
-  serializedVersion: 2
-  m_Mass: 1
-  m_Drag: 0
-  m_AngularDrag: 0.05
-  m_UseGravity: 0
-  m_IsKinematic: 1
-  m_Interpolate: 0
-  m_Constraints: 0
-  m_CollisionDetection: 0
+  m_Enabled: 1
+  m_Avatar: {fileID: 0}
+  m_Controller: {fileID: 9100000, guid: 75fec173a025ee9478f5f0149e9b741f, type: 2}
+  m_CullingMode: 0
+  m_UpdateMode: 0
+  m_ApplyRootMotion: 0
+  m_LinearVelocityBlending: 0
+  m_WarningMessage: 
+  m_HasTransformHierarchy: 1
+  m_AllowConstantClipSamplingOptimization: 1
+  m_KeepAnimatorControllerStateOnDisable: 0

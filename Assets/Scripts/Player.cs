@@ -21,9 +21,9 @@ public class Player : MonoBehaviour, IDamageable<float>
     public GameObject target;
 
     public float speed;
-    float walkSpeed = 3;
-    float runSpeed = 6;
-    float crouchSpeed = 1.5f;
+    float walkSpeed = 2;
+    float runSpeed = 5;
+    float crouchSpeed = 1;
     float acceleration = 50;
     float turnSpeedLow = 7;
     float turnSpeedHigh = 15;
@@ -150,7 +150,8 @@ public class Player : MonoBehaviour, IDamageable<float>
 
     private void Animate()
     {
-        animator.SetBool("isMoving", isMoving);
+        animator.SetBool("isWalking", (movementState == MovementState.Walking));
+        animator.SetBool("isRunning", (movementState == MovementState.Running));
     }
 
     private void MovementStateMachine()

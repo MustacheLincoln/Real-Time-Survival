@@ -16,6 +16,8 @@ public class PlayerVitals : MonoBehaviour
     public float calories;
     public float maxMilliliters = 2000;
     public float milliliters;
+    private float timeUntilStarving;
+    private float timeUntilDehydrated;
     public float exertion;
     public float baseExertion = 1;
     public float healthExertion = 1;
@@ -34,6 +36,13 @@ public class PlayerVitals : MonoBehaviour
         stamina = maxStamina;
         calories = maxCalories / 2;
         milliliters = maxMilliliters / 2;
+    }
+
+    private void CalculateTimeLeft()
+    {
+        timeUntilStarving = calories / .000385f / 60 / 60 / 60;
+        timeUntilDehydrated = milliliters / .000385f / 60 / 60 / 60; //Add items in inventory
+        print(timeUntilStarving);
     }
 
     private void Update()
@@ -80,8 +89,9 @@ public class PlayerVitals : MonoBehaviour
 
         if (calories > 0)
         {
-            exertion = (baseExertion + healthExertion + staminaExertion);
-            calories -= exertion * Time.deltaTime;
+            exertion = ((baseExertion + healthExertion + staminaExertion) * .023f * Time.deltaTime);
+            calories -= exertion;
+            timeUntilStarving = milliliters / exertion / 60 / 60 / 60;
             calories = Mathf.Clamp(calories, 0, maxCalories);
         }
         starving = (calories <= 0);
@@ -90,8 +100,9 @@ public class PlayerVitals : MonoBehaviour
 
         if (milliliters > 0)
         {
-            exertion = (baseExertion + healthExertion + staminaExertion);
-            milliliters -= exertion * Time.deltaTime;
+            exertion = ((baseExertion + healthExertion + staminaExertion) * .023f * Time.deltaTime);
+            milliliters -= exertion;
+            timeUntilDehydrated = milliliters / exertion / 60 / 60 / 60;
             milliliters = Mathf.Clamp(milliliters, 0, maxMilliliters);
         }
         dehydrated = (milliliters <= 0);
@@ -102,6 +113,8 @@ public class PlayerVitals : MonoBehaviour
         {
             player.Die();
         }
+
+        CalculateTimeLeft();
     }
     void Starving()
     {

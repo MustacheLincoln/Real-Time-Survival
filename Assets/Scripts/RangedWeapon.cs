@@ -61,6 +61,7 @@ public class RangedWeapon : MonoBehaviour, IPickUpable
         inMagazine = 10;
         reloadTime = 1;
         aimTime = .5f;
+        SetMesh();
     }
 
     private void RifleSetup()
@@ -78,33 +79,29 @@ public class RangedWeapon : MonoBehaviour, IPickUpable
         inMagazine = 5;
         reloadTime = 2;
         aimTime = 1;
+        SetMesh();
+    }
+
+    private void SetMesh()
+    {
+        foreach (Transform child in transform)
+        {
+            if (child.name == name)
+                child.gameObject.SetActive(true);
+            else
+                child.gameObject.SetActive(false);
+        }
     }
 
     public void PickUp()
     {
-        bool dupe = false;
         if (!player.rangedWeapons.Contains(this))
         {
             player.rangedWeapons.Add(this);
             gameObject.SetActive(false);
             transform.parent = player.transform;
         }
-
-        foreach (RangedWeapon weapon in player.rangedWeapons)
-        {
-            if (weapon.name == name)
-            {
-                if (weapon != this)
-                {
-                    player.rangedWeapons.Remove(this);
-                    Destroy(gameObject);
-                    dupe = true;
-                    break;
-                }
-            }
-        }
-        if (dupe == false)
-            if (player.rangedWeaponEquipped == null)
-                player.rangedWeaponEquipped = this;
+        if (player.rangedWeaponEquipped == null)
+            player.rangedWeaponEquipped = this;
     }
 }

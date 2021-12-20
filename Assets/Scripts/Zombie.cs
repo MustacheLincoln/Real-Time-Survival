@@ -7,6 +7,7 @@ public class Zombie : MonoBehaviour, IDamageable<float>
 {
     NavMeshAgent navMeshAgent;
     FieldOfView fov;
+    Animator animator;
 
     float walkSpeed = 1;
     float investigateSpeed = 2;
@@ -31,12 +32,16 @@ public class Zombie : MonoBehaviour, IDamageable<float>
     Quaternion newRotation;
     public enum State { Wander, Chase, Investigate }
     public State state;
+    private Vector3 currentPos;
+    private bool isMoving;
+    private Vector3 lastPos;
 
     private void Start()
     {
         name = "Zombie";
         navMeshAgent = GetComponent<NavMeshAgent>();
         fov = GetComponent<FieldOfView>();
+        animator = GetComponentInChildren<Animator>();
         fov.radius = fovRadius;
         fov.angle = fovAngle;
         fov.targetMask = LayerMask.GetMask("Player");
@@ -49,6 +54,7 @@ public class Zombie : MonoBehaviour, IDamageable<float>
 
     private void Update()
     {
+        CalculateIsMoving();
         switch (state)
         {
             case State.Wander:
@@ -67,6 +73,33 @@ public class Zombie : MonoBehaviour, IDamageable<float>
 
         if (health <= 0)
             Die();
+
+        Animate();
+    }
+
+    private void CalculateIsMoving()
+    {
+        currentPos = transform.position;
+        isMoving = (currentPos != lastPos);
+        lastPos = currentPos;
+    }
+
+    private void Animate()
+    {
+        animator.SetBool("isWalking", isMoving);
+        animator.speed = walkSpeed / 3 + .25f;
+        switch (state)
+        {
+            case State.Wander:
+                animator.speed = walkSpeed/2 + .25f;
+                break;
+            case State.Chase:
+                animator.speed = runSpeed/2;
+                break;
+            case State.Investigate:
+                animator.speed = investigateSpeed/2;
+                break;
+        }
     }
 
     private void Die()

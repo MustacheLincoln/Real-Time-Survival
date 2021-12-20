@@ -22,8 +22,8 @@ public class Player : MonoBehaviour, IDamageable<float>
 
     public float speed;
     float walkSpeed = 2;
-    float runSpeed = 5;
-    float crouchSpeed = 1;
+    float runSpeed = 4;
+    float crouchWalkSpeed = .75f;
     float acceleration = 50;
     float turnSpeedLow = 7;
     float turnSpeedHigh = 15;
@@ -31,7 +31,7 @@ public class Player : MonoBehaviour, IDamageable<float>
     float idleRadius = 1;
     float walkRadius = 5;
     float runRadius = 10;
-    float crouchRadius = 2;
+    float crouchRadius = 1;
     float noiseSphereRadius;
 
     float rangedAttackCooldown;
@@ -69,7 +69,7 @@ public class Player : MonoBehaviour, IDamageable<float>
     float fovRadius = 4;
     float fovAngle = 250;
 
-    public enum MovementState { Idle, Walking, Running, Crouching, Holding }
+    public enum MovementState { Idle, Walking, Running, Crouching, CrouchWalking, Holding }
     public MovementState movementState;
     public enum ActionState { Idle, Reloading, Aiming, PickingUp, Eating }
     public ActionState actionState;
@@ -112,46 +112,14 @@ public class Player : MonoBehaviour, IDamageable<float>
         turnSpeed = Mathf.Lerp(turnSpeedHigh, turnSpeedLow, velocity.magnitude / 5);
 
         navMeshAgent.speed = speed;
-
-        if (input.magnitude > 0)
-        {
-            navMeshAgent.ResetPath();
-            pickUpTarget = null;
-            intent = camForward * input.y + camRight * input.x;
-            transform.rotation = Quaternion.Lerp(transform.rotation, Quaternion.LookRotation(intent), turnSpeed * Time.deltaTime);
-        }
-        else
-        {
-            if (Input.GetButton("PickUp"))
-            {
-                if (fov.target && actionState != ActionState.Aiming)
-                {
-                    actionState = ActionState.Idle;
-                    if (fov.target.name != "Door")
-                        pickUpTarget = fov.target;
-                }
-                if (pickUpTarget)
-                    navMeshAgent.destination = pickUpTarget.transform.position;
-            }
-        }
-
-        if (Input.GetButtonDown("PickUp"))
-            if (fov.target)
-                if (fov.target.name == "Door")
-                {
-                    actionState = ActionState.Idle;
-                    fov.target.GetComponent<Door>().Interact();
-                }
-
-        if (pickUpTarget)
-            if (Vector3.Distance(transform.position, pickUpTarget.transform.position) < grabDistance)
-                actionState = ActionState.PickingUp;
     }
 
     private void Animate()
     {
         animator.SetBool("isWalking", (movementState == MovementState.Walking));
         animator.SetBool("isRunning", (movementState == MovementState.Running));
+        animator.SetBool("isCrouching", (movementState == MovementState.Crouching));
+        animator.SetBool("isCrouchWalking", (movementState == MovementState.CrouchWalking));
     }
 
     private void MovementStateMachine()
@@ -171,7 +139,11 @@ public class Player : MonoBehaviour, IDamageable<float>
                 noiseSphereRadius = idleRadius + runRadius * input.magnitude;
                 break;
             case MovementState.Crouching:
-                speed = crouchSpeed;
+                speed = crouchWalkSpeed;
+                noiseSphereRadius = idleRadius;
+                break;
+            case MovementState.CrouchWalking:
+                speed = crouchWalkSpeed;
                 noiseSphereRadius = idleRadius + crouchRadius * input.magnitude;
                 break;
             case MovementState.Holding:
@@ -504,13 +476,49 @@ public class Player : MonoBehaviour, IDamageable<float>
                     actionState = ActionState.Idle;
                 }
                 else if (Input.GetButton("Crouch"))
-                    movementState = MovementState.Crouching;
+                    movementState = MovementState.CrouchWalking;
                 else
                     movementState = MovementState.Walking;
             }
+            else if (Input.GetButton("Crouch"))
+                movementState = MovementState.Crouching;
             else
                 movementState = MovementState.Idle;
         }
+
+         if (input.magnitude > 0)
+        {
+            navMeshAgent.ResetPath();
+            pickUpTarget = null;
+            intent = camForward * input.y + camRight * input.x;
+            transform.rotation = Quaternion.Lerp(transform.rotation, Quaternion.LookRotation(intent), turnSpeed * Time.deltaTime);
+        }
+        else
+        {
+            if (Input.GetButton("PickUp"))
+            {
+                if (fov.target && actionState != ActionState.Aiming)
+                {
+                    actionState = ActionState.Idle;
+                    if (fov.target.name != "Door")
+                        pickUpTarget = fov.target;
+                }
+                if (pickUpTarget)
+                    navMeshAgent.destination = pickUpTarget.transform.position;
+            }
+        }
+
+        if (Input.GetButtonDown("PickUp"))
+            if (fov.target)
+                if (fov.target.name == "Door")
+                {
+                    actionState = ActionState.Idle;
+                    fov.target.GetComponent<Door>().Interact();
+                }
+
+        if (pickUpTarget)
+            if (Vector3.Distance(transform.position, pickUpTarget.transform.position) < grabDistance)
+                actionState = ActionState.PickingUp;
     }
 
     private void CalculateCamera()

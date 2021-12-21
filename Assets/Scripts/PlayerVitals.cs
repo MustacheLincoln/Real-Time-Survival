@@ -40,9 +40,9 @@ public class PlayerVitals : MonoBehaviour
 
     private void CalculateTimeLeft()
     {
-        timeUntilStarving = calories / .000385f / 60 / 60 / 60;
-        timeUntilDehydrated = milliliters / .000385f / 60 / 60 / 60; //Add items in inventory
-        print(timeUntilStarving);
+        timeUntilStarving = (calories + player.caloriesInInventory) / .000385f / 60 / 60 / 60;
+        timeUntilDehydrated = (milliliters + player.millilitersInInventory) / .000385f / 60 / 60 / 60; //Add items in inventory
+        print(timeUntilDehydrated);
     }
 
     private void Update()

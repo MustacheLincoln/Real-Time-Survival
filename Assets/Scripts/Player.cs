@@ -54,6 +54,8 @@ public class Player : MonoBehaviour, IDamageable<float>
 
     public Item itemSelected;
     public float eatingTimeElapsed;
+    public float caloriesInInventory;
+    public float millilitersInInventory;
 
     Vector2 input;
     Vector3 camForward;
@@ -291,6 +293,7 @@ public class Player : MonoBehaviour, IDamageable<float>
                         pickUpTarget.GetComponent<IPickUpable>().PickUp();
                     pickUpTarget = null;
                     pickUpTimeElapsed = 0;
+                    CalculateFoodInInventory();
                     actionState = ActionState.Idle;
                 }
                 break;
@@ -321,6 +324,7 @@ public class Player : MonoBehaviour, IDamageable<float>
                         if (items.Count <= 0)
                             itemSelected = null;
                     }
+                    CalculateFoodInInventory();
                     eatingTimeElapsed = 0;
                     actionState = ActionState.Idle;
                 }
@@ -407,7 +411,7 @@ public class Player : MonoBehaviour, IDamageable<float>
     {
         if (aimTimeElapsed >= rangedWeaponEquipped.aimTime && rangedAttackCooldown <= 0)
         {
-            if (rangedWeaponEquipped.GetComponent<RangedWeapon>().inMagazine > 0)
+            if (rangedWeaponEquipped.inMagazine > 0)
             {
                 roundChambered = false;
                 target.GetComponent<IDamageable<float>>().TakeDamage(rangedWeaponEquipped.rangedAttackDamage);
@@ -546,5 +550,19 @@ public class Player : MonoBehaviour, IDamageable<float>
     {
         vitals.health -= damage;
         vitals.maxHealth -= damage / 10;
+    }
+
+    private void CalculateFoodInInventory()
+    {
+        caloriesInInventory = 0;
+        millilitersInInventory = 0;
+        if (items.Count > 0)
+        {
+            foreach (Food food in items)
+            {
+                caloriesInInventory += food.calories;
+                millilitersInInventory += food.milliliters;
+            }
+        }
     }
 }

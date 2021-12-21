@@ -20,6 +20,7 @@ public class UI : MonoBehaviour
     public Image thirstRadial;
     public Image burnedHealthRadial;
     public Image burnedStaminaRadial;
+    public GameObject inventoryBar;
 
     public Image eatingProgressRadial;
     public Image reloadProgressRadial;
@@ -75,6 +76,14 @@ public class UI : MonoBehaviour
                 itemLabel.text = player.itemSelected.name;
             else
                 itemLabel.text = "-----";
+
+            //if (player.items.Count > 0)
+            //{
+            //    foreach (Item item in player.items)
+            //    {
+            //        item.transform.parent = inventoryBar.transform;
+            //    }
+            //}
         }
 
     }

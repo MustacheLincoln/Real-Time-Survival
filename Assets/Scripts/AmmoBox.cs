@@ -2,7 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class AmmoBox : MonoBehaviour, IPickUpable
+public class AmmoBox : Item
 {
     Player player;
 
@@ -48,7 +48,7 @@ public class AmmoBox : MonoBehaviour, IPickUpable
         rifleAmmo = 10;
     }
 
-    public void PickUp()
+    public override void PickUp()
     {
         player.pistolAmmo += pistolAmmo;
         player.rifleAmmo += rifleAmmo;

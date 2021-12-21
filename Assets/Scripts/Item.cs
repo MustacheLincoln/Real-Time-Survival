@@ -2,7 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public abstract class Item : MonoBehaviour, IPickUpable
+public abstract class Item : MonoBehaviour
 {
     public virtual void PickUp()
     {

@@ -11,6 +11,8 @@ public class UI : MonoBehaviour
 
     public TMP_Text timeSurvivedLabel;
     public TMP_Text realTimeLabel;
+    public TMP_Text timeLeftLabel;
+    public TMP_Text dehydrationTimeLabel;
     public TMP_Text rangedWeaponLabel;
     public TMP_Text meleeWeaponLabel;
     public TMP_Text itemLabel;
@@ -27,12 +29,9 @@ public class UI : MonoBehaviour
     public Image aimProgressRadial;
     public TMP_Text targetLabel;
 
-    DateTime startTime;
-
     private void Start()
     {
         player = Player.Instance;
-        startTime = DateTime.Now;
     }
 
     private void Update()
@@ -48,8 +47,15 @@ public class UI : MonoBehaviour
 
         if (player)
         {
-            TimeSpan timeSurvived = DateTime.Now - startTime;
+            TimeSpan timeSurvived = player.vitals.timeSurvived;
             timeSurvivedLabel.text = timeSurvived.Hours.ToString().PadLeft(2, '0') + ":" + timeSurvived.Minutes.ToString().PadLeft(2, '0') + ":" + timeSurvived.Seconds.ToString().PadLeft(2, '0');
+
+            float timeLeft = (Mathf.Min(player.vitals.timeUntilStarving, player.vitals.timeUntilDehydrated));
+            if (timeLeft > 1)
+                timeLeftLabel.text = "You can surivive " + (int)timeLeft + " hours on what's in your pack";
+            else
+                timeLeftLabel.text = "You can surivive less than an hour on what's in your pack";
+
 
             healthRadial.fillAmount = player.vitals.health / player.vitals.maxMaxHealth;
             staminaRadial.fillAmount = player.vitals.stamina / player.vitals.maxMaxStamina;

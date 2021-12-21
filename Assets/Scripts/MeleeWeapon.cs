@@ -2,7 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class MeleeWeapon : MonoBehaviour, IPickUpable
+public class MeleeWeapon : Item
 {
     Player player;
 
@@ -65,7 +65,7 @@ public class MeleeWeapon : MonoBehaviour, IPickUpable
         durability = maxDurability / 2 + Random.Range(0, maxDurability / 2 + 1);
     }
 
-    public void PickUp()
+    public override void PickUp()
     {
         if (!player.meleeWeapons.Contains(this))
         {

@@ -17,7 +17,7 @@ public class Player : MonoBehaviour, IDamageable<float>
 
     float pickUpTime = .25f;
     float pickUpTimeElapsed;
-    public GameObject pickUpTarget;
+    public Item pickUpTarget;
     public GameObject target;
 
     public float speed;
@@ -290,7 +290,7 @@ public class Player : MonoBehaviour, IDamageable<float>
                 if (pickUpTimeElapsed >= pickUpTime)
                 {
                     if (pickUpTarget)
-                        pickUpTarget.GetComponent<IPickUpable>().PickUp();
+                        pickUpTarget.PickUp();
                     pickUpTarget = null;
                     pickUpTimeElapsed = 0;
                     CalculateFoodInInventory();
@@ -505,7 +505,7 @@ public class Player : MonoBehaviour, IDamageable<float>
                 {
                     actionState = ActionState.Idle;
                     if (fov.target.name != "Door")
-                        pickUpTarget = fov.target;
+                        pickUpTarget = fov.target.GetComponent<Item>();
                 }
                 if (pickUpTarget)
                     navMeshAgent.destination = pickUpTarget.transform.position;
@@ -539,6 +539,7 @@ public class Player : MonoBehaviour, IDamageable<float>
     public void Die()
     {
         Destroy(gameObject);
+        PlayerPrefs.DeleteAll();
     }
 
     public void Eat(float cals)

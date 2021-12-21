@@ -2,7 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class RangedWeapon : MonoBehaviour, IPickUpable
+public class RangedWeapon : Item
 {
     Player player;
 
@@ -93,7 +93,7 @@ public class RangedWeapon : MonoBehaviour, IPickUpable
         }
     }
 
-    public void PickUp()
+    public override void PickUp()
     {
         if (!player.rangedWeapons.Contains(this))
         {

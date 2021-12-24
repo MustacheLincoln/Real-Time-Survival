@@ -7,7 +7,9 @@ using UnityEngine.UI;
 
 public class UI : MonoBehaviour
 {
+    public static UI Instance { get; private set; }
     Player player;
+    GameManager gameManager;
 
     public TMP_Text timeSurvivedLabel;
     public TMP_Text realTimeLabel;
@@ -29,9 +31,12 @@ public class UI : MonoBehaviour
     public Image aimProgressRadial;
     public TMP_Text targetLabel;
 
+    private void Awake() { Instance = this; }
+
     private void Start()
     {
         player = Player.Instance;
+        gameManager = GameManager.Instance;
     }
 
     private void Update()
@@ -44,12 +49,10 @@ public class UI : MonoBehaviour
     {
         DateTime time = DateTime.Now;
         realTimeLabel.text = time.Hour.ToString().PadLeft(2, '0') + ":" + time.Minute.ToString().PadLeft(2, '0');
+        timeSurvivedLabel.text = gameManager.timeSurvived.Hours.ToString().PadLeft(2, '0') + ":" + gameManager.timeSurvived.Minutes.ToString().PadLeft(2, '0') + ":" + gameManager.timeSurvived.Seconds.ToString().PadLeft(2, '0');
 
         if (player)
         {
-            TimeSpan timeSurvived = player.vitals.timeSurvived;
-            timeSurvivedLabel.text = timeSurvived.Hours.ToString().PadLeft(2, '0') + ":" + timeSurvived.Minutes.ToString().PadLeft(2, '0') + ":" + timeSurvived.Seconds.ToString().PadLeft(2, '0');
-
             float timeLeft = (Mathf.Min(player.vitals.timeUntilStarving, player.vitals.timeUntilDehydrated));
             if (timeLeft > 1)
                 timeLeftLabel.text = "You can surivive " + (int)timeLeft + " hours on what's in your pack";

@@ -26,6 +26,8 @@ public class CameraController : MonoBehaviour
         newPosition = transform.position;
         newRotation = transform.rotation;
         newZoom = cameraTransform.localPosition;
+        if (followTransform)
+            newPosition = followTransform.position;
     }
 
     private void LateUpdate()

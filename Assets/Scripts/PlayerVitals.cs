@@ -6,6 +6,7 @@ using UnityEngine;
 public class PlayerVitals : MonoBehaviour
 {
     Player player;
+    GameManager gameManager;
     public float maxMaxHealth = 100;
     public float maxHealth;
     public float health;
@@ -35,71 +36,97 @@ public class PlayerVitals : MonoBehaviour
     private void Start()
     {
         player = Player.Instance;
-        if (PlayerPrefs.HasKey("startTime"))
+        gameManager = GameManager.Instance;
+        if (ES3.KeyExists("startTime"))
         {
-            long timeConversion = Convert.ToInt64(PlayerPrefs.GetString("startTime"));
+            long timeConversion = Convert.ToInt64(ES3.Load<string>("startTime"));
             startTime = DateTime.FromBinary(timeConversion);
         }
         else
         {
             startTime = DateTime.Now;
-            PlayerPrefs.SetString("startTime", startTime.ToBinary().ToString());
+            ES3.Save("startTime", startTime.ToBinary().ToString());
         }
-        maxHealth = PlayerPrefs.GetFloat("maxHealth", maxMaxHealth);
-        health = PlayerPrefs.GetFloat("health", maxHealth);
-        maxStamina = PlayerPrefs.GetFloat("maxStamina", maxMaxStamina);
-        stamina = PlayerPrefs.GetFloat("stamina", maxStamina);
-        calories = PlayerPrefs.GetFloat("calories", 1000);
-        milliliters = PlayerPrefs.GetFloat("milliliters", 1000);
-        if (PlayerPrefs.HasKey("logOffTime"))
+        maxHealth = ES3.Load("maxHealth", maxMaxHealth);
+        health = ES3.Load("health", maxHealth);
+        maxStamina = ES3.Load("maxStamina", maxMaxStamina);
+        stamina = ES3.Load("stamina", maxStamina);
+        calories = ES3.Load("calories", 1000f);
+        milliliters = ES3.Load("milliliters", 1000f);
+        if (ES3.KeyExists("logOffTime"))
         {
-            long timeConversion = Convert.ToInt64(PlayerPrefs.GetString("logOffTime"));
+            long timeConversion = Convert.ToInt64(ES3.Load<string>("logOffTime"));
             logOffTime = DateTime.FromBinary(timeConversion);
             timeOffline = (float)DateTime.Now.Subtract(logOffTime).TotalSeconds;
+            timeSurvived = logOffTime.Subtract(startTime);
 
-            if (health < maxHealth)
+            while (timeOffline > 0 && calories > 0 && milliliters > 0)
             {
-                health += ((calories + milliliters) / (maxCalories + maxMilliliters)) * 3 * timeOffline;
-                health = Mathf.Clamp(health, 0, maxHealth);
-            }
+                recuperation = 3;
+                if (health < maxHealth)
+                {
+                    health += ((calories + milliliters) / (maxCalories + maxMilliliters)) * recuperation;
+                    healthExertion = 1 * recuperation;
+                    health = Mathf.Clamp(health, 0, maxHealth);
+                }
+                else
+                    healthExertion = 0;
 
-            if (stamina < maxStamina)
-            {
-                stamina += ((calories + milliliters) / (maxCalories + maxMilliliters)) * 3 * timeOffline;
-                stamina = Mathf.Clamp(stamina, 0, maxStamina);
-            }
+                if (stamina < maxStamina)
+                {
+                    if (player.movementState != Player.MovementState.Running)
+                    {
+                        stamina += ((calories + milliliters) / (maxCalories + maxMilliliters)) * recuperation;
+                        staminaExertion = 1 * recuperation;
+                    }
+                    stamina = Mathf.Clamp(stamina, 0, maxStamina);
 
-            if (calories > 0)
-            {
-                exertion = ((baseExertion + healthExertion + staminaExertion) * .023f * timeOffline);
-                calories -= exertion;
-                calories = Mathf.Clamp(calories, 0, maxCalories);
-            }
-            starving = (calories <= 0);
-            if (starving)
-                Starving();
+                }
+                else
+                    staminaExertion = 0;
 
-            if (milliliters > 0)
-            {
-                exertion = ((baseExertion + healthExertion + staminaExertion) * .023f * timeOffline);
-                milliliters -= exertion;
-                milliliters = Mathf.Clamp(milliliters, 0, maxMilliliters);
+                if (calories > 0)
+                {
+                    exertion = ((baseExertion + healthExertion + staminaExertion) * .023f);
+                    calories -= exertion;
+                    calories = Mathf.Clamp(calories, 0, maxCalories);
+                }
+                starving = (calories <= 0);
+                if (starving)
+                {
+                    Starving();
+                    break;
+                }
+
+
+                if (milliliters > 0)
+                {
+                    exertion = ((baseExertion + healthExertion + staminaExertion) * .023f);
+                    milliliters -= exertion;
+                    milliliters = Mathf.Clamp(milliliters, 0, maxMilliliters);
+                }
+                dehydrated = (milliliters <= 0);
+                if (dehydrated)
+                {
+                    Dehydrated();
+                    break;
+                }
+                timeSurvived += TimeSpan.FromSeconds(1);
+                gameManager.timeSurvived = timeSurvived;
+                timeOffline -= 1;
             }
-            dehydrated = (milliliters <= 0);
-            if (dehydrated)
-                Dehydrated();
+            
         }
     }
 
     private void CalculateTimeLeft()
     {
-        timeUntilStarving = (calories + player.caloriesInInventory) / .000385f / 60 / 60 / 60;
-        timeUntilDehydrated = (milliliters + player.millilitersInInventory) / .000385f / 60 / 60 / 60;
+        timeUntilStarving = (calories + player.caloriesInInventory) / .0003858f / 60 / 60 / 60;
+        timeUntilDehydrated = (milliliters + player.millilitersInInventory) / .0003858f / 60 / 60 / 60;
     }
 
     private void Update()
     {
-        timeSurvived = DateTime.Now.Subtract(startTime);
         switch (player.movementState)
         {
             case Player.MovementState.Idle:
@@ -164,8 +191,13 @@ public class PlayerVitals : MonoBehaviour
         {
             player.Die();
         }
+        else
+        {
+            timeSurvived = DateTime.Now.Subtract(startTime);
+            CalculateTimeLeft();
+        }
 
-        CalculateTimeLeft();
+
     }
     void Starving()
     {
@@ -178,12 +210,12 @@ public class PlayerVitals : MonoBehaviour
 
     private void OnApplicationQuit()
     {
-        PlayerPrefs.SetFloat("maxHealth", maxHealth);
-        PlayerPrefs.SetFloat("health", health);
-        PlayerPrefs.SetFloat("maxStamina", maxStamina);
-        PlayerPrefs.SetFloat("stamina", stamina);
-        PlayerPrefs.SetFloat("calories", calories);
-        PlayerPrefs.SetFloat("milliliters", milliliters);
-        PlayerPrefs.SetString("logOffTime", DateTime.Now.ToBinary().ToString());
+        ES3.Save("maxHealth", maxHealth);
+        ES3.Save("health", health);
+        ES3.Save("maxStamina", maxStamina);
+        ES3.Save("stamina", stamina);
+        ES3.Save("calories", calories);
+        ES3.Save("milliliters", milliliters);
+        ES3.Save("logOffTime", DateTime.Now.ToBinary().ToString());
     }
 }

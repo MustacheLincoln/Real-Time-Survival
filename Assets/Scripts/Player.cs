@@ -91,6 +91,11 @@ public class Player : MonoBehaviour, IDamageable<float>
         navMeshAgent.speed = walkSpeed;
         navMeshAgent.acceleration = acceleration;
 
+        transform.position = ES3.Load("playerPosition", Vector3.zero);
+
+        currentPos = transform.position;
+        lastPos = currentPos;
+
         movementState = MovementState.Idle;
         StartCoroutine(EmitNoisePulse());
     }
@@ -539,7 +544,6 @@ public class Player : MonoBehaviour, IDamageable<float>
     public void Die()
     {
         Destroy(gameObject);
-        PlayerPrefs.DeleteAll();
     }
 
     public void Eat(float cals)
@@ -565,5 +569,10 @@ public class Player : MonoBehaviour, IDamageable<float>
                 millilitersInInventory += food.milliliters;
             }
         }
+    }
+
+    private void OnApplicationQuit()
+    {
+        ES3.Save("playerPosition", transform.position);
     }
 }

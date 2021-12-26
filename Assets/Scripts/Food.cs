@@ -5,7 +5,7 @@ using UnityEngine;
 public class Food : Item
 {
     Player player;
-
+    string goid;
     public float calories;
     public float milliliters;
     public float eatingTime;
@@ -15,8 +15,11 @@ public class Food : Item
 
     private void Start()
     {
+        goid = GetInstanceID().ToString();
         player = Player.Instance;
+        type = ES3.Load(goid + "type", type);
         Initialize();
+        Load();
     }
 
     private void Initialize()
@@ -34,6 +37,33 @@ public class Food : Item
             case Type.Soda:
                 SodaSetup();
                 break;
+        }
+    }
+
+    private void Load()
+    {
+        gameObject.SetActive(ES3.Load(goid + "activeSelf", true));
+        if (player.items.Contains(this))
+        {
+            gameObject.layer = 0;
+            transform.position = player.transform.position;
+            transform.parent = player.transform;
+        }
+        else
+        {
+            transform.position = ES3.Load(goid + "position", transform.position);
+            transform.rotation = ES3.Load(goid + "rotation", transform.rotation);
+        }
+    }
+
+    public override void Save()
+    {
+        if (player)
+        {
+            ES3.Save(goid + "type", type);
+            ES3.Save(goid + "activeSelf", gameObject.activeSelf);
+            ES3.Save(goid + "position", transform.position);
+            ES3.Save(goid + "rotation", transform.rotation);
         }
     }
 
@@ -57,6 +87,9 @@ public class Food : Item
     {
         player.vitals.calories += calories;
         player.vitals.milliliters += milliliters;
+        gameObject.SetActive(false);
+        transform.parent = null;
+        Save();
     }
 
     public override void PickUp()
@@ -64,10 +97,15 @@ public class Food : Item
         if (!player.items.Contains(this))
         {
             player.items.Add(this);
-            if (player.itemSelected == null)
-                player.itemSelected = this;
-            gameObject.SetActive(false);
+            gameObject.layer = 0;
+            Unequip();
+            transform.position = player.transform.position;
             transform.parent = player.transform;
+            if (player.itemSelected == null)
+            {
+                player.itemSelected = this;
+                Equip();
+            }
         }
     }
 }

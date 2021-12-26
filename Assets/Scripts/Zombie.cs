@@ -52,12 +52,15 @@ public class Zombie : MonoBehaviour, IDamageable<float>
         fov.targetMask = LayerMask.GetMask("Player");
         attackCooldown = attackSpeed;
         navMeshAgent.speed = runSpeed;
-        state = State.Wander;
         transform.rotation = Quaternion.Euler(0, Random.Range(0,360), 0);
 
         navMeshAgent.Warp(ES3.Load(goid + "position", transform.position));
         transform.rotation = ES3.Load(goid + "rotation", transform.rotation);
         health = ES3.Load(goid + "health", maxHealth);
+        navMeshAgent.destination = ES3.Load(goid + "destination", navMeshAgent.destination);
+        navMeshAgent.speed = ES3.Load(goid + "speed", navMeshAgent.speed);
+        state = ES3.Load(goid + "state", State.Wander);
+        chasing = ES3.Load(goid + "chasing", chasing);
     }
 
     private void Update()
@@ -208,7 +211,11 @@ public class Zombie : MonoBehaviour, IDamageable<float>
             {
                 foreach (Collider zombie in hitZombies)
                     if (zombie.gameObject != this.gameObject)
-                        zombie.gameObject.GetComponent<Zombie>().StartInvestigating(navMeshAgent.destination);
+                    {
+                        Zombie z = zombie.GetComponent<Zombie>();
+                        if (z.state != State.Chase)
+                            z.StartInvestigating(navMeshAgent.destination);
+                    }
             }
             yield return new WaitForSeconds(noiseCooldown);
             coolingDown = false;
@@ -222,6 +229,10 @@ public class Zombie : MonoBehaviour, IDamageable<float>
             ES3.Save(goid + "position", transform.position);
             ES3.Save(goid + "rotation", transform.rotation);
             ES3.Save(goid + "health", health);
+            ES3.Save(goid + "destination", navMeshAgent.destination);
+            ES3.Save(goid + "speed", navMeshAgent.speed);
+            ES3.Save(goid + "state", state);
+            ES3.Save(goid + "chasing", chasing += 10);
         }
     }
 }

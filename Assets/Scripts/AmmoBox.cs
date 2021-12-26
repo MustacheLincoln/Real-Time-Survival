@@ -5,7 +5,7 @@ using UnityEngine;
 public class AmmoBox : Item
 {
     Player player;
-
+    string goid;
     int rifleAmmo;
     int pistolAmmo;
 
@@ -14,8 +14,11 @@ public class AmmoBox : Item
 
     private void Start()
     {
+        goid = GetInstanceID().ToString();
         player = Player.Instance;
+        type = ES3.Load(goid + "type", type);
         Initialize();
+        Load();
     }
 
     private void Initialize()
@@ -35,6 +38,23 @@ public class AmmoBox : Item
                 break;
         }
     }
+    private void Load()
+    {
+        gameObject.SetActive(ES3.Load(goid + "activeSelf", true));
+        transform.position = ES3.Load(goid + "position", transform.position);
+        transform.rotation = ES3.Load(goid + "rotation", transform.rotation);
+    }
+
+    public override void Save()
+    {
+        if (player)
+        {
+            ES3.Save(goid + "type", type);
+            ES3.Save(goid + "activeSelf", gameObject.activeSelf);
+            ES3.Save(goid + "position", transform.position);
+            ES3.Save(goid + "rotation", transform.rotation);
+        }
+    }
 
     private void PistolSetup()
     {
@@ -52,6 +72,7 @@ public class AmmoBox : Item
     {
         player.pistolAmmo += pistolAmmo;
         player.rifleAmmo += rifleAmmo;
-        Destroy(gameObject);
+        gameObject.SetActive(false);
+        ES3.Save(goid + "activeSelf", gameObject.activeSelf);
     }
 }

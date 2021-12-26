@@ -52,11 +52,29 @@ public class RangedWeapon : Item
     private void Load()
     {
         inMagazine = ES3.Load(goid + "inMagazine", inMagazine);
+        gameObject.SetActive(ES3.Load(goid + "activeSelf", true));
         if (player.rangedWeapons.Contains(this))
         {
             gameObject.layer = 0;
             transform.position = player.transform.position;
             transform.parent = player.transform;
+        }
+        else
+        {
+            transform.position = ES3.Load(goid + "position", transform.position);
+            transform.rotation = ES3.Load(goid + "rotation", transform.rotation);
+        }
+    }
+
+    public override void Save()
+    {
+        if (player)
+        {
+            ES3.Save(goid + "type", type);
+            ES3.Save(goid + "activeSelf", gameObject.activeSelf);
+            ES3.Save(goid + "position", transform.position);
+            ES3.Save(goid + "rotation", transform.rotation);
+            ES3.Save(goid + "inMagazine", inMagazine);
         }
     }
 
@@ -113,19 +131,14 @@ public class RangedWeapon : Item
         {
             player.rangedWeapons.Add(this);
             gameObject.layer = 0;
+            Unequip();
             transform.position = player.transform.position;
             transform.parent = player.transform;
-        }
-        if (player.rangedWeaponEquipped == null)
-            player.rangedWeaponEquipped = this;
-    }
-
-    private void OnApplicationQuit()
-    {
-        if (player)
-        {
-            ES3.Save(goid + "type", type);
-            ES3.Save(goid + "inMagazine", inMagazine);
+            if (player.rangedWeaponEquipped == null)
+            {
+                player.rangedWeaponEquipped = this;
+                Equip();
+            }
         }
     }
 }

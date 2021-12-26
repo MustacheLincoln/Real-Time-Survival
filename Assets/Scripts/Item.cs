@@ -8,4 +8,25 @@ public abstract class Item : MonoBehaviour
     {
 
     }
+
+    public virtual void Save()
+    {
+
+    }
+
+    public void Equip()
+    {
+        gameObject.SetActive(true);
+    }
+
+    public void Unequip()
+    {
+        gameObject.SetActive(false);
+        Save();
+    }
+
+    private void OnApplicationQuit()
+    {
+        Save();
+    }
 }

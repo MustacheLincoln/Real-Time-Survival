@@ -5,7 +5,7 @@ using UnityEngine;
 public class MeleeWeapon : Item
 {
     Player player;
-
+    string goid;
     public float meleeAttackDamage;
     public float meleeAttackSpeed;
     public float meleeAttackNoise;
@@ -19,8 +19,11 @@ public class MeleeWeapon : Item
 
     private void Start()
     {
+        goid = GetInstanceID().ToString();
         player = Player.Instance;
+        type = ES3.Load(goid + "type", type);
         Initialize();
+        Load();
     }
 
     private void Initialize()
@@ -38,6 +41,35 @@ public class MeleeWeapon : Item
             case Type.Knife:
                 KnifeSetup();
                 break;
+        }
+    }
+    private void Load()
+    {
+        durability = ES3.Load(goid + "durability", durability);
+        gameObject.SetActive(ES3.Load(goid + "activeSelf", true));
+        if (player.meleeWeapons.Contains(this))
+        {
+            gameObject.layer = 0;
+            transform.position = player.transform.position;
+            transform.parent = player.transform;
+        }
+        else
+        {
+            transform.position = ES3.Load(goid + "position", transform.position);
+            transform.rotation = ES3.Load(goid + "rotation", transform.rotation);
+        }
+    }
+
+
+    public override void Save()
+    {
+        if (player)
+        {
+            ES3.Save(goid + "type", type);
+            ES3.Save(goid + "activeSelf", gameObject.activeSelf);
+            ES3.Save(goid + "position", transform.position);
+            ES3.Save(goid + "rotation", transform.rotation);
+            ES3.Save(goid + "durability", durability);
         }
     }
 
@@ -70,10 +102,15 @@ public class MeleeWeapon : Item
         if (!player.meleeWeapons.Contains(this))
         {
             player.meleeWeapons.Add(this);
-            gameObject.SetActive(false);
+            gameObject.layer = 0;
+            Unequip();
+            transform.position = player.transform.position;
             transform.parent = player.transform;
+            if (player.meleeWeaponEquipped == null)
+            {
+                player.meleeWeaponEquipped = this;
+                Equip();
+            }
         }
-        if (player.meleeWeaponEquipped == null)
-            player.meleeWeaponEquipped = this;
     }
 }

@@ -5,9 +5,9 @@ using UnityEngine;
 
 public class CameraController : MonoBehaviour
 {
-    public Transform cameraTransform;
-    public Transform followTransform;
-
+    Transform cameraTransform;
+    Transform followTransform;
+    Player player;
     float movementTime = 10;
     float rotationSpeed = 100;
     Vector3 zoomSpeed = new Vector3(0, -200, 200);
@@ -23,9 +23,12 @@ public class CameraController : MonoBehaviour
 
     private void Start()
     {
-        newPosition = transform.position;
-        newRotation = transform.rotation;
-        newZoom = cameraTransform.localPosition;
+        player = Player.Instance;
+        cameraTransform = Camera.main.transform;
+        followTransform = player.transform;
+        newPosition = ES3.Load("cameraPosition", transform.position);
+        newRotation = ES3.Load("cameraRotation", transform.rotation);
+        newZoom = ES3.Load("cameraZoom", cameraTransform.localPosition);
         if (followTransform)
             newPosition = followTransform.position;
     }
@@ -68,6 +71,16 @@ public class CameraController : MonoBehaviour
         newZoom += Input.GetAxis("RightVertical") * zoomSpeed * Time.deltaTime;
         newZoom.y = Mathf.Clamp(newZoom.y, maxZoomIn, maxZoomOut);
         newZoom.z = Mathf.Clamp(newZoom.z, -maxZoomOut, -maxZoomIn);
+    }
+
+    private void OnApplicationQuit()
+    {
+        if (player)
+        {
+            ES3.Save("cameraPosition", transform.position);
+            ES3.Save("cameraRotation", transform.rotation);
+            ES3.Save("cameraZoom", cameraTransform.localPosition);
+        }
     }
 }
 

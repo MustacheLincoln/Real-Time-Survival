@@ -76,10 +76,9 @@ public class Player : MonoBehaviour, IDamageable<float>
     public enum ActionState { Idle, Reloading, Aiming, PickingUp, Eating }
     public ActionState actionState;
 
-    private void Awake() { Instance = this; }
-
-    private void Start()
-    {
+    private void Awake() 
+    { 
+        Instance = this;
         navMeshAgent = GetComponent<NavMeshAgent>();
         vitals = GetComponent<PlayerVitals>();
         fov = GetComponent<FieldOfView>();
@@ -109,6 +108,11 @@ public class Player : MonoBehaviour, IDamageable<float>
 
         movementState = MovementState.Idle;
         StartCoroutine(EmitNoisePulse());
+    }
+
+    private void Start()
+    {
+       
     }
 
     private void Update()
@@ -265,7 +269,10 @@ public class Player : MonoBehaviour, IDamageable<float>
                 fov.targetMask = LayerMask.GetMask("Zombie");
                 target = fov.target;
                 if (rangedWeaponEquipped == null)
+                {
+                    actionState = ActionState.Idle;
                     break;
+                }
                 if (rangedWeaponEquipped.inMagazine > 0)
                 {
                     if (target)
@@ -322,7 +329,10 @@ public class Player : MonoBehaviour, IDamageable<float>
                 else
                     edible = (vitals.milliliters < vitals.maxMilliliters - food.milliliters);
                 if (edible == false)
+                {
+                    actionState = ActionState.Idle;
                     break;
+                }
                 aimTimeElapsed = 0;
                 reloadTimeElapsed = 0;
                 movementState = MovementState.Holding;
@@ -337,7 +347,10 @@ public class Player : MonoBehaviour, IDamageable<float>
                         int index = items.IndexOf(itemSelected);
                         items.Remove(itemSelected);
                         if (items.Count > 0)
+                        {
                             itemSelected = items[0];
+                            itemSelected.Equip();
+                        }
                         if (items.Count <= 0)
                             itemSelected = null;
                     }
@@ -356,7 +369,9 @@ public class Player : MonoBehaviour, IDamageable<float>
             int i = meleeWeapons.IndexOf(meleeWeaponEquipped);
             if (i == meleeWeapons.Count - 1)
                 i = -1;
+            meleeWeaponEquipped.Unequip();
             meleeWeaponEquipped = meleeWeapons[i + 1];
+            meleeWeaponEquipped.Equip();
             weaponChanged = true;
         }
     }
@@ -368,7 +383,9 @@ public class Player : MonoBehaviour, IDamageable<float>
             int i = rangedWeapons.IndexOf(rangedWeaponEquipped);
             if (i == rangedWeapons.Count - 1)
                 i = -1;
+            rangedWeaponEquipped.Unequip();
             rangedWeaponEquipped = rangedWeapons[i + 1];
+            rangedWeaponEquipped.Equip();
             weaponChanged = true;
         }
     }
@@ -380,7 +397,9 @@ public class Player : MonoBehaviour, IDamageable<float>
             int i = items.IndexOf(itemSelected);
             if (i == items.Count - 1)
                 i = -1;
+            itemSelected.Unequip();
             itemSelected = items[i + 1];
+            itemSelected.Equip();
             itemSelectionChanged = true;
         }
     }
@@ -392,7 +411,9 @@ public class Player : MonoBehaviour, IDamageable<float>
             int i = items.IndexOf(itemSelected);
             if (i == 0)
                 i = items.Count;
+            itemSelected.Unequip();
             itemSelected = items[i - 1];
+            itemSelected.Equip();
             itemSelectionChanged = true;
         }
     }

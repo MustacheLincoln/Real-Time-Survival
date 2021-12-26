@@ -91,7 +91,18 @@ public class Player : MonoBehaviour, IDamageable<float>
         navMeshAgent.speed = walkSpeed;
         navMeshAgent.acceleration = acceleration;
 
-        transform.position = ES3.Load("playerPosition", Vector3.zero);
+        navMeshAgent.Warp(ES3.Load("playerPosition", Vector3.zero));
+        transform.rotation = ES3.Load("playerRotation", Quaternion.identity);
+
+        rangedWeapons = ES3.Load("playerRangedWeapons", rangedWeapons);
+        meleeWeapons = ES3.Load("playerMeleeWeapons", meleeWeapons);
+        rangedWeaponEquipped = ES3.Load("playerRangedWeaponEquipped", rangedWeaponEquipped);
+        roundChambered = ES3.Load("playerRoundChambered", roundChambered);
+        pistolAmmo = ES3.Load("playerPistolAmmo", pistolAmmo);
+        rifleAmmo = ES3.Load("playerRifleAmmo", rifleAmmo);
+        meleeWeaponEquipped = ES3.Load("playerMeleeWeaponEquipped", meleeWeaponEquipped);
+        items = ES3.Load("playerItems", items);
+        itemSelected = ES3.Load("playerItemSelected", itemSelected);
 
         currentPos = transform.position;
         lastPos = currentPos;
@@ -297,6 +308,7 @@ public class Player : MonoBehaviour, IDamageable<float>
                     if (pickUpTarget)
                         pickUpTarget.PickUp();
                     pickUpTarget = null;
+                    navMeshAgent.ResetPath();
                     pickUpTimeElapsed = 0;
                     CalculateFoodInInventory();
                     actionState = ActionState.Idle;
@@ -574,5 +586,15 @@ public class Player : MonoBehaviour, IDamageable<float>
     private void OnApplicationQuit()
     {
         ES3.Save("playerPosition", transform.position);
+        ES3.Save("playerRotation", transform.rotation);
+        ES3.Save("playerRangedWeapons", rangedWeapons);
+        ES3.Save("playerMeleeWeapons", meleeWeapons);
+        ES3.Save("playerRangedWeaponEquipped", rangedWeaponEquipped);
+        ES3.Save("playerRoundChambered", roundChambered);
+        ES3.Save("playerPistolAmmo", pistolAmmo);
+        ES3.Save("playerRifleAmmo", rifleAmmo);
+        ES3.Save("playerMeleeWeaponEquipped", meleeWeaponEquipped);
+        ES3.Save("playerItems", items);
+        ES3.Save("playerItemSelected", itemSelected);
     }
 }

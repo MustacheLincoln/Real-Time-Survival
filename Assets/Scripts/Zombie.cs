@@ -8,6 +8,8 @@ public class Zombie : MonoBehaviour, IDamageable<float>
     NavMeshAgent navMeshAgent;
     FieldOfView fov;
     Animator animator;
+    Player player;
+    public Transform spawnPoint;
 
     float walkSpeed = 1;
     float investigateSpeed = 2;
@@ -35,9 +37,12 @@ public class Zombie : MonoBehaviour, IDamageable<float>
     private Vector3 currentPos;
     private bool isMoving;
     private Vector3 lastPos;
+    public string goid;
 
     private void Start()
     {
+        player = Player.Instance;
+        goid = GetInstanceID().ToString();
         name = "Zombie";
         navMeshAgent = GetComponent<NavMeshAgent>();
         fov = GetComponent<FieldOfView>();
@@ -46,10 +51,13 @@ public class Zombie : MonoBehaviour, IDamageable<float>
         fov.angle = fovAngle;
         fov.targetMask = LayerMask.GetMask("Player");
         attackCooldown = attackSpeed;
-        health = maxHealth;
         navMeshAgent.speed = runSpeed;
         state = State.Wander;
         transform.rotation = Quaternion.Euler(0, Random.Range(0,360), 0);
+
+        navMeshAgent.Warp(ES3.Load(goid + "position", transform.position));
+        transform.rotation = ES3.Load(goid + "rotation", transform.rotation);
+        health = ES3.Load(goid + "health", maxHealth);
     }
 
     private void Update()
@@ -104,8 +112,10 @@ public class Zombie : MonoBehaviour, IDamageable<float>
 
     private void Die()
     {
-        navMeshAgent.enabled = false;
-        Destroy(gameObject);
+        navMeshAgent.ResetPath();
+        navMeshAgent.Warp(spawnPoint.position);
+        health = maxHealth;
+        state = State.Wander;
     }
 
     private void Wander()
@@ -202,6 +212,16 @@ public class Zombie : MonoBehaviour, IDamageable<float>
             }
             yield return new WaitForSeconds(noiseCooldown);
             coolingDown = false;
+        }
+    }
+
+    private void OnApplicationQuit()
+    {
+        if (player)
+        {
+            ES3.Save(goid + "position", transform.position);
+            ES3.Save(goid + "rotation", transform.rotation);
+            ES3.Save(goid + "health", health);
         }
     }
 }

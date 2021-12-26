@@ -5,7 +5,7 @@ using UnityEngine;
 public class RangedWeapon : Item
 {
     Player player;
-
+    string goid;
     public float rangedAttackDamage;
     public float rangedAttackSpeed;
     public float rangedAttackNoise;
@@ -24,8 +24,11 @@ public class RangedWeapon : Item
 
     private void Start()
     {
+        goid = GetInstanceID().ToString();
         player = Player.Instance;
+        type = ES3.Load(goid + "type", type);
         Initialize();
+        Load();
     }
 
     private void Initialize()
@@ -43,6 +46,17 @@ public class RangedWeapon : Item
             case Type.Rifle:
                 RifleSetup();
                 break;
+        }
+    }
+
+    private void Load()
+    {
+        inMagazine = ES3.Load(goid + "inMagazine", inMagazine);
+        if (player.rangedWeapons.Contains(this))
+        {
+            gameObject.layer = 0;
+            transform.position = player.transform.position;
+            transform.parent = player.transform;
         }
     }
 
@@ -98,10 +112,20 @@ public class RangedWeapon : Item
         if (!player.rangedWeapons.Contains(this))
         {
             player.rangedWeapons.Add(this);
-            gameObject.SetActive(false);
+            gameObject.layer = 0;
+            transform.position = player.transform.position;
             transform.parent = player.transform;
         }
         if (player.rangedWeaponEquipped == null)
             player.rangedWeaponEquipped = this;
+    }
+
+    private void OnApplicationQuit()
+    {
+        if (player)
+        {
+            ES3.Save(goid + "type", type);
+            ES3.Save(goid + "inMagazine", inMagazine);
+        }
     }
 }

@@ -5,6 +5,8 @@ using UnityEngine.AI;
 
 public class Door : MonoBehaviour, IDamageable<float>
 {
+    Player player;
+    string goid;
     NavMeshObstacle navMeshObstacle;
     float maxHealth = 100;
     public float health;
@@ -17,10 +19,16 @@ public class Door : MonoBehaviour, IDamageable<float>
 
     private void Start()
     {
+        player = Player.Instance;
+        goid = GetInstanceID().ToString();
         name = "Door";
         navMeshObstacle = GetComponent<NavMeshObstacle>();
         health = maxHealth;
-        state = State.Closed;
+        state = ES3.Load(goid + "state", State.Closed);
+        transform.position = ES3.Load(goid + "position", transform.position);
+        transform.rotation = ES3.Load(goid + "rotation", transform.rotation);
+        gameObject.SetActive(ES3.Load(goid + "activeSelf", true));
+        health = ES3.Load(goid + "health", maxHealth);
         newPosition = transform.position;
     }
 
@@ -32,7 +40,10 @@ public class Door : MonoBehaviour, IDamageable<float>
         isMoving = (transform.position != newPosition);
 
         if (health <= 0)
-            Destroy(gameObject);
+        {
+            gameObject.SetActive(false);
+            ES3.Save(goid + "activeSelf", gameObject.activeSelf);
+        }
     }
 
     public void Interact()
@@ -59,5 +70,17 @@ public class Door : MonoBehaviour, IDamageable<float>
     {
         if (state == State.Closed)
             health -= damage;
+    }
+
+
+    private void OnApplicationQuit()
+    {
+        if (player)
+        {
+            ES3.Save(goid + "state", state);
+            ES3.Save(goid + "position", transform.position);
+            ES3.Save(goid + "rotation", transform.rotation);
+            ES3.Save(goid + "health", health);
+        }
     }
 }

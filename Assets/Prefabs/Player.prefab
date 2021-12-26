@@ -97,6 +97,8 @@ MonoBehaviour:
   itemSelectionChanged: 0
   itemSelected: {fileID: 0}
   eatingTimeElapsed: 0
+  caloriesInInventory: 0
+  millilitersInInventory: 0
   movementState: 0
   actionState: 0
 --- !u!195 &3674398203523470647
@@ -164,6 +166,8 @@ MonoBehaviour:
   calories: 0
   maxMilliliters: 2000
   milliliters: 0
+  timeUntilStarving: 0
+  timeUntilDehydrated: 0
   exertion: 0
   baseExertion: 1
   healthExertion: 1

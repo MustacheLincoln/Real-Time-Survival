@@ -29,8 +29,8 @@ public class Player : MonoBehaviour, IDamageable<float>
     float turnSpeedHigh = 15;
     float grabDistance = 1.4f;
     float idleRadius = 1;
-    float walkRadius = 5;
-    float runRadius = 10;
+    float walkRadius = 3;
+    float runRadius = 6;
     float crouchRadius = 1;
     float noiseSphereRadius;
 

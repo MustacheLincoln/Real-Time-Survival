@@ -5,6 +5,8 @@ using UnityEngine;
 
 public class CameraController : MonoBehaviour
 {
+    public static CameraController Instance { get; private set; }
+    public Transform inspectPoint;
     Transform cameraTransform;
     Transform followTransform;
     Player player;
@@ -23,6 +25,7 @@ public class CameraController : MonoBehaviour
 
     private void Start()
     {
+        Instance = this;
         player = Player.Instance;
         cameraTransform = Camera.main.transform;
         followTransform = player.transform;

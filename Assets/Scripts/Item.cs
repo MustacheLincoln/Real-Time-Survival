@@ -7,15 +7,9 @@ public abstract class Item : MonoBehaviour
     public string goid;
     public string descriptiveText;
 
-    public virtual void PickUp()
-    {
+    public abstract void PickUp();
 
-    }
-
-    public virtual void Save()
-    {
-
-    }
+    public abstract void Save();
 
     public void Equip()
     {

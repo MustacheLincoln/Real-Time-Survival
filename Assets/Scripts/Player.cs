@@ -22,6 +22,7 @@ public class Player : MonoBehaviour, IDamageable<float>
     float pickUpTime = .25f;
     float pickUpTimeElapsed;
     public Item pickUpTarget;
+    GameObject navTarget;
     public GameObject target;
 
     public float speed;
@@ -368,7 +369,7 @@ public class Player : MonoBehaviour, IDamageable<float>
         }
     }
 
-    private void Inspect()
+    public void Inspect()
     {
         fov.radius = 0;
         if (pickUpTarget && gm.gameState != GameManager.GameState.Inspecting)
@@ -382,7 +383,6 @@ public class Player : MonoBehaviour, IDamageable<float>
             pickUpRotation = pickUpTarget.transform.rotation;
             pickUpTarget.transform.position = camController.inspectPoint.transform.position;
             pickUpTarget.transform.rotation = camController.inspectPoint.transform.rotation;
-            pickUpTarget.transform.parent = camController.inspectPoint.transform;
         }
     }
 
@@ -410,7 +410,6 @@ public class Player : MonoBehaviour, IDamageable<float>
         {
             pickUpTarget.transform.position = pickUpPosition;
             pickUpTarget.transform.rotation = pickUpRotation;
-            pickUpTarget.transform.parent = null;
         }
         pickUpTarget = null;
         pickUpTimeElapsed = 0;
@@ -604,25 +603,41 @@ public class Player : MonoBehaviour, IDamageable<float>
                         if (fov.target && actionState != ActionState.Aiming)
                         {
                             actionState = ActionState.Idle;
-                            if (fov.target.name != "Door")
+                            if (fov.target.GetComponent<Item>())
+                            {
                                 pickUpTarget = fov.target.GetComponent<Item>();
+                                navTarget = pickUpTarget.gameObject;
+                            }
+                            if (fov.target.GetComponent<Container>())
+                            {
+                                navTarget = fov.target;
+                            }
                         }
-                        if (pickUpTarget)
-                            navMeshAgent.destination = pickUpTarget.transform.position;
+                        if (navTarget)
+                            navMeshAgent.destination = navTarget.transform.position;
                     }
                 }
 
                 if (Input.GetButtonDown("PickUp"))
                     if (fov.target)
+                    {
                         if (fov.target.name == "Door")
                         {
                             actionState = ActionState.Idle;
                             fov.target.GetComponent<Door>().Interact();
                         }
+                    }
 
-                if (pickUpTarget)
-                    if (Vector3.Distance(transform.position, pickUpTarget.transform.position) < grabDistance)
-                        actionState = ActionState.PickingUp;
+                if (navTarget)
+                    if (Vector3.Distance(transform.position, navTarget.transform.position) < grabDistance)
+                    {
+                        navMeshAgent.ResetPath();
+                        if (pickUpTarget)
+                            if (navTarget == pickUpTarget.gameObject)
+                                actionState = ActionState.PickingUp;
+                        if (navTarget.GetComponent<Container>())
+                            navTarget.GetComponent<Container>().Search();
+                    }
                 break;
             case GameManager.GameState.Inspecting:
                 if (Input.GetButtonDown("Submit"))

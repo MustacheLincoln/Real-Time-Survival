@@ -2,14 +2,21 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Rendering;
+using UnityEngine.Rendering.Universal;
+using UnityEngine.UI;
 
 public class CameraController : MonoBehaviour
 {
     public static CameraController Instance { get; private set; }
     public Transform inspectPoint;
+    public Volume volume;
+    public DepthOfField depthOfField;
+    public Image black;
     Transform cameraTransform;
     Transform followTransform;
     Player player;
+    GameManager gm;
     float movementTime = 10;
     float rotationSpeed = 100;
     Vector3 zoomSpeed = new Vector3(0, -200, 200);
@@ -23,10 +30,12 @@ public class CameraController : MonoBehaviour
     Vector3 rotationStartPosition;
     Vector3 rotationCurrentPosition;
 
+    private void Awake() { Instance = this; }
+
     private void Start()
     {
-        Instance = this;
         player = Player.Instance;
+        gm = GameManager.Instance;
         cameraTransform = Camera.main.transform;
         followTransform = player.transform;
         newPosition = ES3.Load("cameraPosition", transform.position);
@@ -34,6 +43,7 @@ public class CameraController : MonoBehaviour
         newZoom = ES3.Load("cameraZoom", cameraTransform.localPosition);
         if (followTransform)
             newPosition = followTransform.position;
+        volume.profile.TryGet(out depthOfField);
     }
 
     private void LateUpdate()
@@ -50,30 +60,33 @@ public class CameraController : MonoBehaviour
 
     void HandleCameraInput()
     {
-        newRotation *= Quaternion.Euler(Vector3.up * Input.GetAxis("RightHorizontal") * rotationSpeed * Time.deltaTime);
-        if (Input.GetKey(KeyCode.Q))
-            newRotation *= Quaternion.Euler(Vector3.up * rotationSpeed * Time.deltaTime);
-        if (Input.GetKey(KeyCode.E))
-            newRotation *= Quaternion.Euler(Vector3.up * -rotationSpeed * Time.deltaTime);
-        if (Input.GetMouseButtonDown(2))
-            rotationStartPosition = Input.mousePosition;
-        if (Input.GetMouseButton(2))
+        if (gm.gameState == GameManager.GameState.Playing)
         {
-            rotationCurrentPosition = Input.mousePosition;
-            Vector3 difference = rotationStartPosition - rotationCurrentPosition;
-            rotationStartPosition = rotationCurrentPosition;
-            newRotation *= Quaternion.Euler(Vector3.up * (-difference.x / 5));
-        }
+            newRotation *= Quaternion.Euler(Vector3.up * Input.GetAxis("RightHorizontal") * rotationSpeed * Time.deltaTime);
+            if (Input.GetKey(KeyCode.Q))
+                newRotation *= Quaternion.Euler(Vector3.up * rotationSpeed * Time.deltaTime);
+            if (Input.GetKey(KeyCode.E))
+                newRotation *= Quaternion.Euler(Vector3.up * -rotationSpeed * Time.deltaTime);
+            if (Input.GetMouseButtonDown(2))
+                rotationStartPosition = Input.mousePosition;
+            if (Input.GetMouseButton(2))
+            {
+                rotationCurrentPosition = Input.mousePosition;
+                Vector3 difference = rotationStartPosition - rotationCurrentPosition;
+                rotationStartPosition = rotationCurrentPosition;
+                newRotation *= Quaternion.Euler(Vector3.up * (-difference.x / 5));
+            }
 
-        if (Input.GetKey(KeyCode.R))
-            newZoom += zoomSpeed * Time.deltaTime;
-        if (Input.GetKey(KeyCode.F))
-            newZoom -= zoomSpeed * Time.deltaTime;
-        if (Input.mouseScrollDelta.y != 0)
-            newZoom += Input.mouseScrollDelta.y * zoomSpeed * Time.deltaTime * 5;
-        newZoom += Input.GetAxis("RightVertical") * zoomSpeed * Time.deltaTime;
-        newZoom.y = Mathf.Clamp(newZoom.y, maxZoomIn, maxZoomOut);
-        newZoom.z = Mathf.Clamp(newZoom.z, -maxZoomOut, -maxZoomIn);
+            if (Input.GetKey(KeyCode.R))
+                newZoom += zoomSpeed * Time.deltaTime;
+            if (Input.GetKey(KeyCode.F))
+                newZoom -= zoomSpeed * Time.deltaTime;
+            if (Input.mouseScrollDelta.y != 0)
+                newZoom += Input.mouseScrollDelta.y * zoomSpeed * Time.deltaTime * 5;
+            newZoom += Input.GetAxis("RightVertical") * zoomSpeed * Time.deltaTime;
+            newZoom.y = Mathf.Clamp(newZoom.y, maxZoomIn, maxZoomOut);
+            newZoom.z = Mathf.Clamp(newZoom.z, -maxZoomOut, -maxZoomIn);
+        }
     }
 
     private void OnApplicationQuit()

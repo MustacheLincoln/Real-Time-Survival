@@ -14,10 +14,11 @@ public class UI : MonoBehaviour
     public TMP_Text timeSurvivedLabel;
     public TMP_Text realTimeLabel;
     public TMP_Text timeLeftLabel;
-    public TMP_Text dehydrationTimeLabel;
     public TMP_Text rangedWeaponLabel;
     public TMP_Text meleeWeaponLabel;
     public TMP_Text itemLabel;
+    public TMP_Text inspectLabel;
+    public TMP_Text inspectText;
     public Image healthRadial;
     public Image staminaRadial;
     public Image hungerRadial;
@@ -85,6 +86,20 @@ public class UI : MonoBehaviour
                 itemLabel.text = player.itemSelected.name;
             else
                 itemLabel.text = "-----";
+
+            if (gameManager.gameState == GameManager.GameState.Inspecting)
+            {
+                if (player.pickUpTarget)
+                {
+                    inspectLabel.text = player.pickUpTarget.name;
+                    inspectText.text = player.pickUpTarget.descriptiveText;
+                }
+            }
+            else
+            {
+                inspectLabel.text = null;
+                inspectText.text = null;
+            }
 
             //if (player.items.Count > 0)
             //{

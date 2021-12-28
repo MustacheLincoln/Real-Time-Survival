@@ -5,7 +5,6 @@ using UnityEngine;
 public class AmmoBox : Item
 {
     Player player;
-    string goid;
     int rifleAmmo;
     int pistolAmmo;
 
@@ -60,12 +59,14 @@ public class AmmoBox : Item
     {
         name = "Pistol Ammo";
         pistolAmmo = 20;
+        descriptiveText = pistolAmmo + " pistol cartridges";
     }
 
     private void RifleSetup()
     {
         name = "Rifle Ammo";
         rifleAmmo = 10;
+        descriptiveText = rifleAmmo + " rifle cartridges";
     }
 
     public override void PickUp()

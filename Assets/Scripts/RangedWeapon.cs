@@ -5,7 +5,6 @@ using UnityEngine;
 public class RangedWeapon : Item
 {
     Player player;
-    string goid;
     public float rangedAttackDamage;
     public float rangedAttackSpeed;
     public float rangedAttackNoise;
@@ -93,6 +92,7 @@ public class RangedWeapon : Item
         inMagazine = 10;
         reloadTime = 1;
         aimTime = .5f;
+        descriptiveText = "Semi-automatic\nDamage: " + rangedAttackDamage + "\nTime to aim: " + aimTime + "\nNoise: " + rangedAttackNoise + "\nRange: " + rangedAttackRange + "\nLT to aim, RT to fire";
         SetMesh();
     }
 
@@ -111,6 +111,7 @@ public class RangedWeapon : Item
         inMagazine = 5;
         reloadTime = 2;
         aimTime = 1;
+        descriptiveText = "Bolt action\nDamage: " + rangedAttackDamage + "\nTime to aim: " + aimTime + "\nNoise: " + rangedAttackNoise + "\nRange: " + rangedAttackRange + "\nLT to aim, RT to fire";
         SetMesh();
     }
 

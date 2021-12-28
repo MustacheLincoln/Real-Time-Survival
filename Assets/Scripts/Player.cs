@@ -9,11 +9,15 @@ using TMPro;
 public class Player : MonoBehaviour, IDamageable<float>
 {
     public static Player Instance { get; private set; }
+    GameManager gm;
     NavMeshAgent navMeshAgent;
     public PlayerVitals vitals;
     public FieldOfView fov;
     Camera cam;
+    CameraController camController;
     Animator animator;
+    Vector3 pickUpPosition;
+    Quaternion pickUpRotation;
 
     float pickUpTime = .25f;
     float pickUpTimeElapsed;
@@ -48,7 +52,7 @@ public class Player : MonoBehaviour, IDamageable<float>
 
     public List<RangedWeapon> rangedWeapons;
     public List<MeleeWeapon> meleeWeapons;
-    public List<Item> items; //Make Food inherit Item class?
+    public List<Item> items;
 
     public bool itemSelectionChanged;
 
@@ -112,7 +116,8 @@ public class Player : MonoBehaviour, IDamageable<float>
 
     private void Start()
     {
-       
+        gm = GameManager.Instance;
+        camController = CameraController.Instance;
     }
 
     private void Update()
@@ -313,12 +318,13 @@ public class Player : MonoBehaviour, IDamageable<float>
                 if (pickUpTimeElapsed >= pickUpTime)
                 {
                     if (pickUpTarget)
-                        pickUpTarget.PickUp();
-                    pickUpTarget = null;
-                    navMeshAgent.ResetPath();
-                    pickUpTimeElapsed = 0;
-                    CalculateFoodInInventory();
-                    actionState = ActionState.Idle;
+                    {
+                        navMeshAgent.ResetPath();
+                        if (gm.inspected.Contains(pickUpTarget.name))
+                            PickUp();
+                        else
+                            Inspect();
+                    }
                 }
                 break;
             case ActionState.Eating:
@@ -360,6 +366,59 @@ public class Player : MonoBehaviour, IDamageable<float>
                 }
                 break;
         }
+    }
+
+    private void Inspect()
+    {
+        fov.radius = 0;
+        if (pickUpTarget && gm.gameState != GameManager.GameState.Inspecting)
+        {
+            fov.target = null;
+            gm.gameState = GameManager.GameState.Inspecting;
+            camController.depthOfField.gaussianStart.value = 15;
+            camController.depthOfField.gaussianEnd.value = 15;
+            camController.black.color = new Color(0, 0, 0, .33f);
+            pickUpPosition = pickUpTarget.transform.position;
+            pickUpRotation = pickUpTarget.transform.rotation;
+            pickUpTarget.transform.position = camController.inspectPoint.transform.position;
+            pickUpTarget.transform.rotation = camController.inspectPoint.transform.rotation;
+            pickUpTarget.transform.parent = camController.inspectPoint.transform;
+        }
+    }
+
+    private void PickUp()
+    {
+        if (pickUpTarget)
+        {
+            pickUpTarget.PickUp();
+            gm.inspected.Add(pickUpTarget.name);
+        }
+        pickUpTarget = null;
+        fov.target = null;
+        camController.depthOfField.gaussianStart.value = 150;
+        camController.depthOfField.gaussianEnd.value = 250;
+        camController.black.color = new Color(0, 0, 0, 0);
+        pickUpTimeElapsed = 0;
+        CalculateFoodInInventory();
+        actionState = ActionState.Idle;
+        gm.gameState = GameManager.GameState.Playing;
+    }
+
+    private void LeaveBehind()
+    {
+        if (pickUpTarget)
+        {
+            pickUpTarget.transform.position = pickUpPosition;
+            pickUpTarget.transform.rotation = pickUpRotation;
+            pickUpTarget.transform.parent = null;
+        }
+        pickUpTarget = null;
+        pickUpTimeElapsed = 0;
+        camController.depthOfField.gaussianStart.value = 150;
+        camController.depthOfField.gaussianEnd.value = 250;
+        camController.black.color = new Color(0, 0, 0, 0);
+        actionState = ActionState.Idle;
+        gm.gameState = GameManager.GameState.Playing;
     }
 
     private void ChangeMeleeWeapon()
@@ -494,73 +553,88 @@ public class Player : MonoBehaviour, IDamageable<float>
 
     private void CaptureInput()
     {
-        input = new Vector2(Input.GetAxis("Horizontal"), Input.GetAxis("Vertical"));
-        input = Vector2.ClampMagnitude(input, 1);
+        switch (gm.gameState)
+        {
+            case GameManager.GameState.Playing:
+                input = new Vector2(Input.GetAxis("Horizontal"), Input.GetAxis("Vertical"));
+                input = Vector2.ClampMagnitude(input, 1);
 
-        if (Input.GetMouseButton(1) || Input.GetAxis("Aim") > 0)
-        {
-            movementState = MovementState.Holding;
-                if (actionState != ActionState.Reloading)
-                    actionState = ActionState.Aiming;
-        }
-        else
-        {
-            if (actionState == ActionState.Aiming)
-                actionState = ActionState.Idle;
-            if (isMoving)
-            {
-                if (Input.GetButton("Run"))
+                if (Input.GetMouseButton(1) || Input.GetAxis("Aim") > 0)
                 {
-                    if (vitals.stamina > 1)
-                        movementState = MovementState.Running;
-                    else
-                        movementState = MovementState.Walking;
-                    actionState = ActionState.Idle;
+                    movementState = MovementState.Holding;
+                    if (actionState != ActionState.Reloading)
+                        actionState = ActionState.Aiming;
                 }
-                else if (Input.GetButton("Crouch"))
-                    movementState = MovementState.CrouchWalking;
                 else
-                    movementState = MovementState.Walking;
-            }
-            else if (Input.GetButton("Crouch"))
-                movementState = MovementState.Crouching;
-            else
-                movementState = MovementState.Idle;
-        }
-
-         if (input.magnitude > 0)
-        {
-            navMeshAgent.ResetPath();
-            pickUpTarget = null;
-            intent = camForward * input.y + camRight * input.x;
-            transform.rotation = Quaternion.Lerp(transform.rotation, Quaternion.LookRotation(intent), turnSpeed * Time.deltaTime);
-        }
-        else
-        {
-            if (Input.GetButton("PickUp"))
-            {
-                if (fov.target && actionState != ActionState.Aiming)
                 {
-                    actionState = ActionState.Idle;
-                    if (fov.target.name != "Door")
-                        pickUpTarget = fov.target.GetComponent<Item>();
+                    if (actionState == ActionState.Aiming)
+                        actionState = ActionState.Idle;
+                    if (isMoving)
+                    {
+                        if (Input.GetButton("Run"))
+                        {
+                            if (vitals.stamina > 1)
+                                movementState = MovementState.Running;
+                            else
+                                movementState = MovementState.Walking;
+                            actionState = ActionState.Idle;
+                        }
+                        else if (Input.GetButton("Crouch"))
+                            movementState = MovementState.CrouchWalking;
+                        else
+                            movementState = MovementState.Walking;
+                    }
+                    else if (Input.GetButton("Crouch"))
+                        movementState = MovementState.Crouching;
+                    else
+                        movementState = MovementState.Idle;
                 }
+
+                if (input.magnitude > 0)
+                {
+                    navMeshAgent.ResetPath();
+                    pickUpTarget = null;
+                    intent = camForward * input.y + camRight * input.x;
+                    transform.rotation = Quaternion.Lerp(transform.rotation, Quaternion.LookRotation(intent), turnSpeed * Time.deltaTime);
+                }
+                else
+                {
+                    if (Input.GetButton("PickUp"))
+                    {
+                        if (fov.target && actionState != ActionState.Aiming)
+                        {
+                            actionState = ActionState.Idle;
+                            if (fov.target.name != "Door")
+                                pickUpTarget = fov.target.GetComponent<Item>();
+                        }
+                        if (pickUpTarget)
+                            navMeshAgent.destination = pickUpTarget.transform.position;
+                    }
+                }
+
+                if (Input.GetButtonDown("PickUp"))
+                    if (fov.target)
+                        if (fov.target.name == "Door")
+                        {
+                            actionState = ActionState.Idle;
+                            fov.target.GetComponent<Door>().Interact();
+                        }
+
                 if (pickUpTarget)
-                    navMeshAgent.destination = pickUpTarget.transform.position;
-            }
-        }
-
-        if (Input.GetButtonDown("PickUp"))
-            if (fov.target)
-                if (fov.target.name == "Door")
+                    if (Vector3.Distance(transform.position, pickUpTarget.transform.position) < grabDistance)
+                        actionState = ActionState.PickingUp;
+                break;
+            case GameManager.GameState.Inspecting:
+                if (Input.GetButtonDown("Submit"))
                 {
-                    actionState = ActionState.Idle;
-                    fov.target.GetComponent<Door>().Interact();
+                    PickUp();
                 }
-
-        if (pickUpTarget)
-            if (Vector3.Distance(transform.position, pickUpTarget.transform.position) < grabDistance)
-                actionState = ActionState.PickingUp;
+                else if (Input.GetButtonDown("Cancel")) 
+                {
+                    LeaveBehind();
+                }
+                break;
+        }       
     }
 
     private void CalculateCamera()

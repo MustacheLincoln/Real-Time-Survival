@@ -5,7 +5,6 @@ using UnityEngine;
 public class MeleeWeapon : Item
 {
     Player player;
-    string goid;
     public float meleeAttackDamage;
     public float meleeAttackSpeed;
     public float meleeAttackNoise;
@@ -83,6 +82,7 @@ public class MeleeWeapon : Item
         meleeKnockback = .5f;
         maxDurability = 200;
         durability = maxDurability / 2 + Random.Range(0, maxDurability / 2);
+        descriptiveText = "Damage: " + meleeAttackDamage + "\nSpeed: " + meleeAttackSpeed + "\nNoise: " + meleeAttackNoise + "\nRange: " + meleeAttackRange + "\nDurability: " + durability + "/" + maxDurability + "\nRT to swing";
     }
 
     private void KnifeSetup()
@@ -95,6 +95,7 @@ public class MeleeWeapon : Item
         meleeKnockback = .1f;
         maxDurability = 100;
         durability = maxDurability / 2 + Random.Range(0, maxDurability / 2 + 1);
+        descriptiveText = "Damage: " + meleeAttackDamage + "\nSpeed: " + meleeAttackSpeed + "\nNoise: " + meleeAttackNoise + "\nRange: " + meleeAttackRange + "\nDurability: " + durability + "/" + maxDurability + "\nRT to swing";
     }
 
     public override void PickUp()

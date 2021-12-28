@@ -9,12 +9,19 @@ public class GameManager : MonoBehaviour
     Player player;
 
     public TimeSpan timeSurvived;
+    public List<String> inspected;
+
+
+    public enum GameState { Playing, Inspecting }
+    public GameState gameState;
 
     private void Awake() { Instance = this; }
 
     private void Start()
     {
         player = Player.Instance;
+        gameState = GameState.Playing;
+        inspected = ES3.Load("inspected", inspected);
     }
 
     private void Update()
@@ -25,7 +32,11 @@ public class GameManager : MonoBehaviour
 
     private void OnApplicationQuit()
     {
-        if (player == null)
+        if (player)
+        {
+            ES3.Save("inspected", inspected);
+        }
+        else
         {
             ES3.DeleteFile();
         }

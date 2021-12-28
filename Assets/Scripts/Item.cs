@@ -4,7 +4,8 @@ using UnityEngine;
 
 public abstract class Item : MonoBehaviour
 {
-    CameraController cam;
+    public string goid;
+    public string descriptiveText;
 
     public virtual void PickUp()
     {
@@ -19,10 +20,6 @@ public abstract class Item : MonoBehaviour
     public void Equip()
     {
         gameObject.SetActive(true);
-        cam = CameraController.Instance;
-        //transform.position = cam.inspectPoint.position;
-        //transform.rotation = cam.inspectPoint.rotation;
-        //transform.parent = cam.inspectPoint;
     }
 
     public void Unequip()

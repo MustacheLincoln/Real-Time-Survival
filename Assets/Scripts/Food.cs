@@ -5,7 +5,6 @@ using UnityEngine;
 public class Food : Item
 {
     Player player;
-    string goid;
     public float calories;
     public float milliliters;
     public float eatingTime;
@@ -73,6 +72,7 @@ public class Food : Item
         calories = 350;
         milliliters = 150f;
         eatingTime = 2;
+        descriptiveText = "Calories: " + calories + "\nmL: " + milliliters + "\nTime to eat: " + eatingTime;
     }
 
     private void SodaSetup()
@@ -81,6 +81,7 @@ public class Food : Item
         calories = 150;
         milliliters = 350;
         eatingTime = 1;
+        descriptiveText = "Calories: " + calories + "\nmL: " + milliliters + "\nTime to drink: " + eatingTime;
     }
 
     public void Eat()

@@ -9,7 +9,7 @@ using TMPro;
 public class Player : MonoBehaviour, IDamageable<float>
 {
     public static Player Instance { get; private set; }
-    GameManager gm;
+    GameManager gameManager;
     NavMeshAgent navMeshAgent;
     public PlayerVitals vitals;
     public FieldOfView fov;
@@ -117,7 +117,7 @@ public class Player : MonoBehaviour, IDamageable<float>
 
     private void Start()
     {
-        gm = GameManager.Instance;
+        gameManager = GameManager.Instance;
         camController = CameraController.Instance;
     }
 
@@ -148,6 +148,7 @@ public class Player : MonoBehaviour, IDamageable<float>
         animator.SetBool("isRunning", (movementState == MovementState.Running));
         animator.SetBool("isCrouching", (movementState == MovementState.Crouching));
         animator.SetBool("isCrouchWalking", (movementState == MovementState.CrouchWalking));
+        animator.SetBool("isPistolAiming", (actionState == ActionState.Aiming));
     }
 
     private void MovementStateMachine()
@@ -321,7 +322,7 @@ public class Player : MonoBehaviour, IDamageable<float>
                     if (pickUpTarget)
                     {
                         navMeshAgent.ResetPath();
-                        if (gm.inspected.Contains(pickUpTarget.name))
+                        if (gameManager.inspected.Contains(pickUpTarget.name))
                             PickUp();
                         else
                             Inspect();
@@ -371,11 +372,10 @@ public class Player : MonoBehaviour, IDamageable<float>
 
     public void Inspect()
     {
-        fov.radius = 0;
-        if (pickUpTarget && gm.gameState != GameManager.GameState.Inspecting)
+        if (pickUpTarget && gameManager.gameState != GameManager.GameState.Inspecting)
         {
             fov.target = null;
-            gm.gameState = GameManager.GameState.Inspecting;
+            gameManager.gameState = GameManager.GameState.Inspecting;
             camController.depthOfField.gaussianStart.value = 15;
             camController.depthOfField.gaussianEnd.value = 15;
             camController.black.color = new Color(0, 0, 0, .33f);
@@ -391,7 +391,7 @@ public class Player : MonoBehaviour, IDamageable<float>
         if (pickUpTarget)
         {
             pickUpTarget.PickUp();
-            gm.inspected.Add(pickUpTarget.name);
+            gameManager.inspected.Add(pickUpTarget.name);
         }
         pickUpTarget = null;
         fov.target = null;
@@ -401,7 +401,7 @@ public class Player : MonoBehaviour, IDamageable<float>
         pickUpTimeElapsed = 0;
         CalculateFoodInInventory();
         actionState = ActionState.Idle;
-        gm.gameState = GameManager.GameState.Playing;
+        gameManager.gameState = GameManager.GameState.Playing;
     }
 
     private void LeaveBehind()
@@ -417,7 +417,7 @@ public class Player : MonoBehaviour, IDamageable<float>
         camController.depthOfField.gaussianEnd.value = 250;
         camController.black.color = new Color(0, 0, 0, 0);
         actionState = ActionState.Idle;
-        gm.gameState = GameManager.GameState.Playing;
+        gameManager.gameState = GameManager.GameState.Playing;
     }
 
     private void ChangeMeleeWeapon()
@@ -509,6 +509,7 @@ public class Player : MonoBehaviour, IDamageable<float>
         {
             if (rangedWeaponEquipped.inMagazine > 0)
             {
+                animator.SetTrigger("PistolFire");
                 roundChambered = false;
                 target.GetComponent<IDamageable<float>>().TakeDamage(rangedWeaponEquipped.rangedAttackDamage);
                 target.GetComponent<NavMeshAgent>().Move((target.transform.position - transform.position).normalized * rangedWeaponEquipped.rangedKnockback);
@@ -552,7 +553,7 @@ public class Player : MonoBehaviour, IDamageable<float>
 
     private void CaptureInput()
     {
-        switch (gm.gameState)
+        switch (gameManager.gameState)
         {
             case GameManager.GameState.Playing:
                 input = new Vector2(Input.GetAxis("Horizontal"), Input.GetAxis("Vertical"));

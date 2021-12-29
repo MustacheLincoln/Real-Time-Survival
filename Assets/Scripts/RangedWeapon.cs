@@ -115,17 +115,6 @@ public class RangedWeapon : Item
         SetMesh();
     }
 
-    private void SetMesh()
-    {
-        foreach (Transform child in transform)
-        {
-            if (child.name == name)
-                child.gameObject.SetActive(true);
-            else
-                child.gameObject.SetActive(false);
-        }
-    }
-
     public override void PickUp()
     {
         if (!player.rangedWeapons.Contains(this))

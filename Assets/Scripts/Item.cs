@@ -11,6 +11,17 @@ public abstract class Item : MonoBehaviour
 
     public abstract void Save();
 
+    public void SetMesh()
+    {
+        foreach (Transform child in transform)
+        {
+            if (child.name == name)
+                child.gameObject.SetActive(true);
+            else
+                child.gameObject.SetActive(false);
+        }
+    }
+
     public void Equip()
     {
         gameObject.SetActive(true);

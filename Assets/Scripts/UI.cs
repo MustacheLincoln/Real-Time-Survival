@@ -144,6 +144,9 @@ public class UI : MonoBehaviour
             else
                 targetLabel.text = null;
 
+            if (gameManager.gameState == GameManager.GameState.Inspecting)
+                targetLabel.text = null;
+
             if (player.actionState == Player.ActionState.Aiming)
             {
                 if (player.target)

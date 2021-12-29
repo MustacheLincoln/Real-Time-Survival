@@ -83,6 +83,7 @@ public class MeleeWeapon : Item
         maxDurability = 200;
         durability = maxDurability / 2 + Random.Range(0, maxDurability / 2);
         descriptiveText = "Damage: " + meleeAttackDamage + "\nSpeed: " + meleeAttackSpeed + "\nNoise: " + meleeAttackNoise + "\nRange: " + meleeAttackRange + "\nDurability: " + durability + "/" + maxDurability + "\nRT to swing";
+        SetMesh();
     }
 
     private void KnifeSetup()
@@ -96,6 +97,7 @@ public class MeleeWeapon : Item
         maxDurability = 100;
         durability = maxDurability / 2 + Random.Range(0, maxDurability / 2 + 1);
         descriptiveText = "Damage: " + meleeAttackDamage + "\nSpeed: " + meleeAttackSpeed + "\nNoise: " + meleeAttackNoise + "\nRange: " + meleeAttackRange + "\nDurability: " + durability + "/" + maxDurability + "\nRT to swing";
+        SetMesh();
     }
 
     public override void PickUp()

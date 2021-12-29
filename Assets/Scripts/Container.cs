@@ -36,15 +36,36 @@ public class Container : MonoBehaviour
                 timeElapsed = 0;
             }
         }
+        if (searched == true && contents.Count > 0)
+        {
+            Open();
+        }
     }
 
     public void Open()
     {
+        contents.Clear();
+        foreach (Item item in transform.GetComponentsInChildren<Item>())
+        {
+            item.gameObject.layer = 0;
+            contents.Add(item);
+        }
         searched = true;
         if (contents.Count > 0)
         {
             player.pickUpTarget = contents[0];
             player.Inspect();
+        }
+        else
+            name = "Empty " + name;
+    }
+
+    public void NextItem()
+    {
+        if (contents.Count > 0)
+        {
+            contents.Remove(contents[0]);
+            Open();
         }
     }
 }

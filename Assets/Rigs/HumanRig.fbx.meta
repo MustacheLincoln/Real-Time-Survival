@@ -33,6 +33,12 @@ ModelImporter:
   - first:
       74: 5363205338145803878
     second: Rig|PistolFire
+  - first:
+      74: 3359238742903820626
+    second: Rig|SideArmAim
+  - first:
+      74: -6060653954369696941
+    second: Rig|SideArmFire
   externalObjects: {}
   materials:
     materialImportMode: 2
@@ -265,8 +271,8 @@ ModelImporter:
       maskSource: {instanceID: 0}
       additiveReferencePoseFrame: 0
     - serializedVersion: 16
-      name: Rig|PistolAim
-      takeName: Rig|PistolAim
+      name: Rig|SideArmAim
+      takeName: Rig|SideArmAim
       internalID: 0
       firstFrame: 0
       lastFrame: 1
@@ -294,8 +300,8 @@ ModelImporter:
       maskSource: {instanceID: 0}
       additiveReferencePoseFrame: 0
     - serializedVersion: 16
-      name: Rig|PistolFire
-      takeName: Rig|PistolFire
+      name: Rig|SideArmFire
+      takeName: Rig|SideArmFire
       internalID: 0
       firstFrame: 0
       lastFrame: 3

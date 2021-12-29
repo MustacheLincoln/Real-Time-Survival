@@ -11,13 +11,14 @@ public class Player : MonoBehaviour, IDamageable<float>
     public static Player Instance { get; private set; }
     GameManager gameManager;
     NavMeshAgent navMeshAgent;
+    UI ui;
     public PlayerVitals vitals;
     public FieldOfView fov;
     Camera cam;
-    CameraController camController;
     Animator animator;
-    Vector3 pickUpPosition;
-    Quaternion pickUpRotation;
+    public Vector3 pickUpPosition;
+    public Quaternion pickUpRotation;
+    public Transform holdPoint;
 
     float pickUpTime = .25f;
     float pickUpTimeElapsed;
@@ -69,7 +70,7 @@ public class Player : MonoBehaviour, IDamageable<float>
     Vector3 velocity;
     float turnSpeed;
     Vector3 currentPos;
-    private bool isMoving = false;
+    public bool isMoving = false;
     Vector3 lastPos;
     float pulseTime = .5f;
 
@@ -118,7 +119,7 @@ public class Player : MonoBehaviour, IDamageable<float>
     private void Start()
     {
         gameManager = GameManager.Instance;
-        camController = CameraController.Instance;
+        ui = UI.Instance;
     }
 
     private void Update()
@@ -148,7 +149,7 @@ public class Player : MonoBehaviour, IDamageable<float>
         animator.SetBool("isRunning", (movementState == MovementState.Running));
         animator.SetBool("isCrouching", (movementState == MovementState.Crouching));
         animator.SetBool("isCrouchWalking", (movementState == MovementState.CrouchWalking));
-        animator.SetBool("isPistolAiming", (actionState == ActionState.Aiming));
+        animator.SetBool("isSideArmAiming", (actionState == ActionState.Aiming));
     }
 
     private void MovementStateMachine()
@@ -376,28 +377,24 @@ public class Player : MonoBehaviour, IDamageable<float>
         {
             fov.target = null;
             gameManager.gameState = GameManager.GameState.Inspecting;
-            camController.depthOfField.gaussianStart.value = 15;
-            camController.depthOfField.gaussianEnd.value = 15;
-            camController.black.color = new Color(0, 0, 0, .33f);
             pickUpPosition = pickUpTarget.transform.position;
             pickUpRotation = pickUpTarget.transform.rotation;
-            pickUpTarget.transform.position = camController.inspectPoint.transform.position;
-            pickUpTarget.transform.rotation = camController.inspectPoint.transform.rotation;
         }
     }
 
     private void PickUp()
     {
+        ui.inspectTarget = null;
         if (pickUpTarget)
         {
+            if (pickUpTarget.transform.parent)
+                if (pickUpTarget.transform.parent.gameObject.GetComponent<Container>())
+                    pickUpTarget.transform.parent.gameObject.GetComponent<Container>().NextItem();
             pickUpTarget.PickUp();
             gameManager.inspected.Add(pickUpTarget.name);
         }
         pickUpTarget = null;
         fov.target = null;
-        camController.depthOfField.gaussianStart.value = 150;
-        camController.depthOfField.gaussianEnd.value = 250;
-        camController.black.color = new Color(0, 0, 0, 0);
         pickUpTimeElapsed = 0;
         CalculateFoodInInventory();
         actionState = ActionState.Idle;
@@ -406,16 +403,13 @@ public class Player : MonoBehaviour, IDamageable<float>
 
     private void LeaveBehind()
     {
+        //Broken
         if (pickUpTarget)
-        {
-            pickUpTarget.transform.position = pickUpPosition;
-            pickUpTarget.transform.rotation = pickUpRotation;
-        }
+            if (pickUpTarget.transform.parent)
+                if (pickUpTarget.transform.parent.gameObject.GetComponent<Container>())
+                    pickUpTarget.transform.parent.gameObject.GetComponent<Container>().NextItem();
         pickUpTarget = null;
         pickUpTimeElapsed = 0;
-        camController.depthOfField.gaussianStart.value = 150;
-        camController.depthOfField.gaussianEnd.value = 250;
-        camController.black.color = new Color(0, 0, 0, 0);
         actionState = ActionState.Idle;
         gameManager.gameState = GameManager.GameState.Playing;
     }
@@ -509,7 +503,7 @@ public class Player : MonoBehaviour, IDamageable<float>
         {
             if (rangedWeaponEquipped.inMagazine > 0)
             {
-                animator.SetTrigger("PistolFire");
+                animator.SetTrigger("SideArmFire");
                 roundChambered = false;
                 target.GetComponent<IDamageable<float>>().TakeDamage(rangedWeaponEquipped.rangedAttackDamage);
                 target.GetComponent<NavMeshAgent>().Move((target.transform.position - transform.position).normalized * rangedWeaponEquipped.rangedKnockback);
@@ -596,6 +590,11 @@ public class Player : MonoBehaviour, IDamageable<float>
                     pickUpTarget = null;
                     intent = camForward * input.y + camRight * input.x;
                     transform.rotation = Quaternion.Lerp(transform.rotation, Quaternion.LookRotation(intent), turnSpeed * Time.deltaTime);
+                    if (actionState == ActionState.PickingUp)
+                    {
+                        actionState = ActionState.Idle;
+                        pickUpTarget = null;
+                    }
                 }
                 else
                 {
@@ -637,7 +636,9 @@ public class Player : MonoBehaviour, IDamageable<float>
                             if (navTarget == pickUpTarget.gameObject)
                                 actionState = ActionState.PickingUp;
                         if (navTarget.GetComponent<Container>())
-                            navTarget.GetComponent<Container>().Search();
+                            if (Input.GetButton("PickUp"))
+                                if (isMoving == false)
+                                    navTarget.GetComponent<Container>().Search();
                     }
                 break;
             case GameManager.GameState.Inspecting:

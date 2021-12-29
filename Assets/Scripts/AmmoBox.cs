@@ -40,6 +40,7 @@ public class AmmoBox : Item
     private void Load()
     {
         gameObject.SetActive(ES3.Load(goid + "activeSelf", true));
+        transform.parent = ES3.Load(goid + "parent", transform.parent);
         transform.position = ES3.Load(goid + "position", transform.position);
         transform.rotation = ES3.Load(goid + "rotation", transform.rotation);
     }
@@ -74,6 +75,8 @@ public class AmmoBox : Item
         player.pistolAmmo += pistolAmmo;
         player.rifleAmmo += rifleAmmo;
         gameObject.SetActive(false);
+        transform.parent = null;
         ES3.Save(goid + "activeSelf", gameObject.activeSelf);
+        ES3.Save(goid + "parent", transform.parent);
     }
 }

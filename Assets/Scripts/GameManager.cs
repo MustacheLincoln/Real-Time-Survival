@@ -27,7 +27,12 @@ public class GameManager : MonoBehaviour
     private void Update()
     {
         if (player)
+        {
             timeSurvived = player.vitals.timeSurvived;
+
+            if (player.isMoving)
+                gameState = GameManager.GameState.Playing;
+        }
     }
 
     private void OnApplicationQuit()

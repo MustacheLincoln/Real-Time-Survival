@@ -13,6 +13,8 @@ public class RangedWeapon : Item
     public bool fullAuto;
     public bool semiAuto;
     public bool boltAction;
+    public bool primary;
+    public bool sideArm;
     public int magazineSize;
     public int inMagazine;
     public float reloadTime;
@@ -57,6 +59,12 @@ public class RangedWeapon : Item
             gameObject.layer = 0;
             transform.position = player.transform.position;
             transform.parent = player.transform;
+            if (player.rangedWeaponEquipped == this)
+            {
+                transform.position = player.holdPoint.position;
+                transform.rotation = player.holdPoint.rotation;
+                transform.parent = player.holdPoint;
+            }
         }
         else
         {
@@ -88,6 +96,8 @@ public class RangedWeapon : Item
         fullAuto = false;
         semiAuto = true;
         boltAction = false;
+        primary = false;
+        sideArm = true;
         magazineSize = 10;
         inMagazine = 10;
         reloadTime = 1;
@@ -107,6 +117,8 @@ public class RangedWeapon : Item
         fullAuto = false;
         semiAuto = false;
         boltAction = true;
+        primary = true;
+        sideArm = false;
         magazineSize = 5;
         inMagazine = 5;
         reloadTime = 2;
@@ -122,8 +134,9 @@ public class RangedWeapon : Item
             player.rangedWeapons.Add(this);
             gameObject.layer = 0;
             Unequip();
-            transform.position = player.transform.position;
-            transform.parent = player.transform;
+            transform.position = player.holdPoint.position;
+            transform.rotation = player.holdPoint.rotation;
+            transform.parent = player.holdPoint;
             if (player.rangedWeaponEquipped == null)
             {
                 player.rangedWeaponEquipped = this;

@@ -33,6 +33,7 @@ public class UI : MonoBehaviour
     public Image eatingProgressRadial;
     public Image reloadProgressRadial;
     public Image aimProgressRadial;
+    public Image searchProgressRadial;
     public TMP_Text targetLabel;
 
     private void Awake() { Instance = this; }
@@ -159,6 +160,14 @@ public class UI : MonoBehaviour
                 targetLabel.transform.position = player.fov.target.transform.position;
                 if (player.fov.target.name == "Zombie")
                     targetLabel.text = null;
+                if (player.fov.target.gameObject.GetComponent<Container>())
+                {
+                    var container = player.fov.target.gameObject.GetComponent<Container>();
+                    searchProgressRadial.transform.position = player.fov.target.transform.position;
+                    searchProgressRadial.fillAmount = player.searchTimeElapsed / container.searchTime;
+                }
+                else
+                    searchProgressRadial.fillAmount = 0;
             }
             else
                 targetLabel.text = null;

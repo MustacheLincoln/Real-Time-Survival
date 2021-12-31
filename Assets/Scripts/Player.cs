@@ -81,6 +81,7 @@ public class Player : MonoBehaviour, IDamageable<float>
     public MovementState movementState;
     public enum ActionState { Idle, Reloading, Aiming, PickingUp, Eating }
     public ActionState actionState;
+    public float searchTimeElapsed;
 
     private void Awake() 
     { 
@@ -638,7 +639,7 @@ public class Player : MonoBehaviour, IDamageable<float>
                         if (navTarget.GetComponent<Container>())
                             if (Input.GetButton("PickUp"))
                                 if (isMoving == false)
-                                    navTarget.GetComponent<Container>().Search();
+                                    Search(navTarget.GetComponent<Container>());
                     }
                 break;
             case GameManager.GameState.Inspecting:
@@ -652,6 +653,23 @@ public class Player : MonoBehaviour, IDamageable<float>
                 }
                 break;
         }       
+    }
+
+    private void Search(Container container)
+    {
+        if (container.searched == false)
+        {
+            searchTimeElapsed += Time.deltaTime;
+            if (searchTimeElapsed >= container.searchTime)
+            {
+                container.Open();
+                searchTimeElapsed = 0;
+            }
+        }
+        if (container.searched == true && container.contents.Count > 0)
+        {
+            container.Open();
+        }
     }
 
     private void CalculateCamera()

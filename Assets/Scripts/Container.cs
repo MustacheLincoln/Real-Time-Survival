@@ -5,40 +5,38 @@ using UnityEngine;
 public class Container : MonoBehaviour
 {
     public string goid;
-    float searchTime;
+    public float searchTime = 3;
     public float timeElapsed;
     public List<Item> contents;
     public bool searched;
-    private GameManager gameManager;
     private Player player;
 
     private void Start()
     {
-        searchTime = 3;
-        searched = false;
-        gameManager = GameManager.Instance;
+        goid = GetInstanceID().ToString();
         player = Player.Instance;
         foreach (Item item in transform.GetComponentsInChildren<Item>())
         {
             item.gameObject.layer = 0;
             contents.Add(item);
         }
+        Load();
+        if (searched && contents.Count <= 0)
+            name = "Empty " + name;
     }
 
-    public void Search()
+    private void Load()
     {
-        if (searched == false)
+        searched = ES3.Load(goid + "searched", false);
+        contents = ES3.Load(goid + "contents", contents);
+    }
+
+    void Save()
+    {
+        if (player)
         {
-            timeElapsed += Time.deltaTime;
-            if (timeElapsed >= searchTime)
-            {
-                Open();
-                timeElapsed = 0;
-            }
-        }
-        if (searched == true && contents.Count > 0)
-        {
-            Open();
+            ES3.Save(goid + "searched", searched);
+            ES3.Save(goid + "contents", contents);
         }
     }
 
@@ -67,5 +65,10 @@ public class Container : MonoBehaviour
             contents.Remove(contents[0]);
             Open();
         }
+    }
+
+    private void OnApplicationQuit()
+    {
+        Save();
     }
 }

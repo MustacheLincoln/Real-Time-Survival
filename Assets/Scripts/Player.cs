@@ -101,7 +101,7 @@ public class Player : MonoBehaviour, IDamageable<float>
         navMeshAgent.Warp(ES3.Load("playerPosition", Vector3.zero));
         transform.rotation = ES3.Load("playerRotation", Quaternion.identity);
 
-        danger = ES3.Load("playerDanger", 10f);
+        danger = ES3.Load("playerDanger", 0f);
         rangedWeapons = ES3.Load("playerRangedWeapons", rangedWeapons);
         meleeWeapons = ES3.Load("playerMeleeWeapons", meleeWeapons);
         rangedWeaponEquipped = ES3.Load("playerRangedWeaponEquipped", rangedWeaponEquipped);
@@ -717,6 +717,12 @@ public class Player : MonoBehaviour, IDamageable<float>
 
     private void OnApplicationQuit()
     {
+        CheckDanger();
+        Save();
+    }
+
+    private void Save()
+    {
         ES3.Save("playerDanger", danger);
         ES3.Save("playerPosition", transform.position);
         ES3.Save("playerRotation", transform.rotation);
@@ -729,5 +735,16 @@ public class Player : MonoBehaviour, IDamageable<float>
         ES3.Save("playerMeleeWeaponEquipped", meleeWeaponEquipped);
         ES3.Save("playerItems", items);
         ES3.Save("playerItemSelected", itemSelected);
+    }
+
+    private void CheckDanger()
+    {
+        float dangerRadius = 5;
+        Collider[] hitZombies = Physics.OverlapSphere(transform.position, dangerRadius, 1 << LayerMask.NameToLayer("Zombie"));
+        if (hitZombies.Length > 0)
+        {
+            foreach (Collider zombie in hitZombies)
+                danger += 10;
+        }
     }
 }

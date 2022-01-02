@@ -26,6 +26,7 @@ public class Player : MonoBehaviour, IDamageable<float>
     GameObject navTarget;
     public GameObject target;
 
+    public float danger = 0;
     public float speed;
     float walkSpeed = 2;
     float runSpeed = 4;
@@ -100,6 +101,7 @@ public class Player : MonoBehaviour, IDamageable<float>
         navMeshAgent.Warp(ES3.Load("playerPosition", Vector3.zero));
         transform.rotation = ES3.Load("playerRotation", Quaternion.identity);
 
+        danger = ES3.Load("playerDanger", 10f);
         rangedWeapons = ES3.Load("playerRangedWeapons", rangedWeapons);
         meleeWeapons = ES3.Load("playerMeleeWeapons", meleeWeapons);
         rangedWeaponEquipped = ES3.Load("playerRangedWeaponEquipped", rangedWeaponEquipped);
@@ -715,6 +717,7 @@ public class Player : MonoBehaviour, IDamageable<float>
 
     private void OnApplicationQuit()
     {
+        ES3.Save("playerDanger", danger);
         ES3.Save("playerPosition", transform.position);
         ES3.Save("playerRotation", transform.rotation);
         ES3.Save("playerRangedWeapons", rangedWeapons);

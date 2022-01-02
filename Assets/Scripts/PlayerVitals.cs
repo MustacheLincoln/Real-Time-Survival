@@ -114,8 +114,23 @@ public class PlayerVitals : MonoBehaviour
                 timeSurvived += TimeSpan.FromSeconds(1);
                 gameManager.timeSurvived = timeSurvived;
                 timeOffline -= 1;
+                if (timeOffline % 60 == 0)
+                {
+                    float deathChanceHourly = UnityEngine.Random.Range(0, 100);
+                    print("Hourly death chance = " + deathChanceHourly);
+                    //Broken
+                    if (deathChanceHourly < player.danger)
+                    {
+                        player.Die();
+                    }
+                }
             }
-            
+        }
+        float deathChanceFinal = UnityEngine.Random.Range(0, 100);
+        print("Final death chance = " + deathChanceFinal);
+        if (deathChanceFinal < player.danger)
+        {
+            player.Die();
         }
     }
 

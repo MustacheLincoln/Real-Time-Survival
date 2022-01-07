@@ -11,7 +11,6 @@ public class Player : MonoBehaviour, IDamageable<float>
     public static Player Instance { get; private set; }
     GameManager gameManager;
     NavMeshAgent navMeshAgent;
-    UI ui;
     public PlayerVitals vitals;
     public FieldOfView fov;
     Camera cam;
@@ -122,7 +121,6 @@ public class Player : MonoBehaviour, IDamageable<float>
     private void Start()
     {
         gameManager = GameManager.Instance;
-        ui = UI.Instance;
     }
 
     private void Update()
@@ -387,7 +385,6 @@ public class Player : MonoBehaviour, IDamageable<float>
 
     private void PickUp()
     {
-        ui.inspectTarget = null;
         if (pickUpTarget)
         {
             if (pickUpTarget.transform.parent)

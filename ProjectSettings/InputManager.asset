@@ -246,7 +246,7 @@ InputManager:
     axis: 0
     joyNum: 0
   - serializedVersion: 3
-    m_Name: Eat
+    m_Name: Use
     descriptiveName: 
     descriptiveNegativeName: 
     negativeButton: 
@@ -358,7 +358,7 @@ InputManager:
     axis: 4
     joyNum: 0
   - serializedVersion: 3
-    m_Name: ChangeWeapon
+    m_Name: D Pad Vertical
     descriptiveName: 
     descriptiveNegativeName: 
     negativeButton: 

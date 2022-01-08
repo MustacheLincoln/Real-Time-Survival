@@ -45,7 +45,6 @@ public class Player : MonoBehaviour, IDamageable<float>
     public float aimTimeElapsed;
     public RangedWeapon rangedWeaponEquipped;
     bool roundChambered;
-    public bool weaponChanged = false;
     public int pistolAmmo;
     public int rifleAmmo;
 
@@ -198,18 +197,6 @@ public class Player : MonoBehaviour, IDamageable<float>
                 target = null;
                 if (Input.GetMouseButton(0) || Input.GetAxis("Fire") > 0)
                     MeleeAttack();
-                if (Input.GetAxis("ChangeWeapon") < 0)
-                {
-                    if (weaponChanged == false)
-                        ChangeMeleeWeapon();
-                }
-                else if (Input.GetAxis("ChangeWeapon") > 0)
-                {
-                    if (weaponChanged == false)
-                    ChangeRangedWeapon();
-                }
-                else
-                    weaponChanged = false;
                 if (Input.GetAxis("Inventory") < 0)
                 {
                     if (itemSelectionChanged == false)
@@ -222,10 +209,16 @@ public class Player : MonoBehaviour, IDamageable<float>
                 }
                 else
                     itemSelectionChanged = false;
-                if (Input.GetButtonDown("Eat"))
+                if (Input.GetButtonDown("Use"))
                     if (itemSelected)
-                        if (itemSelected.GetComponent<Food>() != null)
+                    {
+                        if (itemSelected.GetComponent<Food>())
                             actionState = ActionState.Eating;
+                        else if (itemSelected.GetComponent<MeleeWeapon>())
+                            itemSelected.GetComponent<MeleeWeapon>().EquipMelee();
+                        else if (itemSelected.GetComponent<RangedWeapon>())
+                            itemSelected.GetComponent<RangedWeapon>().EquipRanged();
+                    }
                 break;
             case ActionState.Reloading:
                 aimTimeElapsed = 0;
@@ -414,44 +407,21 @@ public class Player : MonoBehaviour, IDamageable<float>
         gameManager.gameState = GameManager.GameState.Playing;
     }
 
-    private void ChangeMeleeWeapon()
-    {
-        if (meleeWeaponEquipped)
-        {
-            int i = meleeWeapons.IndexOf(meleeWeaponEquipped);
-            if (i == meleeWeapons.Count - 1)
-                i = -1;
-            meleeWeaponEquipped.Unequip();
-            meleeWeaponEquipped = meleeWeapons[i + 1];
-            meleeWeaponEquipped.Equip();
-            weaponChanged = true;
-        }
-    }
-
-    private void ChangeRangedWeapon()
-    {
-        if (rangedWeaponEquipped)
-        {
-            int i = rangedWeapons.IndexOf(rangedWeaponEquipped);
-            if (i == rangedWeapons.Count - 1)
-                i = -1;
-            rangedWeaponEquipped.Unequip();
-            rangedWeaponEquipped = rangedWeapons[i + 1];
-            rangedWeaponEquipped.Equip();
-            weaponChanged = true;
-        }
-    }
-
     private void ChangeItemSelectedUp()
     {
         if (items.Count > 0)
         {
-            int i = items.IndexOf(itemSelected);
-            if (i == items.Count - 1)
-                i = -1;
-            itemSelected.Unequip();
-            itemSelected = items[i + 1];
-            itemSelected.Equip();
+            if (itemSelected == null)
+            {
+                itemSelected = items[0];
+            }
+            else
+            {
+                int i = items.IndexOf(itemSelected);
+                if (i == items.Count - 1)
+                    i = -1;
+                itemSelected = items[i + 1];
+            }
             itemSelectionChanged = true;
         }
     }
@@ -460,12 +430,17 @@ public class Player : MonoBehaviour, IDamageable<float>
     {
         if (items.Count > 0)
         {
-            int i = items.IndexOf(itemSelected);
-            if (i == 0)
-                i = items.Count;
-            itemSelected.Unequip();
-            itemSelected = items[i - 1];
-            itemSelected.Equip();
+            if (itemSelected == null)
+            {
+                itemSelected = items[items.Count - 1];
+            }
+            else
+            {
+                int i = items.IndexOf(itemSelected);
+                if (i == 0)
+                    i = items.Count;
+                itemSelected = items[i - 1];
+            }
             itemSelectionChanged = true;
         }
     }
@@ -688,11 +663,6 @@ public class Player : MonoBehaviour, IDamageable<float>
         Destroy(gameObject);
     }
 
-    public void Eat(float cals)
-    {
-        vitals.calories += cals;
-    }
-
     public void TakeDamage(float damage)
     {
         vitals.health -= damage;
@@ -705,10 +675,14 @@ public class Player : MonoBehaviour, IDamageable<float>
         millilitersInInventory = 0;
         if (items.Count > 0)
         {
-            foreach (Food food in items)
+            foreach (Item item in items)
             {
-                caloriesInInventory += food.calories;
-                millilitersInInventory += food.milliliters;
+                if (item.GetComponent<Food>())
+                {
+                    Food food = item.GetComponent<Food>();
+                    caloriesInInventory += food.calories;
+                    millilitersInInventory += food.milliliters;
+                }
             }
         }
     }

@@ -36,6 +36,8 @@ public class UI : MonoBehaviour
     public Image searchProgressRadial;
     public TMP_Text targetLabel;
 
+    public List<InventorySlot> inventorySlots;
+
     private void Awake() { Instance = this; }
 
     private void Start()
@@ -121,13 +123,17 @@ public class UI : MonoBehaviour
                 camController.black.color = new Color(0, 0, 0, 0);
             }
 
-            //if (player.items.Count > 0)
-            //{
-            //    foreach (Item item in player.items)
-            //    {
-            //        item.transform.parent = inventoryBar.transform;
-            //    }
-            //}
+            if (player.items.Count > 0)
+            {
+                for (int i = 0; i < player.items.Count; i++)
+                {
+                    inventorySlots[i].image.sprite = player.items[i].icon;
+                    if (player.items[i] == player.itemSelected)
+                        inventorySlots[i].selected.gameObject.SetActive(true);
+                    else
+                        inventorySlots[i].selected.gameObject.SetActive(false);
+                }
+            }
         }
 
     }

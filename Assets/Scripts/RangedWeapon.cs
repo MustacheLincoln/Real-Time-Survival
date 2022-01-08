@@ -64,21 +64,27 @@ public class RangedWeapon : Item
         }
     }
 
+    public void EquipRanged()
+    {
+        if (player.rangedWeaponEquipped)
+            player.rangedWeaponEquipped.Unequip();
+        player.rangedWeaponEquipped = this;
+        Equip();
+    }
+
     public override void PickUp()
     {
         if (!player.rangedWeapons.Contains(this))
         {
             player.rangedWeapons.Add(this);
             gameObject.layer = 0;
-            Unequip();
             transform.position = player.holdPoint.position;
             transform.rotation = player.holdPoint.rotation;
             transform.parent = player.holdPoint;
             if (player.rangedWeaponEquipped == null)
-            {
-                player.rangedWeaponEquipped = this;
-                Equip();
-            }
+                EquipRanged();
+            else
+                Unequip();
         }
     }
 }

@@ -54,20 +54,26 @@ public class MeleeWeapon : Item
         }
     }
 
+    public void EquipMelee()
+    {
+        if (player.meleeWeaponEquipped)
+            player.meleeWeaponEquipped.Unequip();
+        player.meleeWeaponEquipped = this;
+        Equip();
+    }
+
     public override void PickUp()
     {
         if (!player.meleeWeapons.Contains(this))
         {
             player.meleeWeapons.Add(this);
             gameObject.layer = 0;
-            Unequip();
             transform.position = player.transform.position;
             transform.parent = player.transform;
             if (player.meleeWeaponEquipped == null)
-            {
-                player.meleeWeaponEquipped = this;
-                Equip();
-            }
+                EquipMelee();
+            else
+                Unequip();
         }
     }
 }

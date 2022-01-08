@@ -8,7 +8,8 @@ public class IconGenerator : MonoBehaviour
     Camera cam;
     Item[] sceneObjects;
 
-    private void Start()
+    [ContextMenu("Screenshot")]
+    private void ProcessScreenshots()
     {
         sceneObjects = GetComponentsInChildren<Item>();
         foreach (Transform child in transform)
@@ -26,6 +27,25 @@ public class IconGenerator : MonoBehaviour
             TakeScreenshot($"{Application.dataPath}/Icons/{item.displayName}_Icon.png");
             yield return null;
             item.gameObject.SetActive(false);
+        }
+        StartCoroutine(SetIcon());
+    }
+
+    private IEnumerator SetIcon()
+    {
+        for (int i = 0; i < sceneObjects.Length; i++)
+        {
+            Item item = sceneObjects[i];
+            Sprite s = AssetDatabase.LoadAssetAtPath<Sprite>($"Assets/Icons/{item.displayName}_Icon.png");
+            if (s)
+            {
+                item.gameObject.SetActive(true);
+                item.icon = s;
+                EditorUtility.SetDirty(item);
+                PrefabUtility.ApplyPrefabInstance(PrefabUtility.GetOutermostPrefabInstanceRoot(item), InteractionMode.AutomatedAction);
+                AssetDatabase.SaveAssets();
+            }
+            yield return null;
         }
     }
 

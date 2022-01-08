@@ -15,12 +15,22 @@ public abstract class Item : MonoBehaviour
 
     public void Equip()
     {
+        Player player = Player.Instance;
         gameObject.SetActive(true);
+        if (player.itemSelected == this)
+            player.itemSelected = null;
+        player.items.Remove(this);
     }
 
     public void Unequip()
     {
+        Player player = Player.Instance;
         gameObject.SetActive(false);
+        if (player.itemSelected)
+            player.items.Insert(player.items.IndexOf(player.itemSelected), this);
+        else
+            player.items.Add(this);
+        player.itemSelected = this;
         Save();
     }
 

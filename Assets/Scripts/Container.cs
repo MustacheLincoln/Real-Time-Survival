@@ -15,9 +15,9 @@ public class Container : MonoBehaviour
     {
         goid = GetInstanceID().ToString();
         player = Player.Instance;
-        foreach (Item item in transform.GetComponentsInChildren<Item>())
+        foreach (Item item in transform.GetComponentsInChildren<Item>(true))
         {
-            item.gameObject.layer = 0;
+            item.gameObject.SetActive(false);
             contents.Add(item);
         }
         Load();
@@ -43,9 +43,9 @@ public class Container : MonoBehaviour
     public void Open()
     {
         contents.Clear();
-        foreach (Item item in transform.GetComponentsInChildren<Item>())
+        foreach (Item item in transform.GetComponentsInChildren<Item>(true))
         {
-            item.gameObject.layer = 0;
+            item.gameObject.SetActive(false);
             contents.Add(item);
         }
         searched = true;

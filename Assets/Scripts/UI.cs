@@ -101,11 +101,6 @@ public class UI : MonoBehaviour
                     inspectImage.gameObject.SetActive(true);
                     inspectBackground.gameObject.SetActive(true);
                     inspectImage.sprite = player.pickUpTarget.icon;
-                    //camController.depthOfField.gaussianStart.value = 15;
-                    //camController.depthOfField.gaussianEnd.value = 15;
-                    //camController.black.color = new Color(0, 0, 0, .33f);
-                    //inspectTarget.transform.position = camController.inspectPoint.transform.position;
-                    //inspectTarget.transform.rotation = camController.inspectPoint.transform.rotation;
                 }
             }
             else
@@ -115,9 +110,14 @@ public class UI : MonoBehaviour
                 inspectImage.sprite = null;
                 inspectImage.gameObject.SetActive(false);
                 inspectBackground.gameObject.SetActive(false);
-                //camController.depthOfField.gaussianStart.value = 150;
-                //camController.depthOfField.gaussianEnd.value = 225;
-                //camController.black.color = new Color(0, 0, 0, 0);
+            }
+
+            for (int i = 0; i < inventorySlots.Count; i++)
+            {
+                inventorySlots[i].gameObject.SetActive(true);
+                inventorySlots[i].selected.gameObject.SetActive(false);
+                if (i > player.inventorySize - 1)
+                    inventorySlots[i].gameObject.SetActive(false);
             }
 
             if (player.items.Count > 0)

@@ -38,7 +38,8 @@ public class Player : MonoBehaviour, IDamageable<float>
     float walkRadius = 3;
     float runRadius = 6;
     float crouchRadius = 1;
-    float noiseSphereRadius;
+    float noiseSphereRadius = 1;
+    public int inventorySize = 4;
 
     float rangedAttackCooldown;
     public float reloadTimeElapsed;
@@ -109,6 +110,7 @@ public class Player : MonoBehaviour, IDamageable<float>
         meleeWeaponEquipped = ES3.Load("playerMeleeWeaponEquipped", meleeWeaponEquipped);
         items = ES3.Load("playerItems", items);
         itemSelected = ES3.Load("playerItemSelected", itemSelected);
+        inventorySize = ES3.Load("playerInventorySize", inventorySize);
 
         currentPos = transform.position;
         lastPos = currentPos;
@@ -120,6 +122,11 @@ public class Player : MonoBehaviour, IDamageable<float>
     private void Start()
     {
         gameManager = GameManager.Instance;
+
+        if (rangedWeaponEquipped)
+            rangedWeaponEquipped.EquipRanged();
+        if (meleeWeaponEquipped)
+            meleeWeaponEquipped.EquipMelee();
     }
 
     private void Update()
@@ -707,6 +714,7 @@ public class Player : MonoBehaviour, IDamageable<float>
         ES3.Save("playerMeleeWeaponEquipped", meleeWeaponEquipped);
         ES3.Save("playerItems", items);
         ES3.Save("playerItemSelected", itemSelected);
+        ES3.Save("playerInventorySize", inventorySize);
     }
 
     private void CheckDanger()

@@ -572,14 +572,17 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   vitals: {fileID: 0}
   fov: {fileID: 0}
+  pickUpPosition: {x: 0, y: 0, z: 0}
+  pickUpRotation: {x: 0, y: 0, z: 0, w: 0}
   holdPoint: {fileID: 6997815147874242607}
   pickUpTarget: {fileID: 0}
   target: {fileID: 0}
+  danger: 0
   speed: 0
+  inventorySize: 4
   reloadTimeElapsed: 0
   aimTimeElapsed: 0
   rangedWeaponEquipped: {fileID: 0}
-  weaponChanged: 0
   pistolAmmo: 0
   rifleAmmo: 0
   meleeWeaponEquipped: {fileID: 0}
@@ -591,8 +594,10 @@ MonoBehaviour:
   eatingTimeElapsed: 0
   caloriesInInventory: 0
   millilitersInInventory: 0
+  isMoving: 0
   movementState: 0
   actionState: 0
+  searchTimeElapsed: 0
 --- !u!195 &3674398203523470647
 NavMeshAgent:
   m_ObjectHideFlags: 0

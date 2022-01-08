@@ -9,80 +9,32 @@ public class Food : Item
     public float milliliters;
     public float eatingTime;
 
-    public enum Type { Beans, Soda, Random }
-    public Type type = Type.Random;
-
     private void Start()
     {
         name = displayName;
         goid = GetInstanceID().ToString();
         player = Player.Instance;
-        type = ES3.Load(goid + "type", type);
-        Initialize();
+        descriptiveText = "Calories: " + calories + "\nmL: " + milliliters + "\nTime to eat: " + eatingTime;
         Load();
-    }
-
-    private void Initialize()
-    {
-        switch (type)
-        {
-            case Type.Random:
-                int rand = Random.Range(0, (int)Type.Random);
-                type = (Type)rand;
-                Initialize();
-                break;
-            case Type.Beans:
-                BeansSetup();
-                break;
-            case Type.Soda:
-                SodaSetup();
-                break;
-        }
     }
 
     private void Load()
     {
         gameObject.SetActive(ES3.Load(goid + "activeSelf", true));
-        if (player.items.Contains(this))
-        {
-            gameObject.layer = 0;
-            transform.position = player.transform.position;
-            transform.parent = player.transform;
-        }
-        else
-        {
-            transform.position = ES3.Load(goid + "position", transform.position);
-            transform.rotation = ES3.Load(goid + "rotation", transform.rotation);
-        }
+        transform.parent = ES3.Load(goid + "parent", transform.parent);
+        transform.localPosition = ES3.Load(goid + "position", transform.localPosition);
+        transform.localRotation = ES3.Load(goid + "rotation", transform.localRotation);
     }
 
     public override void Save()
     {
         if (player)
         {
-            ES3.Save(goid + "type", type);
             ES3.Save(goid + "activeSelf", gameObject.activeSelf);
-            ES3.Save(goid + "position", transform.position);
-            ES3.Save(goid + "rotation", transform.rotation);
+            ES3.Save(goid + "parent", transform.parent);
+            ES3.Save(goid + "position", transform.localPosition);
+            ES3.Save(goid + "rotation", transform.localRotation);
         }
-    }
-
-    private void BeansSetup()
-    {
-        name = "Beans";
-        calories = 350;
-        milliliters = 150f;
-        eatingTime = 2;
-        descriptiveText = "Calories: " + calories + "\nmL: " + milliliters + "\nTime to eat: " + eatingTime;
-    }
-
-    private void SodaSetup()
-    {
-        name = "Soda";
-        calories = 150;
-        milliliters = 350;
-        eatingTime = 1;
-        descriptiveText = "Calories: " + calories + "\nmL: " + milliliters + "\nTime to drink: " + eatingTime;
     }
 
     public void Eat()
@@ -91,6 +43,8 @@ public class Food : Item
         player.vitals.milliliters += milliliters;
         gameObject.SetActive(false);
         transform.parent = null;
+        if (player.items.Contains(this))
+            player.items.Remove(this);
         Save();
     }
 
@@ -98,7 +52,6 @@ public class Food : Item
     {
         if (!player.items.Contains(this))
         {
-            gameObject.layer = 0;
             transform.position = player.transform.position;
             transform.parent = player.transform;
             AddToInventory();

@@ -33,24 +33,9 @@ public class RangedWeapon : Item
     {
         inMagazine = ES3.Load(goid + "inMagazine", inMagazine);
         gameObject.SetActive(ES3.Load(goid + "activeSelf", true));
-        if (player)
-            if (player.rangedWeapons.Contains(this))
-            {
-                gameObject.layer = 0;
-                transform.position = player.transform.position;
-                transform.parent = player.transform;
-                if (player.rangedWeaponEquipped == this)
-                {
-                    transform.position = player.holdPoint.position;
-                    transform.rotation = player.holdPoint.rotation;
-                    transform.parent = player.holdPoint;
-                }
-            }
-            else
-            {
-                transform.position = ES3.Load(goid + "position", transform.position);
-                transform.rotation = ES3.Load(goid + "rotation", transform.rotation);
-            }
+        transform.parent = ES3.Load(goid + "parent", transform.parent);
+        transform.localPosition = ES3.Load(goid + "position", transform.localPosition);
+        transform.localRotation = ES3.Load(goid + "rotation", transform.localRotation);
     }
 
     public override void Save()
@@ -58,16 +43,19 @@ public class RangedWeapon : Item
         if (player)
         {
             ES3.Save(goid + "activeSelf", gameObject.activeSelf);
-            ES3.Save(goid + "position", transform.position);
-            ES3.Save(goid + "rotation", transform.rotation);
+            ES3.Save(goid + "position", transform.localPosition);
+            ES3.Save(goid + "rotation", transform.localRotation);
             ES3.Save(goid + "inMagazine", inMagazine);
+            ES3.Save(goid + "parent", transform.parent);
         }
     }
 
     public void EquipRanged()
     {
+        Player player = Player.Instance;
         if (player.rangedWeaponEquipped)
-            player.rangedWeaponEquipped.Unequip();
+            if (player.rangedWeaponEquipped != this)
+                player.rangedWeaponEquipped.Unequip();
         player.rangedWeaponEquipped = this;
         Equip();
     }
@@ -77,7 +65,6 @@ public class RangedWeapon : Item
         if (!player.rangedWeapons.Contains(this))
         {
             player.rangedWeapons.Add(this);
-            gameObject.layer = 0;
             transform.position = player.holdPoint.position;
             transform.rotation = player.holdPoint.rotation;
             transform.parent = player.holdPoint;

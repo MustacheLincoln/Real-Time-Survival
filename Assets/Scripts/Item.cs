@@ -4,23 +4,14 @@ using UnityEngine;
 
 public abstract class Item : MonoBehaviour
 {
+    public string displayName;
     public string goid;
     public string descriptiveText;
+    public Sprite icon;
 
     public abstract void PickUp();
 
     public abstract void Save();
-
-    public void SetMesh()
-    {
-        foreach (Transform child in transform)
-        {
-            if (child.name == name)
-                child.gameObject.SetActive(true);
-            else
-                child.gameObject.SetActive(false);
-        }
-    }
 
     public void Equip()
     {

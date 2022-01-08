@@ -14,6 +14,7 @@ public class Food : Item
 
     private void Start()
     {
+        name = displayName;
         goid = GetInstanceID().ToString();
         player = Player.Instance;
         type = ES3.Load(goid + "type", type);

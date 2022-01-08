@@ -589,7 +589,8 @@ public class Player : MonoBehaviour, IDamageable<float>
                     navMeshAgent.ResetPath();
                     pickUpTarget = null;
                     intent = camForward * input.y + camRight * input.x;
-                    transform.rotation = Quaternion.Lerp(transform.rotation, Quaternion.LookRotation(intent), turnSpeed * Time.deltaTime);
+                    if (intent != Vector3.zero)
+                        transform.rotation = Quaternion.Lerp(transform.rotation, Quaternion.LookRotation(intent), turnSpeed * Time.deltaTime);
                     if (actionState == ActionState.PickingUp)
                     {
                         actionState = ActionState.Idle;

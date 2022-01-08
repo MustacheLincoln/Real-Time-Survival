@@ -5,38 +5,18 @@ using UnityEngine;
 public class AmmoBox : Item
 {
     Player player;
-    int rifleAmmo;
-    int pistolAmmo;
-
-    public enum Type { Pistol, Rifle, Random }
-    public Type type = Type.Random;
+    public int rifleAmmo;
+    public int pistolAmmo;
 
     private void Start()
     {
+        name = displayName;
         goid = GetInstanceID().ToString();
         player = Player.Instance;
-        type = ES3.Load(goid + "type", type);
-        Initialize();
+        descriptiveText = rifleAmmo + " rifle cartridges";
         Load();
     }
 
-    private void Initialize()
-    {
-        switch (type)
-        {
-            case Type.Random:
-                int rand = Random.Range(0, (int)Type.Random);
-                type = (Type)rand;
-                Initialize();
-                break;
-            case Type.Pistol:
-                PistolSetup();
-                break;
-            case Type.Rifle:
-                RifleSetup();
-                break;
-        }
-    }
     private void Load()
     {
         gameObject.SetActive(ES3.Load(goid + "activeSelf", true));
@@ -49,25 +29,10 @@ public class AmmoBox : Item
     {
         if (player)
         {
-            ES3.Save(goid + "type", type);
             ES3.Save(goid + "activeSelf", gameObject.activeSelf);
             ES3.Save(goid + "position", transform.position);
             ES3.Save(goid + "rotation", transform.rotation);
         }
-    }
-
-    private void PistolSetup()
-    {
-        name = "Pistol Ammo";
-        pistolAmmo = 20;
-        descriptiveText = pistolAmmo + " pistol cartridges";
-    }
-
-    private void RifleSetup()
-    {
-        name = "Rifle Ammo";
-        rifleAmmo = 10;
-        descriptiveText = rifleAmmo + " rifle cartridges";
     }
 
     public override void PickUp()

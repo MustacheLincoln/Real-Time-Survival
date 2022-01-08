@@ -13,7 +13,7 @@ public class AmmoBox : Item
         name = displayName;
         goid = GetInstanceID().ToString();
         player = Player.Instance;
-        descriptiveText = rifleAmmo + " rifle cartridges";
+        descriptiveText = rifleAmmo + pistolAmmo + " cartridges";
         Load();
     }
 

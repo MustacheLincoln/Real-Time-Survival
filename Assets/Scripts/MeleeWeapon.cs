@@ -73,7 +73,7 @@ public class MeleeWeapon : Item
             if (player.meleeWeaponEquipped == null)
                 EquipMelee();
             else
-                Unequip();
+                AddToInventory();
         }
     }
 }

@@ -10,9 +10,6 @@ public class UI : MonoBehaviour
     public static UI Instance { get; private set; }
     Player player;
     GameManager gameManager;
-    CameraController camController;
-
-    public Item inspectTarget;
 
     public TMP_Text timeSurvivedLabel;
     public TMP_Text realTimeLabel;
@@ -37,6 +34,8 @@ public class UI : MonoBehaviour
     public TMP_Text targetLabel;
 
     public List<InventorySlot> inventorySlots;
+    public Image inspectImage;
+    public Image inspectBackground;
 
     private void Awake() { Instance = this; }
 
@@ -44,7 +43,6 @@ public class UI : MonoBehaviour
     {
         player = Player.Instance;
         gameManager = GameManager.Instance;
-        camController = CameraController.Instance;
     }
 
     private void Update()
@@ -98,29 +96,28 @@ public class UI : MonoBehaviour
             {
                 if (player.pickUpTarget)
                 {
-                    inspectTarget = player.pickUpTarget;
-                    inspectLabel.text = inspectTarget.name;
-                    inspectText.text = inspectTarget.descriptiveText;
-                    camController.depthOfField.gaussianStart.value = 15;
-                    camController.depthOfField.gaussianEnd.value = 15;
-                    camController.black.color = new Color(0, 0, 0, .33f);
-                    inspectTarget.transform.position = camController.inspectPoint.transform.position;
-                    inspectTarget.transform.rotation = camController.inspectPoint.transform.rotation;
+                    inspectLabel.text = player.pickUpTarget.name;
+                    inspectText.text = player.pickUpTarget.descriptiveText;
+                    inspectImage.gameObject.SetActive(true);
+                    inspectBackground.gameObject.SetActive(true);
+                    inspectImage.sprite = player.pickUpTarget.icon;
+                    //camController.depthOfField.gaussianStart.value = 15;
+                    //camController.depthOfField.gaussianEnd.value = 15;
+                    //camController.black.color = new Color(0, 0, 0, .33f);
+                    //inspectTarget.transform.position = camController.inspectPoint.transform.position;
+                    //inspectTarget.transform.rotation = camController.inspectPoint.transform.rotation;
                 }
             }
             else
             {
-                if (inspectTarget)
-                {
-                    inspectTarget.transform.position = player.pickUpPosition;
-                    inspectTarget.transform.rotation = player.pickUpRotation;
-                }
-                inspectTarget = null;
                 inspectLabel.text = null;
                 inspectText.text = null;
-                camController.depthOfField.gaussianStart.value = 150;
-                camController.depthOfField.gaussianEnd.value = 225;
-                camController.black.color = new Color(0, 0, 0, 0);
+                inspectImage.sprite = null;
+                inspectImage.gameObject.SetActive(false);
+                inspectBackground.gameObject.SetActive(false);
+                //camController.depthOfField.gaussianStart.value = 150;
+                //camController.depthOfField.gaussianEnd.value = 225;
+                //camController.black.color = new Color(0, 0, 0, 0);
             }
 
             if (player.items.Count > 0)

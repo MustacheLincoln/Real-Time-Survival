@@ -34,6 +34,16 @@ public abstract class Item : MonoBehaviour
         Save();
     }
 
+    public void AddToInventory()
+    {
+        Player player = Player.Instance;
+        gameObject.SetActive(false);
+        player.items.Add(this);
+        if (player.itemSelected == null)
+            player.itemSelected = this;
+        Save();
+    }
+
     private void OnApplicationQuit()
     {
         Save();

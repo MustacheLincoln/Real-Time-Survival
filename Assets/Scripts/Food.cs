@@ -98,16 +98,10 @@ public class Food : Item
     {
         if (!player.items.Contains(this))
         {
-            player.items.Add(this);
             gameObject.layer = 0;
-            Unequip();
             transform.position = player.transform.position;
             transform.parent = player.transform;
-            if (player.itemSelected == null)
-            {
-                player.itemSelected = this;
-                Equip();
-            }
+            AddToInventory();
         }
     }
 }

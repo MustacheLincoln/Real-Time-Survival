@@ -84,7 +84,7 @@ public class RangedWeapon : Item
             if (player.rangedWeaponEquipped == null)
                 EquipRanged();
             else
-                Unequip();
+                AddToInventory();
         }
     }
 }

@@ -157,6 +157,26 @@ public class Player : MonoBehaviour, IDamageable<float>
         animator.SetBool("isCrouching", (movementState == MovementState.Crouching));
         animator.SetBool("isCrouchWalking", (movementState == MovementState.CrouchWalking));
         animator.SetBool("isSideArmAiming", (actionState == ActionState.Aiming));
+        switch (movementState)
+        {
+            case MovementState.Idle:
+                animator.speed = 1;
+                break;
+            case MovementState.Crouching:
+                animator.speed = 1;
+                break;
+            case MovementState.Walking:
+                animator.speed = input.magnitude;
+                break;
+            case MovementState.Running:
+                animator.speed = input.magnitude;
+                break;
+            case MovementState.CrouchWalking:
+                animator.speed = input.magnitude;
+                break;
+        }
+        if (input.magnitude == 0)
+            animator.speed = 1;
     }
 
     private void MovementStateMachine()
@@ -202,14 +222,14 @@ public class Player : MonoBehaviour, IDamageable<float>
                 fov.angle = fovAngle;
                 fov.targetMask = LayerMask.GetMask("Interactable");
                 target = null;
-                if (Input.GetMouseButton(0) || Input.GetAxis("Fire") > 0)
+                if (Input.GetMouseButton(0) || Input.GetAxis("Fire") > 0 || Input.GetKey(KeyCode.Tab))
                     MeleeAttack();
-                if (Input.GetAxis("Inventory") < 0)
+                if (Input.GetAxis("InventoryAxis") < 0)
                 {
                     if (itemSelectionChanged == false)
                         ChangeItemSelectedDown();
                 }
-                else if (Input.GetAxis("Inventory") > 0)
+                else if (Input.GetAxis("InventoryAxis") > 0 || Input.GetKeyDown(KeyCode.BackQuote))
                 {
                     if (itemSelectionChanged == false)
                         ChangeItemSelectedUp();
@@ -291,7 +311,7 @@ public class Player : MonoBehaviour, IDamageable<float>
                 else
                 {
                     aimTimeElapsed = 0;
-                    if (Input.GetMouseButton(0) || Input.GetAxis("Fire") > 0)
+                    if (Input.GetMouseButton(0) || Input.GetAxis("Fire") > 0 || Input.GetKey(KeyCode.Tab))
                         if (rangedWeaponEquipped.name == "Pistol" && pistolAmmo > 0)
                             actionState = ActionState.Reloading;
                         else if (rangedWeaponEquipped.name == "Rifle" && rifleAmmo > 0)
@@ -354,15 +374,7 @@ public class Player : MonoBehaviour, IDamageable<float>
                     if (itemSelected)
                     {
                         itemSelected.GetComponent<Food>().Eat();
-                        int index = items.IndexOf(itemSelected);
-                        items.Remove(itemSelected);
-                        if (items.Count > 0)
-                        {
-                            itemSelected = items[0];
-                            itemSelected.Equip();
-                        }
-                        if (items.Count <= 0)
-                            itemSelected = null;
+                        itemSelected = null;
                     }
                     CalculateFoodInInventory();
                     eatingTimeElapsed = 0;

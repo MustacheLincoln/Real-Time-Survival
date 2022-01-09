@@ -114,21 +114,22 @@ public class UI : MonoBehaviour
 
             for (int i = 0; i < inventorySlots.Count; i++)
             {
-                inventorySlots[i].gameObject.SetActive(true);
                 inventorySlots[i].selected.gameObject.SetActive(false);
                 if (i > player.inventorySize - 1)
                     inventorySlots[i].gameObject.SetActive(false);
-            }
-
-            if (player.items.Count > 0)
-            {
-                for (int i = 0; i < player.items.Count; i++)
+                else
                 {
-                    inventorySlots[i].image.sprite = player.items[i].icon;
-                    if (player.items[i] == player.itemSelected)
-                        inventorySlots[i].selected.gameObject.SetActive(true);
+                    inventorySlots[i].gameObject.SetActive(true);
+                    if (i < player.items.Count)
+                    {
+                        inventorySlots[i].image.sprite = player.items[i].icon;
+                        if (player.items[i] == player.itemSelected)
+                            inventorySlots[i].selected.gameObject.SetActive(true);
+                        else
+                            inventorySlots[i].selected.gameObject.SetActive(false);
+                    }
                     else
-                        inventorySlots[i].selected.gameObject.SetActive(false);
+                        inventorySlots[i].image.sprite = null;
                 }
             }
         }

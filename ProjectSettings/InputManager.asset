@@ -358,7 +358,7 @@ InputManager:
     axis: 4
     joyNum: 0
   - serializedVersion: 3
-    m_Name: D Pad Vertical
+    m_Name: DPadVertical
     descriptiveName: 
     descriptiveNegativeName: 
     negativeButton: 
@@ -374,7 +374,7 @@ InputManager:
     axis: 6
     joyNum: 0
   - serializedVersion: 3
-    m_Name: Inventory
+    m_Name: InventoryAxis
     descriptiveName: 
     descriptiveNegativeName: 
     negativeButton: 
@@ -383,7 +383,7 @@ InputManager:
     altPositiveButton: 
     gravity: 0
     dead: 0.19
-    sensitivity: 1
+    sensitivity: 0
     snap: 0
     invert: 0
     type: 2

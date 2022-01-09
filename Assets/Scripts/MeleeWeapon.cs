@@ -47,7 +47,7 @@ public class MeleeWeapon : Item
 
     public void EquipMelee()
     {
-        Player player = Player.Instance;
+        player = Player.Instance;
         if (player.meleeWeaponEquipped)
             if (player.meleeWeaponEquipped != this)
                 player.meleeWeaponEquipped.Unequip();
@@ -57,6 +57,7 @@ public class MeleeWeapon : Item
 
     public override void PickUp()
     {
+        player = Player.Instance;
         if (!player.meleeWeapons.Contains(this))
         {
             player.meleeWeapons.Add(this);

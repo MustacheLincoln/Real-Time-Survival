@@ -52,7 +52,7 @@ public class RangedWeapon : Item
 
     public void EquipRanged()
     {
-        Player player = Player.Instance;
+        player = Player.Instance;
         if (player.rangedWeaponEquipped)
             if (player.rangedWeaponEquipped != this)
                 player.rangedWeaponEquipped.Unequip();
@@ -62,6 +62,7 @@ public class RangedWeapon : Item
 
     public override void PickUp()
     {
+        player = Player.Instance;
         if (!player.rangedWeapons.Contains(this))
         {
             player.rangedWeapons.Add(this);

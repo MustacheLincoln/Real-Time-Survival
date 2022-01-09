@@ -50,6 +50,7 @@ public class Food : Item
 
     public override void PickUp()
     {
+        player = Player.Instance;
         if (!player.items.Contains(this))
         {
             transform.position = player.transform.position;

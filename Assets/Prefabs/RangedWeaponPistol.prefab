@@ -70,8 +70,7 @@ MonoBehaviour:
   fullAuto: 0
   semiAuto: 1
   boltAction: 0
-  primary: 0
-  sideArm: 1
+  large: 0
   magazineSize: 10
   inMagazine: 10
   reloadTime: 1

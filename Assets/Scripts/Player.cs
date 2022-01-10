@@ -288,6 +288,8 @@ public class Player : MonoBehaviour, IDamageable<float>
                 break;
             case ActionState.Aiming:
                 DrawRangedWeapon();
+                if (rangedWeaponEquipped)
+                    fov.radius = rangedWeaponEquipped.rangedAttackRange;
                 movementState = MovementState.Holding;
                 pickUpTarget = null;
                 pickUpTimeElapsed = 0;
@@ -494,10 +496,20 @@ public class Player : MonoBehaviour, IDamageable<float>
         HolsterWeapon();
         if (rangedWeaponEquipped)
         {
-            fov.radius = rangedWeaponEquipped.rangedAttackRange;
             rangedWeaponEquipped.transform.position = rightHandHoldPoint.position;
             rangedWeaponEquipped.transform.rotation = rightHandHoldPoint.rotation;
             rangedWeaponEquipped.transform.parent = rightHandHoldPoint;
+        }
+    }
+
+    public void DrawMeleeWeapon()
+    {
+        HolsterWeapon();
+        if (meleeWeaponEquipped)
+        {
+            meleeWeaponEquipped.transform.position = rightHandHoldPoint.position;
+            meleeWeaponEquipped.transform.rotation = rightHandHoldPoint.rotation;
+            meleeWeaponEquipped.transform.parent = rightHandHoldPoint;
         }
     }
 
@@ -556,6 +568,7 @@ public class Player : MonoBehaviour, IDamageable<float>
     {
         if (meleeWeaponEquipped && meleeAttackCooldown <= 0)
         {
+            DrawMeleeWeapon();
             Collider[] hitZombies = Physics.OverlapSphere(transform.position + transform.forward, meleeWeaponEquipped.meleeAttackRange, 1 << LayerMask.NameToLayer("Zombie"));
             if (hitZombies.Length > 0)
             {
@@ -567,12 +580,7 @@ public class Player : MonoBehaviour, IDamageable<float>
                 if (meleeWeaponEquipped.durability > 0)
                     meleeWeaponEquipped.durability -= 1;
                 else
-                {
-                    meleeWeapons.Remove(meleeWeaponEquipped);
-                    if (meleeWeapons.Count > 0)
-                        meleeWeaponEquipped = meleeWeapons[0];
-                    Destroy(meleeWeaponEquipped);
-                }
+                    meleeWeaponEquipped.Break();
             }
             EmitNoiseUnique(meleeWeaponEquipped.meleeAttackNoise);
             meleeAttackCooldown = meleeWeaponEquipped.meleeAttackSpeed;

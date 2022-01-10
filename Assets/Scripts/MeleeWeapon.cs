@@ -57,6 +57,16 @@ public class MeleeWeapon : Item
         player.HolsterWeapon();
     }
 
+    public void Break()
+    {
+        gameObject.SetActive(false);
+        transform.parent = null;
+        player.RemoveItem(this, 0);
+        player.meleeWeapons.Remove(this);
+        player.meleeWeaponEquipped = null;
+        Save();
+    }
+
     public override void PickUp()
     {
         player = Player.Instance;

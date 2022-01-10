@@ -18,9 +18,7 @@ public abstract class Item : MonoBehaviour
         Player player = Player.Instance;
         gameObject.SetActive(true);
         GetComponent<Collider>().enabled = false;
-        if (player.itemSelected == this)
-            player.itemSelected = null;
-        player.items.Remove(this);
+        player.RemoveItem(this, -1);
     }
 
     public void Unequip()
@@ -29,10 +27,15 @@ public abstract class Item : MonoBehaviour
         gameObject.SetActive(false);
         GetComponent<Collider>().enabled = true;
         if (player.itemSelected)
-            player.items.Insert(player.items.IndexOf(player.itemSelected), this);
+        {
+            int index = player.items.IndexOf(player.itemSelected);
+            if (index <= player.items.Count - 1)
+                player.items.Insert(index, this);
+            else
+                player.items.Insert(0, this);
+        }
         else
-            player.items.Add(this);
-        player.itemSelected = this;
+            player.items.Insert(0, this);
         Save();
     }
 

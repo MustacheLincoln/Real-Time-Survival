@@ -92,7 +92,7 @@ public class UI : MonoBehaviour
             else
                 itemLabel.text = "-----";
 
-            if (gameManager.gameState == GameManager.GameState.Inspecting)
+            if (player.actionState == Player.ActionState.Inspecting)
             {
                 if (player.pickUpTarget)
                 {
@@ -123,13 +123,17 @@ public class UI : MonoBehaviour
                     if (i < player.items.Count)
                     {
                         inventorySlots[i].image.sprite = player.items[i].icon;
+                        inventorySlots[i].image.gameObject.SetActive(true);
                         if (player.items[i] == player.itemSelected)
                             inventorySlots[i].selected.gameObject.SetActive(true);
                         else
                             inventorySlots[i].selected.gameObject.SetActive(false);
                     }
                     else
+                    {
                         inventorySlots[i].image.sprite = null;
+                        inventorySlots[i].image.gameObject.SetActive(false);
+                    }
                 }
             }
         }
@@ -154,6 +158,8 @@ public class UI : MonoBehaviour
                     var food = player.itemSelected as Food;
                     eatingProgressRadial.fillAmount = player.eatingTimeElapsed / food.eatingTime;
                 }
+                else
+                    eatingProgressRadial.fillAmount = 0;
             }     
             else
                 eatingProgressRadial.fillAmount = 0;
@@ -176,7 +182,7 @@ public class UI : MonoBehaviour
             else
                 targetLabel.text = null;
 
-            if (gameManager.gameState == GameManager.GameState.Inspecting)
+            if (player.actionState == Player.ActionState.Inspecting)
                 targetLabel.text = null;
 
             if (player.actionState == Player.ActionState.Aiming)

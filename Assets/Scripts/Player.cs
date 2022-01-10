@@ -17,7 +17,12 @@ public class Player : MonoBehaviour, IDamageable<float>
     Animator animator;
     public Vector3 pickUpPosition;
     public Quaternion pickUpRotation;
-    public Transform holdPoint;
+    public Transform rightHandHoldPoint;
+    public Transform leftHandHoldPoint;
+    public Transform largeMeleeWeaponAttachPoint;
+    public Transform largeRangedWeaponAttachPoint;
+    public Transform smallMeleeWeaponAttachPoint;
+    public Transform smallRangedWeaponAttachPoint;
 
     float pickUpTime = .25f;
     float pickUpTimeElapsed;
@@ -55,6 +60,7 @@ public class Player : MonoBehaviour, IDamageable<float>
     public List<RangedWeapon> rangedWeapons;
     public List<MeleeWeapon> meleeWeapons;
     public List<Item> items;
+    public List<String> inspected;
 
     public bool itemSelectionChanged;
 
@@ -79,7 +85,7 @@ public class Player : MonoBehaviour, IDamageable<float>
 
     public enum MovementState { Idle, Walking, Running, Crouching, CrouchWalking, Holding }
     public MovementState movementState;
-    public enum ActionState { Idle, Reloading, Aiming, PickingUp, Eating }
+    public enum ActionState { Idle, Reloading, Aiming, PickingUp, Eating, Inspecting }
     public ActionState actionState;
     public float searchTimeElapsed;
 
@@ -104,13 +110,18 @@ public class Player : MonoBehaviour, IDamageable<float>
         rangedWeapons = ES3.Load("playerRangedWeapons", rangedWeapons);
         meleeWeapons = ES3.Load("playerMeleeWeapons", meleeWeapons);
         rangedWeaponEquipped = ES3.Load("playerRangedWeaponEquipped", rangedWeaponEquipped);
+        if (rangedWeaponEquipped)
+            rangedWeaponEquipped.EquipRanged();
         roundChambered = ES3.Load("playerRoundChambered", roundChambered);
         pistolAmmo = ES3.Load("playerPistolAmmo", pistolAmmo);
         rifleAmmo = ES3.Load("playerRifleAmmo", rifleAmmo);
         meleeWeaponEquipped = ES3.Load("playerMeleeWeaponEquipped", meleeWeaponEquipped);
+        if (meleeWeaponEquipped)
+            meleeWeaponEquipped.EquipMelee();
         items = ES3.Load("playerItems", items);
         itemSelected = ES3.Load("playerItemSelected", itemSelected);
         inventorySize = ES3.Load("playerInventorySize", inventorySize);
+        inspected = ES3.Load("inspected", inspected);
 
         currentPos = transform.position;
         lastPos = currentPos;
@@ -122,11 +133,6 @@ public class Player : MonoBehaviour, IDamageable<float>
     private void Start()
     {
         gameManager = GameManager.Instance;
-
-        if (rangedWeaponEquipped)
-            rangedWeaponEquipped.EquipRanged();
-        if (meleeWeaponEquipped)
-            meleeWeaponEquipped.EquipMelee();
     }
 
     private void Update()
@@ -176,6 +182,8 @@ public class Player : MonoBehaviour, IDamageable<float>
                 break;
         }
         if (input.magnitude == 0)
+            animator.speed = 1;
+        if (actionState == ActionState.Aiming)
             animator.speed = 1;
     }
 
@@ -248,6 +256,7 @@ public class Player : MonoBehaviour, IDamageable<float>
                     }
                 break;
             case ActionState.Reloading:
+                DrawRangedWeapon();
                 aimTimeElapsed = 0;
                 target = null;
                 reloadTimeElapsed += Time.deltaTime;
@@ -278,11 +287,10 @@ public class Player : MonoBehaviour, IDamageable<float>
                 }
                 break;
             case ActionState.Aiming:
+                DrawRangedWeapon();
                 movementState = MovementState.Holding;
                 pickUpTarget = null;
                 pickUpTimeElapsed = 0;
-                if (rangedWeaponEquipped)
-                    fov.radius = rangedWeaponEquipped.rangedAttackRange;
                 fov.angle = 45;
                 if (Input.GetButtonDown("Reload"))
                     if (rangedWeaponEquipped.inMagazine < rangedWeaponEquipped.magazineSize)
@@ -335,6 +343,7 @@ public class Player : MonoBehaviour, IDamageable<float>
                 }
                 break;
             case ActionState.PickingUp:
+                HolsterWeapon();
                 aimTimeElapsed = 0;
                 reloadTimeElapsed = 0;
                 movementState = MovementState.Holding;
@@ -344,7 +353,7 @@ public class Player : MonoBehaviour, IDamageable<float>
                     if (pickUpTarget)
                     {
                         navMeshAgent.ResetPath();
-                        if (gameManager.inspected.Contains(pickUpTarget.name))
+                        if (inspected.Contains(pickUpTarget.name))
                             PickUp();
                         else
                             Inspect();
@@ -352,6 +361,7 @@ public class Player : MonoBehaviour, IDamageable<float>
                 }
                 break;
             case ActionState.Eating:
+                HolsterWeapon();
                 Food food = itemSelected as Food;
                 bool edible;
                 if (food.calories > food.milliliters)
@@ -369,27 +379,56 @@ public class Player : MonoBehaviour, IDamageable<float>
                 pickUpTarget = null;
                 target = null;
                 eatingTimeElapsed += Time.deltaTime;
+                if (isMoving)
+                {
+                    eatingTimeElapsed = 0;
+                    actionState = ActionState.Idle;
+                }
                 if (eatingTimeElapsed >= food.eatingTime)
                 {
                     if (itemSelected)
                     {
                         itemSelected.GetComponent<Food>().Eat();
-                        itemSelected = null;
                     }
                     CalculateFoodInInventory();
                     eatingTimeElapsed = 0;
                     actionState = ActionState.Idle;
                 }
                 break;
+            case ActionState.Inspecting:
+                HolsterWeapon();
+                if (isMoving)
+                {
+                    pickUpTarget = null;
+                    actionState = ActionState.Idle;
+                }
+                break;
         }
+    }
+
+    internal void RemoveItem(Item item, int indexModifier)
+    {
+        int index = items.IndexOf(item) + indexModifier;
+        if (items.Contains(item))
+            items.Remove(item);
+        if (items.Count > 0)
+        {
+            if (index < items.Count - 1)
+                itemSelected = items[Mathf.Max(0, index)];
+            else
+                itemSelected = items[items.Count - 1];
+        }
+        else
+            itemSelected = null;
+
     }
 
     public void Inspect()
     {
-        if (pickUpTarget && gameManager.gameState != GameManager.GameState.Inspecting)
+        if (pickUpTarget)
         {
             fov.target = null;
-            gameManager.gameState = GameManager.GameState.Inspecting;
+            actionState = ActionState.Inspecting;
             pickUpPosition = pickUpTarget.transform.position;
             pickUpRotation = pickUpTarget.transform.rotation;
         }
@@ -397,20 +436,69 @@ public class Player : MonoBehaviour, IDamageable<float>
 
     private void PickUp()
     {
-        if (pickUpTarget)
+        if (items.Count < inventorySize)
         {
-            if (pickUpTarget.transform.parent)
-                if (pickUpTarget.transform.parent.gameObject.GetComponent<Container>())
-                    pickUpTarget.transform.parent.gameObject.GetComponent<Container>().NextItem();
-            pickUpTarget.PickUp();
-            gameManager.inspected.Add(pickUpTarget.name);
+            if (pickUpTarget)
+            {
+                if (pickUpTarget.transform.parent)
+                    if (pickUpTarget.transform.parent.gameObject.GetComponent<Container>())
+                        pickUpTarget.transform.parent.gameObject.GetComponent<Container>().NextItem();
+                pickUpTarget.PickUp();
+                inspected.Add(pickUpTarget.name);
+            }
+            pickUpTarget = null;
+            fov.target = null;
+            pickUpTimeElapsed = 0;
+            CalculateFoodInInventory();
+            actionState = ActionState.Idle;
+            gameManager.gameState = GameManager.GameState.Playing;
         }
-        pickUpTarget = null;
-        fov.target = null;
-        pickUpTimeElapsed = 0;
-        CalculateFoodInInventory();
-        actionState = ActionState.Idle;
-        gameManager.gameState = GameManager.GameState.Playing;
+    }
+
+    public void HolsterWeapon()
+    {
+        if (rangedWeaponEquipped)
+        {
+            if (rangedWeaponEquipped.large)
+            {
+                rangedWeaponEquipped.transform.position = largeRangedWeaponAttachPoint.position;
+                rangedWeaponEquipped.transform.rotation = largeRangedWeaponAttachPoint.rotation;
+                rangedWeaponEquipped.transform.parent = largeRangedWeaponAttachPoint;
+            }
+            else
+            {
+                rangedWeaponEquipped.transform.position = smallRangedWeaponAttachPoint.position;
+                rangedWeaponEquipped.transform.rotation = smallRangedWeaponAttachPoint.rotation;
+                rangedWeaponEquipped.transform.parent = smallRangedWeaponAttachPoint;
+            }
+        }
+        if (meleeWeaponEquipped)
+        {
+            if (meleeWeaponEquipped.large)
+            {
+                meleeWeaponEquipped.transform.position = largeMeleeWeaponAttachPoint.position;
+                meleeWeaponEquipped.transform.rotation = largeMeleeWeaponAttachPoint.rotation;
+                meleeWeaponEquipped.transform.parent = largeMeleeWeaponAttachPoint;
+            }
+            else
+            {
+                meleeWeaponEquipped.transform.position = smallMeleeWeaponAttachPoint.position;
+                meleeWeaponEquipped.transform.rotation = smallMeleeWeaponAttachPoint.rotation;
+                meleeWeaponEquipped.transform.parent = smallMeleeWeaponAttachPoint;
+            }
+        }
+    }
+
+    public void DrawRangedWeapon()
+    {
+        HolsterWeapon();
+        if (rangedWeaponEquipped)
+        {
+            fov.radius = rangedWeaponEquipped.rangedAttackRange;
+            rangedWeaponEquipped.transform.position = rightHandHoldPoint.position;
+            rangedWeaponEquipped.transform.rotation = rightHandHoldPoint.rotation;
+            rangedWeaponEquipped.transform.parent = rightHandHoldPoint;
+        }
     }
 
     private void LeaveBehind()
@@ -544,6 +632,19 @@ public class Player : MonoBehaviour, IDamageable<float>
         switch (gameManager.gameState)
         {
             case GameManager.GameState.Playing:
+                if (actionState == ActionState.Inspecting)
+                {
+                    if (Input.GetButtonDown("Submit"))
+                    {
+                        PickUp();
+                    }
+                    else if (Input.GetButtonDown("Cancel"))
+                    {
+                        LeaveBehind();
+                    }
+                    break;
+                }
+
                 input = new Vector2(Input.GetAxis("Horizontal"), Input.GetAxis("Vertical"));
                 input = Vector2.ClampMagnitude(input, 1);
 
@@ -636,15 +737,7 @@ public class Player : MonoBehaviour, IDamageable<float>
                                     Search(navTarget.GetComponent<Container>());
                     }
                 break;
-            case GameManager.GameState.Inspecting:
-                if (Input.GetButtonDown("Submit"))
-                {
-                    PickUp();
-                }
-                else if (Input.GetButtonDown("Cancel")) 
-                {
-                    LeaveBehind();
-                }
+            case GameManager.GameState.Paused:
                 break;
         }       
     }
@@ -727,6 +820,7 @@ public class Player : MonoBehaviour, IDamageable<float>
         ES3.Save("playerItems", items);
         ES3.Save("playerItemSelected", itemSelected);
         ES3.Save("playerInventorySize", inventorySize);
+        ES3.Save("inspected", inspected);
     }
 
     private void CheckDanger()

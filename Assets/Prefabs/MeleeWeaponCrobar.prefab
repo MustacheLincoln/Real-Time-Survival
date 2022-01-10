@@ -69,6 +69,7 @@ MonoBehaviour:
   meleeKnockback: 0.5
   maxDurability: 200
   durability: 0
+  large: 1
 --- !u!1001 &2827152075306310547
 PrefabInstance:
   m_ObjectHideFlags: 0

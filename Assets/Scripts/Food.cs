@@ -43,8 +43,7 @@ public class Food : Item
         player.vitals.milliliters += milliliters;
         gameObject.SetActive(false);
         transform.parent = null;
-        if (player.items.Contains(this))
-            player.items.Remove(this);
+        player.RemoveItem(this, 0);
         Save();
     }
 

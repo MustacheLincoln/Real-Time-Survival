@@ -13,8 +13,7 @@ public class RangedWeapon : Item
     public bool fullAuto;
     public bool semiAuto;
     public bool boltAction;
-    public bool primary;
-    public bool sideArm;
+    public bool large;
     public int magazineSize;
     public int inMagazine;
     public float reloadTime;
@@ -56,8 +55,9 @@ public class RangedWeapon : Item
         if (player.rangedWeaponEquipped)
             if (player.rangedWeaponEquipped != this)
                 player.rangedWeaponEquipped.Unequip();
-        player.rangedWeaponEquipped = this;
         Equip();
+        player.rangedWeaponEquipped = this;
+        player.HolsterWeapon();
     }
 
     public override void PickUp()
@@ -66,9 +66,6 @@ public class RangedWeapon : Item
         if (!player.rangedWeapons.Contains(this))
         {
             player.rangedWeapons.Add(this);
-            transform.position = player.holdPoint.position;
-            transform.rotation = player.holdPoint.rotation;
-            transform.parent = player.holdPoint;
             if (player.rangedWeaponEquipped == null)
                 EquipRanged();
             else

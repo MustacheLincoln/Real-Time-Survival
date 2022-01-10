@@ -12,6 +12,7 @@ public class MeleeWeapon : Item
     public float meleeKnockback;
     public int maxDurability;
     public int durability;
+    public bool large;
 
     private void Start()
     {
@@ -51,8 +52,9 @@ public class MeleeWeapon : Item
         if (player.meleeWeaponEquipped)
             if (player.meleeWeaponEquipped != this)
                 player.meleeWeaponEquipped.Unequip();
-        player.meleeWeaponEquipped = this;
         Equip();
+        player.meleeWeaponEquipped = this;
+        player.HolsterWeapon();
     }
 
     public override void PickUp()
@@ -61,8 +63,6 @@ public class MeleeWeapon : Item
         if (!player.meleeWeapons.Contains(this))
         {
             player.meleeWeapons.Add(this);
-            transform.position = player.transform.position;
-            transform.parent = player.transform;
             if (player.meleeWeaponEquipped == null)
                 EquipMelee();
             else

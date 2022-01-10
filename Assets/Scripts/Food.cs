@@ -18,25 +18,6 @@ public class Food : Item
         Load();
     }
 
-    private void Load()
-    {
-        gameObject.SetActive(ES3.Load(goid + "activeSelf", true));
-        transform.parent = ES3.Load(goid + "parent", transform.parent);
-        transform.localPosition = ES3.Load(goid + "position", transform.localPosition);
-        transform.localRotation = ES3.Load(goid + "rotation", transform.localRotation);
-    }
-
-    public override void Save()
-    {
-        if (player)
-        {
-            ES3.Save(goid + "activeSelf", gameObject.activeSelf);
-            ES3.Save(goid + "parent", transform.parent);
-            ES3.Save(goid + "position", transform.localPosition);
-            ES3.Save(goid + "rotation", transform.localRotation);
-        }
-    }
-
     public void Eat()
     {
         player.vitals.calories += calories;
@@ -45,16 +26,5 @@ public class Food : Item
         transform.parent = null;
         player.RemoveItem(this, 0);
         Save();
-    }
-
-    public override void PickUp()
-    {
-        player = Player.Instance;
-        if (!player.items.Contains(this))
-        {
-            transform.position = player.transform.position;
-            transform.parent = player.transform;
-            AddToInventory();
-        }
     }
 }

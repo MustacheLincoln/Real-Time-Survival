@@ -15,14 +15,14 @@ public class Player : MonoBehaviour, IDamageable<float>
     public FieldOfView fov;
     Camera cam;
     Animator animator;
-    public Vector3 pickUpPosition;
-    public Quaternion pickUpRotation;
+    public Transform backpackAttachPoint;
     public Transform rightHandHoldPoint;
     public Transform leftHandHoldPoint;
     public Transform largeMeleeWeaponAttachPoint;
     public Transform largeRangedWeaponAttachPoint;
     public Transform smallMeleeWeaponAttachPoint;
     public Transform smallRangedWeaponAttachPoint;
+    public Backpack backpackEquipped;
 
     float pickUpTime = .25f;
     float pickUpTimeElapsed;
@@ -57,8 +57,6 @@ public class Player : MonoBehaviour, IDamageable<float>
     float meleeAttackCooldown;
     public MeleeWeapon meleeWeaponEquipped;
 
-    public List<RangedWeapon> rangedWeapons;
-    public List<MeleeWeapon> meleeWeapons;
     public List<Item> items;
     public List<String> inspected;
 
@@ -107,20 +105,14 @@ public class Player : MonoBehaviour, IDamageable<float>
         transform.rotation = ES3.Load("playerRotation", Quaternion.identity);
 
         danger = ES3.Load("playerDanger", 0f);
-        rangedWeapons = ES3.Load("playerRangedWeapons", rangedWeapons);
-        meleeWeapons = ES3.Load("playerMeleeWeapons", meleeWeapons);
         rangedWeaponEquipped = ES3.Load("playerRangedWeaponEquipped", rangedWeaponEquipped);
-        if (rangedWeaponEquipped)
-            rangedWeaponEquipped.EquipRanged();
         roundChambered = ES3.Load("playerRoundChambered", roundChambered);
         pistolAmmo = ES3.Load("playerPistolAmmo", pistolAmmo);
         rifleAmmo = ES3.Load("playerRifleAmmo", rifleAmmo);
         meleeWeaponEquipped = ES3.Load("playerMeleeWeaponEquipped", meleeWeaponEquipped);
-        if (meleeWeaponEquipped)
-            meleeWeaponEquipped.EquipMelee();
         items = ES3.Load("playerItems", items);
         itemSelected = ES3.Load("playerItemSelected", itemSelected);
-        inventorySize = ES3.Load("playerInventorySize", inventorySize);
+        backpackEquipped = ES3.Load("backpackEquipped", backpackEquipped);
         inspected = ES3.Load("inspected", inspected);
 
         currentPos = transform.position;
@@ -249,10 +241,10 @@ public class Player : MonoBehaviour, IDamageable<float>
                     {
                         if (itemSelected.GetComponent<Food>())
                             actionState = ActionState.Eating;
-                        else if (itemSelected.GetComponent<MeleeWeapon>())
-                            itemSelected.GetComponent<MeleeWeapon>().EquipMelee();
-                        else if (itemSelected.GetComponent<RangedWeapon>())
-                            itemSelected.GetComponent<RangedWeapon>().EquipRanged();
+                        else
+                        {
+                            itemSelected.Equip();
+                        }
                     }
                 break;
             case ActionState.Reloading:
@@ -358,7 +350,7 @@ public class Player : MonoBehaviour, IDamageable<float>
                         if (inspected.Contains(pickUpTarget.name))
                             PickUp();
                         else
-                            Inspect();
+                            Inspect(pickUpTarget);
                     }
                 }
                 break;
@@ -399,7 +391,7 @@ public class Player : MonoBehaviour, IDamageable<float>
                 break;
             case ActionState.Inspecting:
                 HolsterWeapon();
-                if (isMoving)
+                if (isMoving || pickUpTarget == null)
                 {
                     pickUpTarget = null;
                     actionState = ActionState.Idle;
@@ -425,36 +417,11 @@ public class Player : MonoBehaviour, IDamageable<float>
 
     }
 
-    public void Inspect()
+    public void Inspect(Item target)
     {
-        if (pickUpTarget)
-        {
-            fov.target = null;
-            actionState = ActionState.Inspecting;
-            pickUpPosition = pickUpTarget.transform.position;
-            pickUpRotation = pickUpTarget.transform.rotation;
-        }
-    }
-
-    private void PickUp()
-    {
-        if (items.Count < inventorySize)
-        {
-            if (pickUpTarget)
-            {
-                if (pickUpTarget.transform.parent)
-                    if (pickUpTarget.transform.parent.gameObject.GetComponent<Container>())
-                        pickUpTarget.transform.parent.gameObject.GetComponent<Container>().NextItem();
-                pickUpTarget.PickUp();
-                inspected.Add(pickUpTarget.name);
-            }
-            pickUpTarget = null;
-            fov.target = null;
-            pickUpTimeElapsed = 0;
-            CalculateFoodInInventory();
-            actionState = ActionState.Idle;
-            gameManager.gameState = GameManager.GameState.Playing;
-        }
+        pickUpTarget = target;
+        fov.target = null;
+        actionState = ActionState.Inspecting;
     }
 
     public void HolsterWeapon()
@@ -635,6 +602,50 @@ public class Player : MonoBehaviour, IDamageable<float>
         }
     }
 
+    private void PickUp()
+    {
+        int storage = 0;
+        if (backpackEquipped)
+            storage = backpackEquipped.storage;
+        if (items.Count < inventorySize + storage)
+        {
+            if (pickUpTarget)
+            {
+                if (pickUpTarget.transform.parent)
+                    if (pickUpTarget.transform.parent.gameObject.GetComponent<Container>())
+                        pickUpTarget.transform.parent.gameObject.GetComponent<Container>().NextItem();
+                pickUpTarget.AddToInventory();
+                inspected.Add(pickUpTarget.name);
+            }
+            pickUpTarget = null;
+            fov.target = null;
+            pickUpTimeElapsed = 0;
+            CalculateFoodInInventory();
+        }
+    }
+
+    private void Use()
+    {
+        if (pickUpTarget)
+        {
+            if (pickUpTarget.GetComponent<Food>())
+                return;
+                //actionState = ActionState.Eating; BROKEN
+            else if (pickUpTarget.GetComponent<AmmoBox>())
+                pickUpTarget.AddToInventory();
+            else
+                pickUpTarget.Equip();
+            if (pickUpTarget.transform.parent)
+                if (pickUpTarget.transform.parent.gameObject.GetComponent<Container>())
+                    pickUpTarget.transform.parent.gameObject.GetComponent<Container>().NextItem();
+            inspected.Add(pickUpTarget.name);
+        }
+        pickUpTarget = null;
+        fov.target = null;
+        pickUpTimeElapsed = 0;
+        CalculateFoodInInventory();
+    }
+
     private void CaptureInput()
     {
         switch (gameManager.gameState)
@@ -645,6 +656,10 @@ public class Player : MonoBehaviour, IDamageable<float>
                     if (Input.GetButtonDown("Submit"))
                     {
                         PickUp();
+                    }
+                    else if (Input.GetButtonDown("Use"))
+                    {
+                        Use();
                     }
                     else if (Input.GetButtonDown("Cancel"))
                     {
@@ -818,8 +833,6 @@ public class Player : MonoBehaviour, IDamageable<float>
         ES3.Save("playerDanger", danger);
         ES3.Save("playerPosition", transform.position);
         ES3.Save("playerRotation", transform.rotation);
-        ES3.Save("playerRangedWeapons", rangedWeapons);
-        ES3.Save("playerMeleeWeapons", meleeWeapons);
         ES3.Save("playerRangedWeaponEquipped", rangedWeaponEquipped);
         ES3.Save("playerRoundChambered", roundChambered);
         ES3.Save("playerPistolAmmo", pistolAmmo);
@@ -827,7 +840,7 @@ public class Player : MonoBehaviour, IDamageable<float>
         ES3.Save("playerMeleeWeaponEquipped", meleeWeaponEquipped);
         ES3.Save("playerItems", items);
         ES3.Save("playerItemSelected", itemSelected);
-        ES3.Save("playerInventorySize", inventorySize);
+        ES3.Save("backpackEquipped", backpackEquipped);
         ES3.Save("inspected", inspected);
     }
 

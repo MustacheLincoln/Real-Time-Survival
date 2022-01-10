@@ -28,48 +28,46 @@ public class RangedWeapon : Item
         Load();
     }
 
-    private void Load()
+    public override void Load()
     {
         inMagazine = ES3.Load(goid + "inMagazine", inMagazine);
         gameObject.SetActive(ES3.Load(goid + "activeSelf", true));
+        GetComponent<Collider>().enabled = ES3.Load(goid + "colliderEnabled", GetComponent<Collider>().enabled);
         transform.parent = ES3.Load(goid + "parent", transform.parent);
         transform.localPosition = ES3.Load(goid + "position", transform.localPosition);
         transform.localRotation = ES3.Load(goid + "rotation", transform.localRotation);
+        if (transform.parent)
+            if (transform.parent.GetComponent<Container>())
+                gameObject.SetActive(false);
     }
 
     public override void Save()
     {
         if (player)
         {
+            ES3.Save(goid + "inMagazine", inMagazine);
             ES3.Save(goid + "activeSelf", gameObject.activeSelf);
+            ES3.Save(goid + "colliderEnabled", GetComponent<Collider>().enabled);
+            ES3.Save(goid + "parent", transform.parent);
             ES3.Save(goid + "position", transform.localPosition);
             ES3.Save(goid + "rotation", transform.localRotation);
-            ES3.Save(goid + "inMagazine", inMagazine);
-            ES3.Save(goid + "parent", transform.parent);
         }
     }
 
-    public void EquipRanged()
+    public override void Equip()
     {
+        int indexModifier = 0;
         player = Player.Instance;
         if (player.rangedWeaponEquipped)
             if (player.rangedWeaponEquipped != this)
+            {
                 player.rangedWeaponEquipped.Unequip();
-        Equip();
+                indexModifier = -1;
+            }
+        gameObject.SetActive(true);
+        GetComponent<Collider>().enabled = false;
+        player.RemoveItem(this, indexModifier);
         player.rangedWeaponEquipped = this;
         player.HolsterWeapon();
-    }
-
-    public override void PickUp()
-    {
-        player = Player.Instance;
-        if (!player.rangedWeapons.Contains(this))
-        {
-            player.rangedWeapons.Add(this);
-            if (player.rangedWeaponEquipped == null)
-                EquipRanged();
-            else
-                AddToInventory();
-        }
     }
 }

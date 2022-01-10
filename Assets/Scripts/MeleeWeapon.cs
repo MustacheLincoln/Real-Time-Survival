@@ -24,13 +24,17 @@ public class MeleeWeapon : Item
 
         Load();
     }
-    private void Load()
+    public override void Load()
     {
         durability = ES3.Load(goid + "durability", durability);
         gameObject.SetActive(ES3.Load(goid + "activeSelf", true));
+        GetComponent<Collider>().enabled = ES3.Load(goid + "colliderEnabled", GetComponent<Collider>().enabled);
         transform.parent = ES3.Load(goid + "parent", transform.parent);
         transform.localPosition = ES3.Load(goid + "position", transform.localPosition);
         transform.localRotation = ES3.Load(goid + "rotation", transform.localRotation);
+        if (transform.parent)
+            if (transform.parent.GetComponent<Container>())
+                gameObject.SetActive(false);
     }
 
 
@@ -38,21 +42,28 @@ public class MeleeWeapon : Item
     {
         if (player)
         {
+            ES3.Save(goid + "durability", durability);
             ES3.Save(goid + "activeSelf", gameObject.activeSelf);
+            ES3.Save(goid + "colliderEnabled", GetComponent<Collider>().enabled);
+            ES3.Save(goid + "parent", transform.parent);
             ES3.Save(goid + "position", transform.localPosition);
             ES3.Save(goid + "rotation", transform.localRotation);
-            ES3.Save(goid + "durability", durability);
-            ES3.Save(goid + "parent", transform.parent);
         }
     }
 
-    public void EquipMelee()
+    public override void Equip()
     {
+        int indexModifier = 0;
         player = Player.Instance;
         if (player.meleeWeaponEquipped)
             if (player.meleeWeaponEquipped != this)
+            {
                 player.meleeWeaponEquipped.Unequip();
-        Equip();
+                indexModifier = -1;
+            }
+        gameObject.SetActive(true);
+        GetComponent<Collider>().enabled = false;
+        player.RemoveItem(this, indexModifier);
         player.meleeWeaponEquipped = this;
         player.HolsterWeapon();
     }
@@ -61,22 +72,7 @@ public class MeleeWeapon : Item
     {
         gameObject.SetActive(false);
         transform.parent = null;
-        player.RemoveItem(this, 0);
-        player.meleeWeapons.Remove(this);
         player.meleeWeaponEquipped = null;
         Save();
-    }
-
-    public override void PickUp()
-    {
-        player = Player.Instance;
-        if (!player.meleeWeapons.Contains(this))
-        {
-            player.meleeWeapons.Add(this);
-            if (player.meleeWeaponEquipped == null)
-                EquipMelee();
-            else
-                AddToInventory();
-        }
     }
 }

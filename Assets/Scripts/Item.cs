@@ -9,16 +9,34 @@ public abstract class Item : MonoBehaviour
     public string descriptiveText;
     public Sprite icon;
 
-    public abstract void PickUp();
-
-    public abstract void Save();
-
-    public void Equip()
+    public virtual void Save()
     {
         Player player = Player.Instance;
-        gameObject.SetActive(true);
-        GetComponent<Collider>().enabled = false;
-        player.RemoveItem(this, -1);
+        if (player)
+        {
+            ES3.Save(goid + "activeSelf", gameObject.activeSelf);
+            ES3.Save(goid + "colliderEnabled", GetComponent<Collider>().enabled);
+            ES3.Save(goid + "parent", transform.parent);
+            ES3.Save(goid + "position", transform.localPosition);
+            ES3.Save(goid + "rotation", transform.localRotation);
+        }
+    }
+
+    public virtual void Load()
+    {
+        gameObject.SetActive(ES3.Load(goid + "activeSelf", true));
+        GetComponent<Collider>().enabled = ES3.Load(goid + "colliderEnabled", GetComponent<Collider>().enabled);
+        transform.parent = ES3.Load(goid + "parent", transform.parent);
+        transform.localPosition = ES3.Load(goid + "position", transform.localPosition);
+        transform.localRotation = ES3.Load(goid + "rotation", transform.localRotation);
+        if (transform.parent)
+            if (transform.parent.GetComponent<Container>())
+                gameObject.SetActive(false);
+    }
+
+    public virtual void Equip()
+    {
+
     }
 
     public void Unequip()
@@ -39,11 +57,14 @@ public abstract class Item : MonoBehaviour
         Save();
     }
 
-    public void AddToInventory()
+    public virtual void AddToInventory()
     {
         Player player = Player.Instance;
         gameObject.SetActive(false);
-        player.items.Add(this);
+        transform.position = player.transform.position;
+        transform.parent = player.transform;
+        if (!player.items.Contains(this))
+            player.items.Add(this);
         if (player.itemSelected == null)
             player.itemSelected = this;
         Save();

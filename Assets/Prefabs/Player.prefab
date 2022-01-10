@@ -122,6 +122,36 @@ Transform:
   m_Father: {fileID: 5239517876252176788}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &997777451837637719
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 3816823586220988073}
+  m_Layer: 0
+  m_Name: BackpackAttachPoint
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &3816823586220988073
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 997777451837637719}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: -0.00008, y: 0.00147, z: -0.00249}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_Children: []
+  m_Father: {fileID: 6767471505095626197}
+  m_RootOrder: 5
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &2036582237223545234
 GameObject:
   m_ObjectHideFlags: 0
@@ -390,7 +420,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 3947731425450007646}
   m_LocalRotation: {x: -0.5, y: 0.5, z: 0.5, w: 0.5}
-  m_LocalPosition: {x: 0.001, y: 0.00016, z: -0.00186}
+  m_LocalPosition: {x: 0.00146, y: 0.00018, z: -0.002}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 6767471505095626197}
@@ -665,12 +695,14 @@ MonoBehaviour:
   fov: {fileID: 0}
   pickUpPosition: {x: 0, y: 0, z: 0}
   pickUpRotation: {x: 0, y: 0, z: 0, w: 0}
+  backpackAttachPoint: {fileID: 3816823586220988073}
   rightHandHoldPoint: {fileID: 6997815147874242607}
   leftHandHoldPoint: {fileID: 984858960}
   largeMeleeWeaponAttachPoint: {fileID: 1463705227458995110}
   largeRangedWeaponAttachPoint: {fileID: 5971654665525285865}
   smallMeleeWeaponAttachPoint: {fileID: 4496005935463609393}
   smallRangedWeaponAttachPoint: {fileID: 1976369614396005934}
+  backpackEquipped: {fileID: 0}
   pickUpTarget: {fileID: 0}
   target: {fileID: 0}
   danger: 0
@@ -682,8 +714,6 @@ MonoBehaviour:
   pistolAmmo: 0
   rifleAmmo: 0
   meleeWeaponEquipped: {fileID: 0}
-  rangedWeapons: []
-  meleeWeapons: []
   items: []
   inspected: []
   itemSelectionChanged: 0
@@ -825,7 +855,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 5035943080253705602}
   m_LocalRotation: {x: 0, y: 0, z: 0.7071068, w: 0.7071068}
-  m_LocalPosition: {x: -0.00132, y: 0.00313, z: -0.00214}
+  m_LocalPosition: {x: -0.00166, y: 0.00313, z: -0.00214}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 6767471505095626197}
@@ -2313,6 +2343,7 @@ Transform:
   - {fileID: 8376890933675398523}
   - {fileID: 1463705227458995110}
   - {fileID: 5971654665525285865}
+  - {fileID: 3816823586220988073}
   m_Father: {fileID: 3440610206252945889}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}

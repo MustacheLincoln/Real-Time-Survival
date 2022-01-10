@@ -115,7 +115,10 @@ public class UI : MonoBehaviour
             for (int i = 0; i < inventorySlots.Count; i++)
             {
                 inventorySlots[i].selected.gameObject.SetActive(false);
-                if (i > player.inventorySize - 1)
+                int storage = 0;
+                if (player.backpackEquipped)
+                    storage = player.backpackEquipped.storage;
+                if (i > player.inventorySize + storage - 1)
                     inventorySlots[i].gameObject.SetActive(false);
                 else
                 {

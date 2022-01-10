@@ -17,7 +17,6 @@ public class Container : MonoBehaviour
         player = Player.Instance;
         foreach (Item item in transform.GetComponentsInChildren<Item>(true))
         {
-            item.gameObject.SetActive(false);
             contents.Add(item);
         }
         Load();
@@ -51,8 +50,7 @@ public class Container : MonoBehaviour
         searched = true;
         if (contents.Count > 0)
         {
-            player.pickUpTarget = contents[0];
-            player.Inspect();
+            player.Inspect(contents[0]);
         }
         else
             name = "Empty " + name;

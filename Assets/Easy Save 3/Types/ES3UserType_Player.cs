@@ -22,8 +22,6 @@ namespace ES3Types
 			writer.WriteProperty("rifleAmmo", instance.rifleAmmo, ES3Type_int.Instance);
 			writer.WritePrivateField("meleeAttackCooldown", instance);
 			writer.WritePropertyByRef("meleeWeaponEquipped", instance.meleeWeaponEquipped);
-			writer.WriteProperty("rangedWeapons", instance.rangedWeapons, ES3Internal.ES3TypeMgr.GetES3Type(typeof(System.Collections.Generic.List<RangedWeapon>)));
-			writer.WriteProperty("meleeWeapons", instance.meleeWeapons, ES3Internal.ES3TypeMgr.GetES3Type(typeof(System.Collections.Generic.List<MeleeWeapon>)));
 			writer.WriteProperty("items", instance.items, ES3Internal.ES3TypeMgr.GetES3Type(typeof(System.Collections.Generic.List<Item>)));
 			writer.WritePropertyByRef("itemSelected", instance.itemSelected);
 			writer.WriteProperty("caloriesInInventory", instance.caloriesInInventory, ES3Type_float.Instance);
@@ -55,12 +53,6 @@ namespace ES3Types
 					break;
 					case "meleeWeaponEquipped":
 						instance.meleeWeaponEquipped = reader.Read<MeleeWeapon>();
-						break;
-					case "rangedWeapons":
-						instance.rangedWeapons = reader.Read<System.Collections.Generic.List<RangedWeapon>>();
-						break;
-					case "meleeWeapons":
-						instance.meleeWeapons = reader.Read<System.Collections.Generic.List<MeleeWeapon>>();
 						break;
 					case "items":
 						instance.items = reader.Read<System.Collections.Generic.List<Item>>();

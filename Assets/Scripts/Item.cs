@@ -34,7 +34,16 @@ public abstract class Item : MonoBehaviour
                 gameObject.SetActive(false);
     }
 
-    public virtual void Equip()
+    public virtual void Drop(Player owner)
+    {
+        gameObject.SetActive(true);
+        GetComponent<Collider>().enabled = true;
+        transform.parent = null;
+        if (owner.items.Contains(this))
+            owner.items.Remove(this);
+    }
+
+    public virtual void Equip(Player owner)
     {
 
     }

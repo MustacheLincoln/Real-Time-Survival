@@ -5,34 +5,31 @@ using UnityEngine;
 
 public class Backpack : Item
 {
-    Player player;
     public int storage;
 
     private void Start()
     {
         name = displayName;
         goid = GetInstanceID().ToString();
-        player = Player.Instance;
         descriptiveText = "Adds " + storage + " Inventory Slots";
         Load();
     }
 
-    public override void Equip()
+    public override void Equip(Player owner)
     {
         int indexModifier = 0;
-        player = Player.Instance;
-        if (player.backpackEquipped)
-            if (player.backpackEquipped != this)
+        if (owner.backpackEquipped)
+            if (owner.backpackEquipped != this)
             {
-                player.backpackEquipped.Unequip();
+                owner.backpackEquipped.Unequip();
                 indexModifier = -1;
             }
         gameObject.SetActive(true);
         GetComponent<Collider>().enabled = false;
-        player.RemoveItem(this, indexModifier);
-        player.backpackEquipped = this;
-        transform.position = player.backpackAttachPoint.position;
-        transform.rotation = player.backpackAttachPoint.rotation;
-        transform.parent = player.backpackAttachPoint;
+        owner.RemoveItem(this, indexModifier);
+        owner.backpackEquipped = this;
+        transform.position = owner.backpackAttachPoint.position;
+        transform.rotation = owner.backpackAttachPoint.rotation;
+        transform.parent = owner.backpackAttachPoint;
     }
 }

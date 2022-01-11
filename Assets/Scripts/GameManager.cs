@@ -10,16 +10,11 @@ public class GameManager : MonoBehaviour
 
     public TimeSpan timeSurvived;
 
-
-    public enum GameState { Playing, Paused }
-    public GameState gameState;
-
     private void Awake() { Instance = this; }
 
     private void Start()
     {
         player = Player.Instance;
-        gameState = GameState.Playing;
     }
 
     private void Update()

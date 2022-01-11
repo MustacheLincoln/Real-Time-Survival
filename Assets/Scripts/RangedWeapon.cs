@@ -54,20 +54,29 @@ public class RangedWeapon : Item
         }
     }
 
-    public override void Equip()
+    public override void Equip(Player owner)
     {
         int indexModifier = 0;
-        player = Player.Instance;
-        if (player.rangedWeaponEquipped)
-            if (player.rangedWeaponEquipped != this)
+        if (owner.rangedWeaponEquipped)
+            if (owner.rangedWeaponEquipped != this)
             {
-                player.rangedWeaponEquipped.Unequip();
-                indexModifier = -1;
+                int storage = 0;
+                if (owner.backpackEquipped)
+                    storage = owner.backpackEquipped.storage;
+                if (owner.items.Count < owner.inventorySize + storage)
+                {
+                    owner.rangedWeaponEquipped.Unequip();
+                    indexModifier = -1;
+                }
+                else
+                {
+                    owner.rangedWeaponEquipped.Drop(owner);
+                }
             }
         gameObject.SetActive(true);
         GetComponent<Collider>().enabled = false;
-        player.RemoveItem(this, indexModifier);
-        player.rangedWeaponEquipped = this;
-        player.HolsterWeapon();
+        owner.RemoveItem(this, indexModifier);
+        owner.rangedWeaponEquipped = this;
+        owner.HolsterWeapon();
     }
 }

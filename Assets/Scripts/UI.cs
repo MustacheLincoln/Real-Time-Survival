@@ -163,7 +163,7 @@ public class UI : MonoBehaviour
             {
                 targetLabel.text = player.fov.target.name;
                 targetLabel.transform.position = player.fov.target.transform.position;
-                if (player.fov.target.name == "Zombie")
+                if (player.fov.target.name == "Zombie" || player.eating)
                     targetLabel.text = null;
                 if (player.fov.target.gameObject.GetComponent<Container>())
                 {
@@ -182,9 +182,9 @@ public class UI : MonoBehaviour
 
             if (player.actionState == Player.ActionState.Aiming)
             {
-                if (player.target)
+                if (player.fov.target)
                 {
-                    aimProgressRadial.transform.position = player.target.transform.position;
+                    aimProgressRadial.transform.position = player.fov.target.transform.position;
                     if (player.rangedWeaponEquipped)
                         aimProgressRadial.fillAmount = player.aimTimeElapsed / player.rangedWeaponEquipped.aimTime;
                     else

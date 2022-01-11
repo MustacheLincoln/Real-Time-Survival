@@ -51,21 +51,30 @@ public class MeleeWeapon : Item
         }
     }
 
-    public override void Equip()
+    public override void Equip(Player owner)
     {
         int indexModifier = 0;
-        player = Player.Instance;
-        if (player.meleeWeaponEquipped)
-            if (player.meleeWeaponEquipped != this)
+        if (owner.meleeWeaponEquipped)
+            if (owner.meleeWeaponEquipped != this)
             {
-                player.meleeWeaponEquipped.Unequip();
-                indexModifier = -1;
+                int storage = 0;
+                if (owner.backpackEquipped)
+                    storage = owner.backpackEquipped.storage;
+                if (owner.items.Count < owner.inventorySize + storage)
+                {
+                    owner.meleeWeaponEquipped.Unequip();
+                    indexModifier = -1;
+                }
+                else
+                {
+                    owner.meleeWeaponEquipped.Drop(owner);
+                }
             }
         gameObject.SetActive(true);
         GetComponent<Collider>().enabled = false;
-        player.RemoveItem(this, indexModifier);
-        player.meleeWeaponEquipped = this;
-        player.HolsterWeapon();
+        owner.RemoveItem(this, indexModifier);
+        owner.meleeWeaponEquipped = this;
+        owner.HolsterWeapon();
     }
 
     public void Break()

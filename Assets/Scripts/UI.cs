@@ -154,16 +154,8 @@ public class UI : MonoBehaviour
                 reloadProgressRadial.fillAmount = 0;
 
             eatingProgressRadial.transform.position = player.transform.position;
-            if (player.itemSelected)
-            {
-                if (player.itemSelected is Food)
-                {
-                    var food = player.itemSelected as Food;
-                    eatingProgressRadial.fillAmount = player.eatingTimeElapsed / food.eatingTime;
-                }
-                else
-                    eatingProgressRadial.fillAmount = 0;
-            }     
+            if (player.eating)
+                eatingProgressRadial.fillAmount = player.eatingTimeElapsed / player.eating.eatingTime;  
             else
                 eatingProgressRadial.fillAmount = 0;
 

@@ -62,6 +62,7 @@ public class Player : MonoBehaviour, IDamageable<float>
 
     public bool itemSelectionChanged;
 
+    public Food eating;
     public Item itemSelected;
     public float eatingTimeElapsed;
     public float caloriesInInventory;
@@ -83,7 +84,7 @@ public class Player : MonoBehaviour, IDamageable<float>
 
     public enum MovementState { Idle, Walking, Running, Crouching, CrouchWalking, Holding }
     public MovementState movementState;
-    public enum ActionState { Idle, Reloading, Aiming, PickingUp, Eating, Inspecting }
+    public enum ActionState { Idle, Reloading, Aiming, PickingUp, Inspecting }
     public ActionState actionState;
     public float searchTimeElapsed;
 
@@ -240,7 +241,7 @@ public class Player : MonoBehaviour, IDamageable<float>
                     if (itemSelected)
                     {
                         if (itemSelected.GetComponent<Food>())
-                            actionState = ActionState.Eating;
+                            StartCoroutine(Eat(itemSelected as Food));
                         else
                         {
                             itemSelected.Equip();
@@ -352,41 +353,6 @@ public class Player : MonoBehaviour, IDamageable<float>
                         else
                             Inspect(pickUpTarget);
                     }
-                }
-                break;
-            case ActionState.Eating:
-                HolsterWeapon();
-                Food food = itemSelected as Food;
-                bool edible;
-                if (food.calories > food.milliliters)
-                    edible = (vitals.calories < vitals.maxCalories - food.calories);
-                else
-                    edible = (vitals.milliliters < vitals.maxMilliliters - food.milliliters);
-                if (edible == false)
-                {
-                    actionState = ActionState.Idle;
-                    break;
-                }
-                aimTimeElapsed = 0;
-                reloadTimeElapsed = 0;
-                movementState = MovementState.Holding;
-                pickUpTarget = null;
-                target = null;
-                eatingTimeElapsed += Time.deltaTime;
-                if (isMoving)
-                {
-                    eatingTimeElapsed = 0;
-                    actionState = ActionState.Idle;
-                }
-                if (eatingTimeElapsed >= food.eatingTime)
-                {
-                    if (itemSelected)
-                    {
-                        itemSelected.GetComponent<Food>().Eat();
-                    }
-                    CalculateFoodInInventory();
-                    eatingTimeElapsed = 0;
-                    actionState = ActionState.Idle;
                 }
                 break;
             case ActionState.Inspecting:
@@ -624,26 +590,64 @@ public class Player : MonoBehaviour, IDamageable<float>
         }
     }
 
-    private void Use()
+    private IEnumerator Eat(Food food)
     {
-        if (pickUpTarget)
+        bool edible;
+        if (food.calories > food.milliliters)
+            edible = (vitals.calories < vitals.maxCalories - food.calories);
+        else
+            edible = (vitals.milliliters < vitals.maxMilliliters - food.milliliters);
+        if (edible == false)
         {
-            if (pickUpTarget.GetComponent<Food>())
-                return;
-                //actionState = ActionState.Eating; BROKEN
-            else if (pickUpTarget.GetComponent<AmmoBox>())
-                pickUpTarget.AddToInventory();
-            else
-                pickUpTarget.Equip();
-            if (pickUpTarget.transform.parent)
-                if (pickUpTarget.transform.parent.gameObject.GetComponent<Container>())
-                    pickUpTarget.transform.parent.gameObject.GetComponent<Container>().NextItem();
-            inspected.Add(pickUpTarget.name);
+            actionState = ActionState.Idle;
+            yield break;
         }
+        eating = food;
+        HolsterWeapon();
+        aimTimeElapsed = 0;
+        reloadTimeElapsed = 0;
+        movementState = MovementState.Holding;
+        pickUpTarget = null;
+        target = null;
+        while (eatingTimeElapsed < food.eatingTime)
+        {
+            eatingTimeElapsed += Time.deltaTime;
+            yield return null;
+            if (isMoving)
+            {
+                eatingTimeElapsed = 0;
+                eating = null;
+                yield break;
+            }
+        }
+        food.Eat();
+        CalculateFoodInInventory();
+        eatingTimeElapsed = 0;
+        eating = null;
+    }
+
+    private void Use(Item item)
+    {
+        if (item.GetComponent<Food>())
+        {
+            StartCoroutine(Eat(item as Food));
+            inspected.Add(item.name);
+            pickUpTarget = null;
+            fov.target = null;
+            pickUpTimeElapsed = 0;
+            return;
+        }
+        else if (item.GetComponent<AmmoBox>())
+            item.AddToInventory();
+        else
+            item.Equip();
+        if (item.transform.parent)
+            if (item.transform.parent.gameObject.GetComponent<Container>())
+                item.transform.parent.gameObject.GetComponent<Container>().NextItem();
+        inspected.Add(item.name);
         pickUpTarget = null;
         fov.target = null;
         pickUpTimeElapsed = 0;
-        CalculateFoodInInventory();
     }
 
     private void CaptureInput()
@@ -659,7 +663,7 @@ public class Player : MonoBehaviour, IDamageable<float>
                     }
                     else if (Input.GetButtonDown("Use"))
                     {
-                        Use();
+                        Use(pickUpTarget);
                     }
                     else if (Input.GetButtonDown("Cancel"))
                     {

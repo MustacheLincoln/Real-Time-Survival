@@ -15,6 +15,7 @@ public class RangedWeapon : Item
     public int inMagazine;
     public float reloadTime;
     public float aimTime;
+    public Ammo.AmmoType ammoType;
 
     public enum GunType { FullAuto, SemiAuto, BoltAction }
     public GunType gunType;
@@ -31,14 +32,7 @@ public class RangedWeapon : Item
     public override void Load()
     {
         inMagazine = ES3.Load(goid + "inMagazine", inMagazine);
-        gameObject.SetActive(ES3.Load(goid + "activeSelf", true));
-        GetComponent<Collider>().enabled = ES3.Load(goid + "colliderEnabled", GetComponent<Collider>().enabled);
-        transform.parent = ES3.Load(goid + "parent", transform.parent);
-        transform.localPosition = ES3.Load(goid + "position", transform.localPosition);
-        transform.localRotation = ES3.Load(goid + "rotation", transform.localRotation);
-        if (transform.parent)
-            if (transform.parent.GetComponent<Container>())
-                gameObject.SetActive(false);
+        base.Load();
     }
 
     public override void Save()
@@ -46,17 +40,13 @@ public class RangedWeapon : Item
         if (player)
         {
             ES3.Save(goid + "inMagazine", inMagazine);
-            ES3.Save(goid + "activeSelf", gameObject.activeSelf);
-            ES3.Save(goid + "colliderEnabled", GetComponent<Collider>().enabled);
-            ES3.Save(goid + "parent", transform.parent);
-            ES3.Save(goid + "position", transform.localPosition);
-            ES3.Save(goid + "rotation", transform.localRotation);
+            base.Save();
         }
     }
 
     public override void Equip(Player owner)
     {
-        int indexModifier = 0;
+        bool isReplacingEquipment = false;
         if (owner.rangedWeaponEquipped)
             if (owner.rangedWeaponEquipped != this)
             {
@@ -66,16 +56,16 @@ public class RangedWeapon : Item
                 if (owner.items.Count < owner.inventorySize + storage)
                 {
                     owner.rangedWeaponEquipped.Unequip();
-                    indexModifier = -1;
+                    isReplacingEquipment = true;
                 }
                 else
                 {
-                    owner.rangedWeaponEquipped.Drop(owner);
+                    owner.rangedWeaponEquipped.Drop();
                 }
             }
         gameObject.SetActive(true);
         GetComponent<Collider>().enabled = false;
-        owner.RemoveItem(this, indexModifier);
+        owner.RemoveItem(this, isReplacingEquipment);
         owner.rangedWeaponEquipped = this;
         owner.HolsterWeapon();
     }

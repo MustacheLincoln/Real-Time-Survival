@@ -50,8 +50,6 @@ public class Player : MonoBehaviour, IDamageable<float>
     public float aimTimeElapsed;
     public RangedWeapon rangedWeaponEquipped;
     bool roundChambered;
-    public int pistolAmmo;
-    public int rifleAmmo;
 
     float meleeAttackCooldown;
     public MeleeWeapon meleeWeaponEquipped;
@@ -60,6 +58,9 @@ public class Player : MonoBehaviour, IDamageable<float>
     public List<String> inspected;
 
     public bool itemSelectionChanged;
+
+    public int pistolAmmo;
+    public int rifleAmmo;
 
     public Food eating;
     public Item inspecting;
@@ -119,8 +120,6 @@ public class Player : MonoBehaviour, IDamageable<float>
         danger = ES3.Load("playerDanger", 0f);
         rangedWeaponEquipped = ES3.Load("playerRangedWeaponEquipped", rangedWeaponEquipped);
         roundChambered = ES3.Load("playerRoundChambered", roundChambered);
-        pistolAmmo = ES3.Load("playerPistolAmmo", pistolAmmo);
-        rifleAmmo = ES3.Load("playerRifleAmmo", rifleAmmo);
         meleeWeaponEquipped = ES3.Load("playerMeleeWeaponEquipped", meleeWeaponEquipped);
         items = ES3.Load("playerItems", items);
         itemSelected = ES3.Load("playerItemSelected", itemSelected);
@@ -131,6 +130,8 @@ public class Player : MonoBehaviour, IDamageable<float>
     private void Start()
     {
         gameManager = GameManager.Instance;
+        CalculateFoodInInventory();
+        CalculateAmmoInInventory();
     }
 
     private void Update()
@@ -263,9 +264,9 @@ public class Player : MonoBehaviour, IDamageable<float>
     {
         if (weapon.inMagazine >= weapon.magazineSize)
             yield break;
-        if (weapon.name == "Pistol" && pistolAmmo <= 0)
+        if (weapon.ammoType == Ammo.AmmoType.Pistol && pistolAmmo <= 0)
             yield break;
-        if (weapon.name == "Rifle" && rifleAmmo <= 0)
+        if (weapon.ammoType == Ammo.AmmoType.Rifle && rifleAmmo <= 0)
             yield break;
         if (reloading)
             yield break;
@@ -277,28 +278,40 @@ public class Player : MonoBehaviour, IDamageable<float>
             reloadTimeElapsed += Time.deltaTime;
             yield return null;
         }
-        if (rangedWeaponEquipped.name == "Pistol" && pistolAmmo >= rangedWeaponEquipped.magazineSize - rangedWeaponEquipped.inMagazine)
+        if (weapon.ammoType == Ammo.AmmoType.Pistol)
         {
-            pistolAmmo -= rangedWeaponEquipped.magazineSize - rangedWeaponEquipped.inMagazine;
-            rangedWeaponEquipped.inMagazine = rangedWeaponEquipped.magazineSize;
+            int reloadAmount = Mathf.Min((rangedWeaponEquipped.magazineSize - rangedWeaponEquipped.inMagazine), pistolAmmo);
+            pistolAmmo -= reloadAmount;
+            rangedWeaponEquipped.inMagazine += reloadAmount;
         }
-        else if (rangedWeaponEquipped.name == "Pistol" && pistolAmmo < rangedWeaponEquipped.magazineSize - rangedWeaponEquipped.inMagazine)
+        if (weapon.ammoType == Ammo.AmmoType.Rifle)
         {
-            rangedWeaponEquipped.inMagazine += pistolAmmo;
-            pistolAmmo = 0;
+            int reloadAmount = Mathf.Min((rangedWeaponEquipped.magazineSize - rangedWeaponEquipped.inMagazine), rifleAmmo);
+            rifleAmmo -= reloadAmount;
+            rangedWeaponEquipped.inMagazine += reloadAmount;
         }
-        if (rangedWeaponEquipped.name == "Rifle" && rifleAmmo >= rangedWeaponEquipped.magazineSize - rangedWeaponEquipped.inMagazine)
+        foreach (Item item in items)
         {
-            rifleAmmo -= rangedWeaponEquipped.magazineSize - rangedWeaponEquipped.inMagazine;
-            rangedWeaponEquipped.inMagazine = rangedWeaponEquipped.magazineSize;
-        }
-        else if (rangedWeaponEquipped.name == "Rifle" && rifleAmmo < rangedWeaponEquipped.magazineSize - rangedWeaponEquipped.inMagazine)
-        {
-            rangedWeaponEquipped.inMagazine += rifleAmmo;
-            rifleAmmo = 0;
+            if (item.GetComponent<Ammo>())
+            {
+                Ammo ammo = item as Ammo;
+                if (ammo.ammoType == weapon.ammoType)
+                {
+                    ammo.amount = Mathf.Min(pistolAmmo, ammo.maxAmount);
+                    pistolAmmo -= ammo.amount;
+                    break;
+                }
+                else if (ammo.ammoType == Ammo.AmmoType.Rifle)
+                {
+                    ammo.amount = Mathf.Min(rifleAmmo, ammo.maxAmount);
+                    rifleAmmo -= ammo.amount;
+                    break;
+                }
+            }
         }
         reloadTimeElapsed = 0;
         reloading = null;
+        CalculateAmmoInInventory();
     }
 
     private IEnumerator PickingUp(Item item)
@@ -357,26 +370,34 @@ public class Player : MonoBehaviour, IDamageable<float>
                 yield break;
             }
         }
-        food.Eat();
+        vitals.calories += food.calories;
+        vitals.milliliters += food.milliliters;
+        RemoveItem(food, false);
+        food.Destroy();
         CalculateFoodInInventory();
         eating = null;
         eatingTimeElapsed = 0;
     }
 
-    internal void RemoveItem(Item item, int indexModifier)
+    internal void RemoveItem(Item item, bool isReplacingEquipment)
     {
-        int index = items.IndexOf(item) + indexModifier;
+        int indexModifier = 0;
+        if (isReplacingEquipment)
+            indexModifier = -1;
         if (items.Contains(item))
-            items.Remove(item);
-        if (items.Count > 0)
         {
-            if (index < items.Count - 1)
-                itemSelected = items[Mathf.Max(0, index)];
+            int index = items.IndexOf(item) + indexModifier;
+            items.Remove(item);
+            if (items.Count > 0)
+            {
+                if (index < items.Count - 1)
+                    itemSelected = items[Mathf.Max(0, index)];
+                else
+                    itemSelected = items[items.Count - 1];
+            }
             else
-                itemSelected = items[items.Count - 1];
+                itemSelected = null;
         }
-        else
-            itemSelected = null;
 
     }
 
@@ -574,6 +595,7 @@ public class Player : MonoBehaviour, IDamageable<float>
             inspecting = null;
             fov.target = null;
             CalculateFoodInInventory();
+            CalculateAmmoInInventory();
         }
     }
 
@@ -587,7 +609,7 @@ public class Player : MonoBehaviour, IDamageable<float>
             StartCoroutine(Eat(item as Food));
             return;
         }
-        else if (item.GetComponent<AmmoBox>())
+        else if (item.GetComponent<Ammo>())
             item.AddToInventory();
         else
             item.Equip(this);
@@ -684,8 +706,8 @@ public class Player : MonoBehaviour, IDamageable<float>
             if (Input.GetButtonDown("Cancel"))
                 if (itemSelected)
                 {
-                    itemSelected.Drop(this);
-                    RemoveItem(itemSelected, 0);
+                    itemSelected.Drop();
+                    RemoveItem(itemSelected, false);
                 }
         }
 
@@ -786,11 +808,61 @@ public class Player : MonoBehaviour, IDamageable<float>
             {
                 if (item.GetComponent<Food>())
                 {
-                    Food food = item.GetComponent<Food>();
+                    Food food = item as Food;
                     caloriesInInventory += food.calories;
                     millilitersInInventory += food.milliliters;
                 }
             }
+        }
+    }
+
+    private void CalculateAmmoInInventory()
+    {
+        pistolAmmo = 0;
+        rifleAmmo = 0;
+        if (items.Count > 0)
+        {
+            foreach (Item item in items)
+            {
+                if (item.GetComponent<Ammo>())
+                {
+                    Ammo ammo = item as Ammo;
+                    if (ammo.ammoType == Ammo.AmmoType.Pistol)
+                        pistolAmmo += ammo.amount;
+                    else if (ammo.ammoType == Ammo.AmmoType.Rifle)
+                        rifleAmmo += ammo.amount;
+                }
+            }
+            int tempPistolAmmo = pistolAmmo;
+            int tempRifleAmmo = rifleAmmo;
+            List<Ammo> emptyBoxesToDestroy = new List<Ammo>();
+            foreach (Item item in items)
+            {
+                if (item.GetComponent<Ammo>())
+                {
+                    Ammo ammo = item as Ammo;
+                    if (ammo.ammoType == Ammo.AmmoType.Pistol)
+                    {
+                        ammo.amount = Mathf.Min(tempPistolAmmo, ammo.maxAmount);
+                        tempPistolAmmo -= ammo.amount;
+                    }
+                    else if (ammo.ammoType == Ammo.AmmoType.Rifle)
+                    {
+                        ammo.amount = Mathf.Min(tempRifleAmmo, ammo.maxAmount);
+                        tempRifleAmmo -= ammo.amount;
+                    }
+                    if (ammo.amount <= 0)
+                    {
+                        emptyBoxesToDestroy.Add(ammo);
+                    }
+                }
+            }
+            if (emptyBoxesToDestroy.Count > 0)
+                foreach (Ammo ammo in emptyBoxesToDestroy)
+                {
+                    RemoveItem(ammo, false);
+                    ammo.Destroy();
+                }
         }
     }
 
@@ -807,8 +879,6 @@ public class Player : MonoBehaviour, IDamageable<float>
         ES3.Save("playerRotation", transform.rotation);
         ES3.Save("playerRangedWeaponEquipped", rangedWeaponEquipped);
         ES3.Save("playerRoundChambered", roundChambered);
-        ES3.Save("playerPistolAmmo", pistolAmmo);
-        ES3.Save("playerRifleAmmo", rifleAmmo);
         ES3.Save("playerMeleeWeaponEquipped", meleeWeaponEquipped);
         ES3.Save("playerItems", items);
         ES3.Save("playerItemSelected", itemSelected);

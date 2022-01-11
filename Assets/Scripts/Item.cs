@@ -34,13 +34,11 @@ public abstract class Item : MonoBehaviour
                 gameObject.SetActive(false);
     }
 
-    public virtual void Drop(Player owner)
+    public virtual void Drop()
     {
         gameObject.SetActive(true);
         GetComponent<Collider>().enabled = true;
         transform.parent = null;
-        if (owner.items.Contains(this))
-            owner.items.Remove(this);
     }
 
     public virtual void Equip(Player owner)
@@ -76,6 +74,13 @@ public abstract class Item : MonoBehaviour
             player.items.Add(this);
         if (player.itemSelected == null)
             player.itemSelected = this;
+        Save();
+    }
+
+    public void Destroy()
+    {
+        gameObject.SetActive(false);
+        transform.parent = null;
         Save();
     }
 

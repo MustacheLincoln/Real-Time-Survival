@@ -27,14 +27,7 @@ public class MeleeWeapon : Item
     public override void Load()
     {
         durability = ES3.Load(goid + "durability", durability);
-        gameObject.SetActive(ES3.Load(goid + "activeSelf", true));
-        GetComponent<Collider>().enabled = ES3.Load(goid + "colliderEnabled", GetComponent<Collider>().enabled);
-        transform.parent = ES3.Load(goid + "parent", transform.parent);
-        transform.localPosition = ES3.Load(goid + "position", transform.localPosition);
-        transform.localRotation = ES3.Load(goid + "rotation", transform.localRotation);
-        if (transform.parent)
-            if (transform.parent.GetComponent<Container>())
-                gameObject.SetActive(false);
+        base.Load();
     }
 
 
@@ -43,17 +36,13 @@ public class MeleeWeapon : Item
         if (player)
         {
             ES3.Save(goid + "durability", durability);
-            ES3.Save(goid + "activeSelf", gameObject.activeSelf);
-            ES3.Save(goid + "colliderEnabled", GetComponent<Collider>().enabled);
-            ES3.Save(goid + "parent", transform.parent);
-            ES3.Save(goid + "position", transform.localPosition);
-            ES3.Save(goid + "rotation", transform.localRotation);
+            base.Save();
         }
     }
 
     public override void Equip(Player owner)
     {
-        int indexModifier = 0;
+        bool isReplacingEquipment = false;
         if (owner.meleeWeaponEquipped)
             if (owner.meleeWeaponEquipped != this)
             {
@@ -63,25 +52,23 @@ public class MeleeWeapon : Item
                 if (owner.items.Count < owner.inventorySize + storage)
                 {
                     owner.meleeWeaponEquipped.Unequip();
-                    indexModifier = -1;
+                    isReplacingEquipment = true;
                 }
                 else
                 {
-                    owner.meleeWeaponEquipped.Drop(owner);
+                    owner.meleeWeaponEquipped.Drop();
                 }
             }
         gameObject.SetActive(true);
         GetComponent<Collider>().enabled = false;
-        owner.RemoveItem(this, indexModifier);
+        owner.RemoveItem(this, isReplacingEquipment);
         owner.meleeWeaponEquipped = this;
         owner.HolsterWeapon();
     }
 
     public void Break()
     {
-        gameObject.SetActive(false);
-        transform.parent = null;
         player.meleeWeaponEquipped = null;
-        Save();
+        Destroy();
     }
 }

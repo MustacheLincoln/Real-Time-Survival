@@ -72,6 +72,7 @@ MonoBehaviour:
   inMagazine: 5
   reloadTime: 2
   aimTime: 1
+  ammoUsed: {fileID: -9050216771292678702, guid: 2d871497d9618fd47a91eeab07649bf5, type: 3}
   gunType: 2
 --- !u!1001 &7087488075116057886
 PrefabInstance:

@@ -17,14 +17,4 @@ public class Food : Item
         descriptiveText = "Calories: " + calories + "\nmL: " + milliliters + "\nTime to eat: " + eatingTime;
         Load();
     }
-
-    public void Eat()
-    {
-        player.vitals.calories += calories;
-        player.vitals.milliliters += milliliters;
-        gameObject.SetActive(false);
-        transform.parent = null;
-        player.RemoveItem(this, 0);
-        Save();
-    }
 }

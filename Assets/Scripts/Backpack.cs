@@ -17,16 +17,16 @@ public class Backpack : Item
 
     public override void Equip(Player owner)
     {
-        int indexModifier = 0;
+        bool isReplacingEquipment = false;
         if (owner.backpackEquipped)
             if (owner.backpackEquipped != this)
             {
                 owner.backpackEquipped.Unequip();
-                indexModifier = -1;
+                isReplacingEquipment = true;
             }
         gameObject.SetActive(true);
         GetComponent<Collider>().enabled = false;
-        owner.RemoveItem(this, indexModifier);
+        owner.RemoveItem(this, isReplacingEquipment);
         owner.backpackEquipped = this;
         transform.position = owner.backpackAttachPoint.position;
         transform.rotation = owner.backpackAttachPoint.rotation;

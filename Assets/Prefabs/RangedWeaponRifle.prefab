@@ -63,18 +63,16 @@ MonoBehaviour:
   descriptiveText: 
   icon: {fileID: 21300000, guid: 0beff7bfe32511342bba0fbc454f360f, type: 3}
   rangedAttackDamage: 100
-  rangedAttackSpeed: 0.01
+  rangedAttackSpeed: 1
   rangedAttackNoise: 20
   rangedAttackRange: 20
   rangedKnockback: 0.25
-  fullAuto: 0
-  semiAuto: 0
-  boltAction: 1
   large: 1
   magazineSize: 5
   inMagazine: 5
   reloadTime: 2
   aimTime: 1
+  gunType: 2
 --- !u!1001 &7087488075116057886
 PrefabInstance:
   m_ObjectHideFlags: 0

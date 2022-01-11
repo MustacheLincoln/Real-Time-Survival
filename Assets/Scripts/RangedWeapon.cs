@@ -10,14 +10,14 @@ public class RangedWeapon : Item
     public float rangedAttackNoise;
     public float rangedAttackRange;
     public float rangedKnockback;
-    public bool fullAuto;
-    public bool semiAuto;
-    public bool boltAction;
     public bool large;
     public int magazineSize;
     public int inMagazine;
     public float reloadTime;
     public float aimTime;
+
+    public enum GunType { FullAuto, SemiAuto, BoltAction }
+    public GunType gunType;
 
     private void Start()
     {

@@ -103,9 +103,19 @@ public class Player : MonoBehaviour, IDamageable<float>
         navMeshAgent.speed = walkSpeed;
         navMeshAgent.acceleration = acceleration;
 
+        Load();
+
+        currentPos = transform.position;
+        lastPos = currentPos;
+
+        movementState = MovementState.Idle;
+        StartCoroutine(EmitNoisePulse());
+    }
+
+    private void Load()
+    {
         navMeshAgent.Warp(ES3.Load("playerPosition", Vector3.zero));
         transform.rotation = ES3.Load("playerRotation", Quaternion.identity);
-
         danger = ES3.Load("playerDanger", 0f);
         rangedWeaponEquipped = ES3.Load("playerRangedWeaponEquipped", rangedWeaponEquipped);
         roundChambered = ES3.Load("playerRoundChambered", roundChambered);
@@ -116,12 +126,6 @@ public class Player : MonoBehaviour, IDamageable<float>
         itemSelected = ES3.Load("playerItemSelected", itemSelected);
         backpackEquipped = ES3.Load("backpackEquipped", backpackEquipped);
         inspected = ES3.Load("inspected", inspected);
-
-        currentPos = transform.position;
-        lastPos = currentPos;
-
-        movementState = MovementState.Idle;
-        StartCoroutine(EmitNoisePulse());
     }
 
     private void Start()
@@ -179,7 +183,7 @@ public class Player : MonoBehaviour, IDamageable<float>
             if (Input.GetMouseButton(0) || Input.GetAxis("Fire") > 0)
             {
                 if (fov.target)
-                    if (roundChambered || rangedWeaponEquipped.fullAuto)
+                    if (roundChambered || rangedWeaponEquipped.gunType == RangedWeapon.GunType.FullAuto)
                         RangedAttack(fov.target);
             }
             else
@@ -520,7 +524,7 @@ public class Player : MonoBehaviour, IDamageable<float>
                 EmitNoiseUnique(rangedWeaponEquipped.rangedAttackNoise);
                 rangedWeaponEquipped.inMagazine -= 1;
                 rangedAttackCooldown = rangedWeaponEquipped.rangedAttackSpeed;
-                if (rangedWeaponEquipped.boltAction)
+                if (rangedWeaponEquipped.gunType == RangedWeapon.GunType.BoltAction)
                     aimTimeElapsed = 0;
             }
         }
@@ -568,6 +572,7 @@ public class Player : MonoBehaviour, IDamageable<float>
             item.AddToInventory();
             inspected.Add(item.name);
             inspecting = null;
+            fov.target = null;
             CalculateFoodInInventory();
         }
     }
@@ -575,6 +580,7 @@ public class Player : MonoBehaviour, IDamageable<float>
     private void Use(Item item)
     {
         inspecting = null;
+        fov.target = null;
         inspected.Add(item.name);
         if (item.GetComponent<Food>())
         {

@@ -120,6 +120,9 @@ public class UI : MonoBehaviour
                 else
                 {
                     inventorySlots[i].gameObject.SetActive(true);
+                    inventorySlots[i].amountLabel.text = null;
+                    inventorySlots[i].image.sprite = null;
+                    inventorySlots[i].image.gameObject.SetActive(false);
                     if (i < player.items.Count)
                     {
                         inventorySlots[i].image.sprite = player.items[i].icon;
@@ -128,11 +131,10 @@ public class UI : MonoBehaviour
                             inventorySlots[i].selected.gameObject.SetActive(true);
                         else
                             inventorySlots[i].selected.gameObject.SetActive(false);
-                    }
-                    else
-                    {
-                        inventorySlots[i].image.sprite = null;
-                        inventorySlots[i].image.gameObject.SetActive(false);
+                        if (player.items[i].amount > 0)
+                            inventorySlots[i].amountLabel.text = player.items[i].amount.ToString();
+                        else
+                            inventorySlots[i].amountLabel.text = null;
                     }
                 }
             }

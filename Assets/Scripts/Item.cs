@@ -7,6 +7,8 @@ public abstract class Item : MonoBehaviour
     public string displayName;
     public string goid;
     public string descriptiveText;
+    public int amount;
+    public int maxAmount;
     public Sprite icon;
 
     public virtual void Save()

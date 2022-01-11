@@ -4,7 +4,6 @@ using UnityEngine;
 
 public class Food : Item
 {
-    Player player;
     public float calories;
     public float milliliters;
     public float eatingTime;
@@ -13,7 +12,6 @@ public class Food : Item
     {
         name = displayName;
         goid = GetInstanceID().ToString();
-        player = Player.Instance;
         descriptiveText = "Calories: " + calories + "\nmL: " + milliliters + "\nTime to eat: " + eatingTime;
         Load();
     }

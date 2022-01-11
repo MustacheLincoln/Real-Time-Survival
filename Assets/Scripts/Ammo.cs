@@ -4,24 +4,25 @@ using UnityEngine;
 
 public class Ammo : Item
 {
-    Player player;
-    public int amount;
-    public int maxAmount;
-
     public enum AmmoType { Rifle, Pistol }
     public AmmoType ammoType;
 
     private void Start()
     {
-        name = displayName;
         goid = GetInstanceID().ToString();
-        player = Player.Instance;
         descriptiveText = amount + " " + ammoType + " cartridges";
         Load();
+        UpdateName();
+    }
+
+    public void UpdateName()
+    {
+        name = displayName + " (" + amount + ")";
     }
 
     public override void Save()
     {
+        Player player = Player.Instance;
         if (player)
         {
             ES3.Save(goid + "ammo", amount);

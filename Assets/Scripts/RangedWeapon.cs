@@ -4,7 +4,6 @@ using UnityEngine;
 
 public class RangedWeapon : Item
 {
-    Player player;
     public float rangedAttackDamage;
     public float rangedAttackSpeed;
     public float rangedAttackNoise;
@@ -24,7 +23,6 @@ public class RangedWeapon : Item
     {
         name = displayName;
         goid = GetInstanceID().ToString();
-        player = Player.Instance;
         descriptiveText = "Semi-automatic\nDamage: " + rangedAttackDamage + "\nTime to aim: " + aimTime + "\nNoise: " + rangedAttackNoise + "\nRange: " + rangedAttackRange + "\nLT to aim, RT to fire";
         Load();
     }
@@ -37,6 +35,7 @@ public class RangedWeapon : Item
 
     public override void Save()
     {
+        Player player = Player.Instance;
         if (player)
         {
             ES3.Save(goid + "inMagazine", inMagazine);

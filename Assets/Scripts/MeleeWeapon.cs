@@ -4,7 +4,6 @@ using UnityEngine;
 
 public class MeleeWeapon : Item
 {
-    Player player;
     public float meleeAttackDamage;
     public float meleeAttackSpeed;
     public float meleeAttackNoise;
@@ -18,7 +17,6 @@ public class MeleeWeapon : Item
     {
         name = displayName;
         goid = GetInstanceID().ToString();
-        player = Player.Instance;
         durability = maxDurability / 2 + Random.Range(0, maxDurability / 2 + 1);
         descriptiveText = "Damage: " + meleeAttackDamage + "\nSpeed: " + meleeAttackSpeed + "\nNoise: " + meleeAttackNoise + "\nRange: " + meleeAttackRange + "\nDurability: " + durability + "/" + maxDurability + "\nRT to swing";
 
@@ -33,6 +31,7 @@ public class MeleeWeapon : Item
 
     public override void Save()
     {
+        Player player = Player.Instance;
         if (player)
         {
             ES3.Save(goid + "durability", durability);
@@ -66,9 +65,9 @@ public class MeleeWeapon : Item
         owner.HolsterWeapon();
     }
 
-    public void Break()
+    public void Break(Player owner)
     {
-        player.meleeWeaponEquipped = null;
+        owner.meleeWeaponEquipped = null;
         Destroy();
     }
 }

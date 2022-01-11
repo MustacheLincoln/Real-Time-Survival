@@ -525,7 +525,7 @@ public class Player : MonoBehaviour, IDamageable<float>
                 if (meleeWeaponEquipped.durability > 0)
                     meleeWeaponEquipped.durability -= 1;
                 else
-                    meleeWeaponEquipped.Break();
+                    meleeWeaponEquipped.Break(this);
             }
             EmitNoiseUnique(meleeWeaponEquipped.meleeAttackNoise);
             meleeAttackCooldown = meleeWeaponEquipped.meleeAttackSpeed;
@@ -860,6 +860,7 @@ public class Player : MonoBehaviour, IDamageable<float>
                     {
                         emptyBoxesToDestroy.Add(ammo);
                     }
+                    ammo.UpdateName();
                 }
             }
             if (emptyBoxesToDestroy.Count > 0)

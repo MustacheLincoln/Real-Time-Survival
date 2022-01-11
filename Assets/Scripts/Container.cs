@@ -50,7 +50,7 @@ public class Container : MonoBehaviour
         searched = true;
         if (contents.Count > 0)
         {
-            player.Inspect(contents[0]);
+            StartCoroutine(player.Inspect(contents[0]));
         }
         else
             name = "Empty " + name;

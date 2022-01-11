@@ -92,16 +92,13 @@ public class UI : MonoBehaviour
             else
                 itemLabel.text = "-----";
 
-            if (player.actionState == Player.ActionState.Inspecting)
+            if (player.inspecting)
             {
-                if (player.pickUpTarget)
-                {
-                    inspectLabel.text = player.pickUpTarget.name;
-                    inspectText.text = player.pickUpTarget.descriptiveText;
-                    inspectImage.gameObject.SetActive(true);
-                    inspectBackground.gameObject.SetActive(true);
-                    inspectImage.sprite = player.pickUpTarget.icon;
-                }
+                inspectLabel.text = player.inspecting.name;
+                inspectText.text = player.inspecting.descriptiveText;
+                inspectImage.gameObject.SetActive(true);
+                inspectBackground.gameObject.SetActive(true);
+                inspectImage.sprite = player.inspecting.icon;
             }
             else
             {
@@ -177,10 +174,10 @@ public class UI : MonoBehaviour
             else
                 targetLabel.text = null;
 
-            if (player.actionState == Player.ActionState.Inspecting)
+            if (player.inspecting)
                 targetLabel.text = null;
 
-            if (player.actionState == Player.ActionState.Aiming)
+            if (player.isAiming)
             {
                 if (player.fov.target)
                 {

@@ -599,6 +599,14 @@ public class Player : MonoBehaviour, IDamageable<float>
         }
     }
 
+    public void Drop(Item item)
+    {
+        item.Drop();
+        RemoveItem(item, false);
+        CalculateFoodInInventory();
+        CalculateAmmoInInventory();
+    }
+
     private void Use(Item item)
     {
         inspecting = null;
@@ -610,7 +618,7 @@ public class Player : MonoBehaviour, IDamageable<float>
             return;
         }
         else if (item.GetComponent<Ammo>())
-            item.AddToInventory();
+            PickUp(item);
         else
             item.Equip(this);
         if (item.transform.parent)
@@ -705,10 +713,7 @@ public class Player : MonoBehaviour, IDamageable<float>
                 }
             if (Input.GetButtonDown("Cancel"))
                 if (itemSelected)
-                {
-                    itemSelected.Drop();
-                    RemoveItem(itemSelected, false);
-                }
+                    Drop(itemSelected);
         }
 
         if (input.magnitude > 0)

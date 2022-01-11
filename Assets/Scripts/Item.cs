@@ -39,6 +39,7 @@ public abstract class Item : MonoBehaviour
         gameObject.SetActive(true);
         GetComponent<Collider>().enabled = true;
         transform.parent = null;
+        Save();
     }
 
     public virtual void Equip(Player owner)

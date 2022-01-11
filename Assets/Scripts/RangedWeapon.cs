@@ -60,7 +60,7 @@ public class RangedWeapon : Item
                 }
                 else
                 {
-                    owner.rangedWeaponEquipped.Drop();
+                    owner.Drop(owner.rangedWeaponEquipped);
                 }
             }
         gameObject.SetActive(true);

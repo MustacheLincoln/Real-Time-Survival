@@ -56,7 +56,7 @@ public class MeleeWeapon : Item
                 }
                 else
                 {
-                    owner.meleeWeaponEquipped.Drop();
+                    owner.Drop(owner.meleeWeaponEquipped);
                 }
             }
         gameObject.SetActive(true);

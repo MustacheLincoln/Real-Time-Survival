@@ -31,7 +31,7 @@ public class Player : MonoBehaviour, IDamageable<float>
 
     public float danger = 0;
     public float speed;
-    float walkSpeed = 2;
+    float walkSpeed = 1.5f;
     float runSpeed = 4;
     float crouchWalkSpeed = .75f;
     float acceleration = 50;
@@ -39,11 +39,13 @@ public class Player : MonoBehaviour, IDamageable<float>
     float turnSpeedHigh = 15;
     float grabDistance = 1.4f;
     float idleRadius = 1;
-    float walkRadius = 3;
+    float walkRadius = 2;
     float runRadius = 6;
     float crouchRadius = 1;
     float noiseSphereRadius = 1;
     public int inventorySize = 4;
+    public bool meleeAttacking = false;
+    public bool itemSelectionChanged = false;
 
     float rangedAttackCooldown;
     public float reloadTimeElapsed;
@@ -56,8 +58,6 @@ public class Player : MonoBehaviour, IDamageable<float>
 
     public List<Item> items;
     public List<String> inspected;
-
-    public bool itemSelectionChanged;
 
     public int pistolAmmo;
     public int rifleAmmo;
@@ -78,8 +78,10 @@ public class Player : MonoBehaviour, IDamageable<float>
     Vector3 velocity;
     float turnSpeed;
     Vector3 currentPos;
-    public bool isMoving = false;
-    public bool isAiming = false;
+    public bool isMoving;
+    public bool isAiming;
+    public bool isHoldingLargeRanged;
+    public bool isHoldingLargeMelee;
     Vector3 lastPos;
     float pulseTime = .5f;
 
@@ -143,7 +145,6 @@ public class Player : MonoBehaviour, IDamageable<float>
         Animate();
 
         rangedAttackCooldown -= Time.deltaTime;
-        meleeAttackCooldown -= Time.deltaTime;
 
         velocity = Vector3.Lerp(velocity, transform.forward * input.magnitude * speed, acceleration * Time.deltaTime);
 
@@ -152,59 +153,17 @@ public class Player : MonoBehaviour, IDamageable<float>
         turnSpeed = Mathf.Lerp(turnSpeedHigh, turnSpeedLow, velocity.magnitude / 5);
 
         navMeshAgent.speed = speed;
-
-        if (isAiming)
-        {
-            if (rangedWeaponEquipped)
-            {
-                DrawWeapon(rangedWeaponEquipped);
-                fov.radius = rangedWeaponEquipped.rangedAttackRange;
-            }
-            else
-                isAiming = false;
-            pickUpTarget = null;
-            pickUpTimeElapsed = 0;
-            fov.angle = 45;
-            if (fov.target)
-                if (fov.target.name != "Zombie")
-                    fov.target = null;
-            fov.targetMask = LayerMask.GetMask("Zombie");
-            if (rangedWeaponEquipped.inMagazine > 0)
-            {
-                if (fov.target)
-                    if (aimTimeElapsed < rangedWeaponEquipped.aimTime)
-                        aimTimeElapsed += Time.deltaTime;
-            }
-            else
-            {
-                aimTimeElapsed = 0;
-                if (Input.GetMouseButton(0) || Input.GetAxis("Fire") > 0 || Input.GetKey(KeyCode.Tab))
-                    StartCoroutine(Reloading(rangedWeaponEquipped));
-            }
-            if (Input.GetMouseButton(0) || Input.GetAxis("Fire") > 0)
-            {
-                if (fov.target)
-                    if (roundChambered || rangedWeaponEquipped.gunType == RangedWeapon.GunType.FullAuto)
-                        RangedAttack(fov.target);
-            }
-            else
-                roundChambered = true;
-        }
-        else
-        {
-            fov.radius = fovRadius;
-            fov.angle = fovAngle;
-            fov.targetMask = LayerMask.GetMask("Interactable");
-        }
     }
 
     private void Animate()
     {
-        animator.SetBool("isWalking", (movementState == MovementState.Walking));
-        animator.SetBool("isRunning", (movementState == MovementState.Running));
-        animator.SetBool("isCrouching", (movementState == MovementState.Crouching));
-        animator.SetBool("isCrouchWalking", (movementState == MovementState.CrouchWalking));
-        animator.SetBool("isSideArmAiming", (isAiming));
+        animator.SetBool("isHoldingLargeRanged", isHoldingLargeRanged);
+        animator.SetBool("isHoldingLargeMelee", isHoldingLargeMelee);
+        animator.SetBool("isWalking", movementState == MovementState.Walking);
+        animator.SetBool("isRunning", movementState == MovementState.Running);
+        animator.SetBool("isCrouching", movementState == MovementState.Crouching);
+        animator.SetBool("isCrouchWalking", movementState == MovementState.CrouchWalking);
+        animator.SetBool("isAiming", isAiming);
         switch (movementState)
         {
             case MovementState.Idle:
@@ -221,6 +180,9 @@ public class Player : MonoBehaviour, IDamageable<float>
                 break;
             case MovementState.CrouchWalking:
                 animator.speed = input.magnitude;
+                break;
+            case MovementState.Holding:
+                animator.speed = 1;
                 break;
         }
         if (input.magnitude == 0)
@@ -271,10 +233,10 @@ public class Player : MonoBehaviour, IDamageable<float>
         if (reloading)
             yield break;
         reloading = weapon;
+        reloadTimeElapsed = 0;
         while (reloadTimeElapsed < weapon.reloadTime)
         {
             aimTimeElapsed = 0;
-            fov.target = null;
             reloadTimeElapsed += Time.deltaTime;
             yield return null;
         }
@@ -323,6 +285,7 @@ public class Player : MonoBehaviour, IDamageable<float>
         aimTimeElapsed = 0;
         reloadTimeElapsed = 0;
         movementState = MovementState.Holding;
+        pickUpTimeElapsed = 0;
         while (pickUpTimeElapsed < pickUpTime)
         {
             pickUpTimeElapsed += Time.deltaTime;
@@ -339,6 +302,7 @@ public class Player : MonoBehaviour, IDamageable<float>
             PickUp(item);
         else
             StartCoroutine(Inspect(item));
+        movementState = MovementState.Idle;
         pickUpTimeElapsed = 0;
         pickingUp = null;
     }
@@ -422,6 +386,8 @@ public class Player : MonoBehaviour, IDamageable<float>
 
     public void HolsterWeapon()
     {
+        isHoldingLargeRanged = false;
+        isHoldingLargeMelee = false;
         if (rangedWeaponEquipped)
         {
             if (rangedWeaponEquipped.large)
@@ -509,11 +475,14 @@ public class Player : MonoBehaviour, IDamageable<float>
         }
     }
 
-    private void MeleeAttack()
+    private IEnumerator MeleeAttack()
     {
-        if (meleeWeaponEquipped && meleeAttackCooldown <= 0)
+        if (meleeWeaponEquipped && meleeAttacking == false)
         {
+            meleeAttacking = true;
             DrawWeapon(meleeWeaponEquipped);
+            isHoldingLargeMelee = meleeWeaponEquipped.large;
+            animator.SetTrigger("Melee");
             Collider[] hitZombies = Physics.OverlapSphere(transform.position + transform.forward, meleeWeaponEquipped.meleeAttackRange, 1 << LayerMask.NameToLayer("Zombie"));
             if (hitZombies.Length > 0)
             {
@@ -526,28 +495,31 @@ public class Player : MonoBehaviour, IDamageable<float>
                     meleeWeaponEquipped.durability -= 1;
                 else
                     meleeWeaponEquipped.Break(this);
+                EmitNoiseUnique(meleeWeaponEquipped.meleeAttackNoise);
             }
-            EmitNoiseUnique(meleeWeaponEquipped.meleeAttackNoise);
-            meleeAttackCooldown = meleeWeaponEquipped.meleeAttackSpeed;
+            meleeAttackCooldown = 0;
+            while (meleeAttackCooldown < meleeWeaponEquipped.meleeAttackSpeed)
+            {
+                movementState = MovementState.Holding;
+                meleeAttackCooldown += Time.deltaTime;
+                yield return null;
+            }
+            movementState = MovementState.Idle;            
+            meleeAttacking = false;
         }
     }
 
     private void RangedAttack(GameObject target)
     {
-        if (aimTimeElapsed >= rangedWeaponEquipped.aimTime && rangedAttackCooldown <= 0)
+        if (rangedWeaponEquipped.inMagazine > 0)
         {
-            if (rangedWeaponEquipped.inMagazine > 0)
-            {
-                animator.SetTrigger("SideArmFire");
-                roundChambered = false;
-                target.GetComponent<IDamageable<float>>().TakeDamage(rangedWeaponEquipped.rangedAttackDamage);
-                target.GetComponent<NavMeshAgent>().Move((target.transform.position - transform.position).normalized * rangedWeaponEquipped.rangedKnockback);
-                EmitNoiseUnique(rangedWeaponEquipped.rangedAttackNoise);
-                rangedWeaponEquipped.inMagazine -= 1;
-                rangedAttackCooldown = rangedWeaponEquipped.rangedAttackSpeed;
-                if (rangedWeaponEquipped.gunType == RangedWeapon.GunType.BoltAction)
-                    aimTimeElapsed = 0;
-            }
+            animator.SetTrigger("Fire");
+            roundChambered = false;
+            target.GetComponent<IDamageable<float>>().TakeDamage(rangedWeaponEquipped.rangedAttackDamage);
+            target.GetComponent<NavMeshAgent>().Move((target.transform.position - transform.position).normalized * rangedWeaponEquipped.rangedKnockback);
+            EmitNoiseUnique(rangedWeaponEquipped.rangedAttackNoise);
+            rangedWeaponEquipped.inMagazine -= 1;
+            rangedAttackCooldown = rangedWeaponEquipped.rangedAttackSpeed;
         }
     }
 
@@ -650,10 +622,9 @@ public class Player : MonoBehaviour, IDamageable<float>
 
         if (Input.GetMouseButton(1) || Input.GetAxis("Aim") > 0)
         {
-            movementState = MovementState.Holding;
             if (reloading == null)
             {
-                isAiming = true;
+                StartCoroutine(Aiming());
                 if (Input.GetButtonDown("Reload"))
                     StartCoroutine(Reloading(rangedWeaponEquipped));
                 if (Input.GetMouseButton(1))
@@ -669,26 +640,29 @@ public class Player : MonoBehaviour, IDamageable<float>
         else
         {
             isAiming = false;
-            if (isMoving)
+            if (movementState != MovementState.Holding)
             {
-                if (Input.GetButton("Run"))
+                if (isMoving)
                 {
-                    if (vitals.stamina > 1)
-                        movementState = MovementState.Running;
+                    if (Input.GetButton("Run"))
+                    {
+                        if (vitals.stamina > 1 && input.magnitude >= .99f)
+                            movementState = MovementState.Running;
+                        else
+                            movementState = MovementState.Walking;
+                    }
+                    else if (Input.GetButton("Crouch"))
+                        movementState = MovementState.CrouchWalking;
                     else
                         movementState = MovementState.Walking;
                 }
                 else if (Input.GetButton("Crouch"))
-                    movementState = MovementState.CrouchWalking;
+                    movementState = MovementState.Crouching;
                 else
-                    movementState = MovementState.Walking;
+                    movementState = MovementState.Idle;
             }
-            else if (Input.GetButton("Crouch"))
-                movementState = MovementState.Crouching;
-            else
-                movementState = MovementState.Idle;
             if (Input.GetMouseButton(0) || Input.GetAxis("Fire") > 0 || Input.GetKey(KeyCode.Tab))
-                MeleeAttack();
+                StartCoroutine(MeleeAttack());
             if (Input.GetAxis("InventoryAxis") < 0)
             {
                 if (itemSelectionChanged == false)
@@ -762,6 +736,64 @@ public class Player : MonoBehaviour, IDamageable<float>
                         if (isMoving == false)
                             Search(navTarget.GetComponent<Container>());
             }    
+    }
+
+    private IEnumerator Aiming()
+    {
+        if (isAiming)
+            yield break;
+        isAiming = true;
+        if (rangedWeaponEquipped == null)
+        {
+            isAiming = false;
+            yield break;
+        }
+        DrawWeapon(rangedWeaponEquipped);
+        isHoldingLargeRanged = rangedWeaponEquipped.large;
+        pickUpTarget = null;
+        pickUpTimeElapsed = 0;
+        aimTimeElapsed = 0;
+        while (isAiming)
+        {
+            movementState = MovementState.Holding;
+            fov.radius = rangedWeaponEquipped.rangedAttackRange;
+            fov.angle = 45;
+            if (fov.target)
+                if (fov.target.name != "Zombie")
+                    fov.target = null;
+            fov.targetMask = LayerMask.GetMask("Zombie");
+            if (rangedWeaponEquipped.inMagazine > 0)
+            {
+                if (fov.target)
+                    if (aimTimeElapsed < rangedWeaponEquipped.aimTime)
+                        aimTimeElapsed += Time.deltaTime;
+            }
+            else
+            {
+                aimTimeElapsed = 0;
+                if (Input.GetMouseButton(0) || Input.GetAxis("Fire") > 0 || Input.GetKey(KeyCode.Tab))
+                    StartCoroutine(Reloading(rangedWeaponEquipped));
+            }
+            if (Input.GetMouseButton(0) || Input.GetAxis("Fire") > 0)
+            {
+                if (fov.target)
+                    if (roundChambered || rangedWeaponEquipped.gunType == RangedWeapon.GunType.FullAuto)
+                        if (aimTimeElapsed >= rangedWeaponEquipped.aimTime && rangedAttackCooldown <= 0)
+                        {
+                            RangedAttack(fov.target);
+                            if (rangedWeaponEquipped.gunType == RangedWeapon.GunType.BoltAction)
+                                aimTimeElapsed = 0;
+                        }
+            }
+            else
+                roundChambered = true;
+            yield return null;
+        }
+        movementState = MovementState.Idle;
+        fov.radius = fovRadius;
+        fov.angle = fovAngle;
+        fov.targetMask = LayerMask.GetMask("Interactable");
+        isAiming = false;
     }
 
     private void Search(Container container)

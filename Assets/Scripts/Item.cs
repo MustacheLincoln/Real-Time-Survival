@@ -49,21 +49,22 @@ public abstract class Item : MonoBehaviour
 
     }
 
-    public void Unequip()
+    public void Unequip(Player owner)
     {
-        Player player = Player.Instance;
         gameObject.SetActive(false);
         GetComponent<Collider>().enabled = true;
-        if (player.itemSelected)
+        if (!owner.items.Contains(this))
         {
-            int index = player.items.IndexOf(player.itemSelected);
-            if (index <= player.items.Count - 1)
-                player.items.Insert(index, this);
+            if (owner.itemSelected)
+            {
+                int index = owner.items.IndexOf(owner.itemSelected);
+                if (index <= owner.items.Count - 1)
+                    owner.items.Insert(index, this);
+            }
             else
-                player.items.Insert(0, this);
+                owner.items.Add(this);
+            owner.itemSelected = this;
         }
-        else
-            player.items.Insert(0, this);
         Save();
     }
 

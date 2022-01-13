@@ -50,7 +50,7 @@ public class MeleeWeapon : Item
                     storage = owner.backpackEquipped.storage;
                 if (owner.items.Count < owner.inventorySize + storage)
                 {
-                    owner.meleeWeaponEquipped.Unequip();
+                    owner.meleeWeaponEquipped.Unequip(owner);
                     isReplacingEquipment = true;
                 }
                 else

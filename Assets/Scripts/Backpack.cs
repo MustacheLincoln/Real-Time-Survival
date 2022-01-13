@@ -21,7 +21,7 @@ public class Backpack : Item
         if (owner.backpackEquipped)
             if (owner.backpackEquipped != this)
             {
-                owner.backpackEquipped.Unequip();
+                owner.backpackEquipped.Unequip(owner);
                 isReplacingEquipment = true;
             }
         gameObject.SetActive(true);

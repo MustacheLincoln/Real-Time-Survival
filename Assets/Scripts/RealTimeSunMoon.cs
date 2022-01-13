@@ -14,11 +14,12 @@ public class RealTimeSunMoon : MonoBehaviour
 
     private void Update()
     {
-        TimeSpan timeSinceDawn = DateTime.Now - DateTime.Now.Date.AddHours(6);
-        float secondsSinceDawn = (float)timeSinceDawn.TotalSeconds;
-        float angle = secondsSinceDawn / 240;
-        if (angle < 180)
+        TimeSpan timeSinceMidnight = DateTime.Now - DateTime.Now.Date;
+        float secondsSinceMidnight = (float)timeSinceMidnight.TotalSeconds;
+        float angle = secondsSinceMidnight / 240 + 90;
+        if (angle >= 180 && angle < 360)
         {
+            angle = angle - 180;
             directionalLight.color = sunColor;
             directionalLight.intensity = dayIntensity;
             if (angle < fadeAngle)
@@ -28,7 +29,6 @@ public class RealTimeSunMoon : MonoBehaviour
         }
         else
         {
-            angle = angle - 180;
             directionalLight.color = moonColor;
             directionalLight.intensity = nightIntensity;
             if (angle < fadeAngle)

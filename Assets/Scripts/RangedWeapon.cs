@@ -54,7 +54,7 @@ public class RangedWeapon : Item
                     storage = owner.backpackEquipped.storage;
                 if (owner.items.Count < owner.inventorySize + storage)
                 {
-                    owner.rangedWeaponEquipped.Unequip();
+                    owner.rangedWeaponEquipped.Unequip(owner);
                     isReplacingEquipment = true;
                 }
                 else

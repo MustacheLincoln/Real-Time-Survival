@@ -64,6 +64,7 @@ public class RangedWeapon : Item
             }
         GetComponent<Renderer>().enabled = true;
         GetComponent<Collider>().enabled = false;
+        GetComponent<Rigidbody>().isKinematic = true;
         owner.RemoveItem(this, isReplacingEquipment);
         owner.rangedWeaponEquipped = this;
         owner.HolsterWeapon();

@@ -39,11 +39,14 @@ public abstract class Item : MonoBehaviour
             }
     }
 
-    public virtual void Drop()
+    public virtual IEnumerator Drop()
     {
+        transform.parent = null;
         GetComponent<Renderer>().enabled = true;
         GetComponent<Collider>().enabled = true;
-        transform.parent = null;
+        GetComponent<Rigidbody>().isKinematic = false;
+        yield return new WaitForSecondsRealtime(2);
+        GetComponent<Rigidbody>().isKinematic = true;
     }
 
     public virtual void Equip(Player owner) { }
@@ -57,6 +60,7 @@ public abstract class Item : MonoBehaviour
     {
         GetComponent<Renderer>().enabled = false;
         GetComponent<Collider>().enabled = false;
+        GetComponent<Rigidbody>().isKinematic = true;
         if (!owner.items.Contains(this))
         {
             if (owner.itemSelected)
@@ -76,6 +80,7 @@ public abstract class Item : MonoBehaviour
         Player player = Player.Instance;
         GetComponent<Renderer>().enabled = false;
         GetComponent<Collider>().enabled = false;
+        GetComponent<Rigidbody>().isKinematic = true;
         transform.position = player.transform.position;
         transform.parent = player.transform;
         if (!player.items.Contains(this))

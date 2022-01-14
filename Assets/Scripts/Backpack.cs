@@ -26,6 +26,7 @@ public class Backpack : Item
             }
         GetComponent<Renderer>().enabled = true;
         GetComponent<Collider>().enabled = false;
+        GetComponent<Rigidbody>().isKinematic = true;
         owner.RemoveItem(this, isReplacingEquipment);
         owner.backpackEquipped = this;
         transform.position = owner.backpackAttachPoint.position;

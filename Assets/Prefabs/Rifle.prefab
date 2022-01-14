@@ -1,6 +1,6 @@
 %YAML 1.1
 %TAG !u! tag:unity3d.com,2011:
---- !u!1 &3234220454853264157
+--- !u!1 &6043322061985346078
 GameObject:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -8,48 +8,48 @@ GameObject:
   m_PrefabAsset: {fileID: 0}
   serializedVersion: 6
   m_Component:
-  - component: {fileID: 8596925899727184664}
-  - component: {fileID: 5340522725203766517}
-  - component: {fileID: 3487404370137927414}
-  - component: {fileID: 4817137530674437980}
-  - component: {fileID: 2839352598763384588}
-  - component: {fileID: 4237499817357223309}
+  - component: {fileID: 6383256304120146084}
+  - component: {fileID: 8014782656410920705}
+  - component: {fileID: 5250859706867864523}
+  - component: {fileID: 7748274059777967250}
+  - component: {fileID: 683307306462140226}
+  - component: {fileID: -5385845575038074556}
   m_Layer: 3
-  m_Name: Backpack
+  m_Name: Rifle
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!4 &8596925899727184664
+--- !u!4 &6383256304120146084
 Transform:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 3234220454853264157}
-  m_LocalRotation: {x: -0.7071068, y: 0, z: 0, w: 0.7071068}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_GameObject: {fileID: 6043322061985346078}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: -0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 0}
   m_RootOrder: 0
-  m_LocalEulerAnglesHint: {x: -90, y: 0, z: 0}
---- !u!33 &5340522725203766517
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!33 &8014782656410920705
 MeshFilter:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 3234220454853264157}
-  m_Mesh: {fileID: -5003366202268185646, guid: 2d7cd927ea09d2f47b69ccf4415cd789, type: 3}
---- !u!23 &3487404370137927414
+  m_GameObject: {fileID: 6043322061985346078}
+  m_Mesh: {fileID: 624270676327525987, guid: e8535d177a04b024e9d5152984ac84ca, type: 3}
+--- !u!23 &5250859706867864523
 MeshRenderer:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 3234220454853264157}
+  m_GameObject: {fileID: 6043322061985346078}
   m_Enabled: 1
   m_CastShadows: 1
   m_ReceiveShadows: 1
@@ -62,7 +62,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: -876546973899608171, guid: 2d7cd927ea09d2f47b69ccf4415cd789, type: 3}
+  - {fileID: 2100000, guid: 93363195aaa838b4d9f0bd3371dae30c, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -84,46 +84,57 @@ MeshRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 0
   m_AdditionalVertexStreams: {fileID: 0}
---- !u!114 &4817137530674437980
+--- !u!114 &7748274059777967250
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 3234220454853264157}
+  m_GameObject: {fileID: 6043322061985346078}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: a08924a04b5877746aac8aa68ed4191d, type: 3}
+  m_Script: {fileID: 11500000, guid: 52925b440470f1b429fea3623ca756e2, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  displayName: Backpack
+  displayName: Rifle
   goid: 
   descriptiveText: 
   amount: 0
   maxAmount: 0
-  icon: {fileID: 21300000, guid: 56e7f70734486804c9363bdadb764464, type: 3}
-  storage: 4
---- !u!64 &2839352598763384588
+  icon: {fileID: 21300000, guid: 0beff7bfe32511342bba0fbc454f360f, type: 3}
+  rangedAttackDamage: 100
+  rangedAttackSpeed: 1
+  rangedAttackNoise: 20
+  rangedAttackRange: 20
+  rangedKnockback: 0.25
+  large: 1
+  magazineSize: 5
+  inMagazine: 2
+  reloadTime: 2
+  aimTime: 1
+  ammoType: 0
+  gunType: 2
+--- !u!64 &683307306462140226
 MeshCollider:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 3234220454853264157}
+  m_GameObject: {fileID: 6043322061985346078}
   m_Material: {fileID: 0}
   m_IsTrigger: 0
   m_Enabled: 1
   serializedVersion: 4
   m_Convex: 1
   m_CookingOptions: 30
-  m_Mesh: {fileID: -5003366202268185646, guid: 2d7cd927ea09d2f47b69ccf4415cd789, type: 3}
---- !u!54 &4237499817357223309
+  m_Mesh: {fileID: 624270676327525987, guid: e8535d177a04b024e9d5152984ac84ca, type: 3}
+--- !u!54 &-5385845575038074556
 Rigidbody:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 3234220454853264157}
+  m_GameObject: {fileID: 6043322061985346078}
   serializedVersion: 2
   m_Mass: 1
   m_Drag: 0

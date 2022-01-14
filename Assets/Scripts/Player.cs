@@ -92,8 +92,8 @@ public class Player : MonoBehaviour, IDamageable<float>
     public MovementState movementState;
     public float searchTimeElapsed;
 
-    private void Awake() 
-    { 
+    private void Awake()
+    {
         Instance = this;
         navMeshAgent = GetComponent<NavMeshAgent>();
         vitals = GetComponent<PlayerVitals>();
@@ -148,7 +148,7 @@ public class Player : MonoBehaviour, IDamageable<float>
 
         velocity = Vector3.Lerp(velocity, transform.forward * input.magnitude * speed, acceleration * Time.deltaTime);
 
-        navMeshAgent.Move(velocity*Time.deltaTime);
+        navMeshAgent.Move(velocity * Time.deltaTime);
 
         turnSpeed = Mathf.Lerp(turnSpeedHigh, turnSpeedLow, velocity.magnitude / 5);
 
@@ -227,16 +227,12 @@ public class Player : MonoBehaviour, IDamageable<float>
         if (ammo == null)
             foreach (Item item in items)
                 if (item.GetComponent<Ammo>())
-                    if (ammo.ammoType == weapon.ammoType)
+                    if (item.GetComponent<Ammo>().ammoType == weapon.ammoType)
                     {
                         ammo = item as Ammo;
                         break;
                     }
-        if (ammo == null)
-            yield break;
-        if (weapon.inMagazine >= weapon.magazineSize)
-            yield break;
-        if (reloading)
+        if (ammo == null || weapon.inMagazine >= weapon.magazineSize || reloading)
             yield break;
         reloading = weapon;
         while (reloadTimeElapsed < weapon.reloadTime)
@@ -555,7 +551,7 @@ public class Player : MonoBehaviour, IDamageable<float>
 
     public void Drop(Item item)
     {
-        item.Drop();
+        StartCoroutine(item.Drop());
         RemoveItem(item, false);
         CalculateFoodInInventory();
         CalculateAmmoInInventory();

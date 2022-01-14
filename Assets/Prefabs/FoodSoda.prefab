@@ -11,8 +11,9 @@ GameObject:
   - component: {fileID: 2662326745947929623}
   - component: {fileID: 2662326745947929624}
   - component: {fileID: 2662326745947929625}
-  - component: {fileID: 2662326745947929626}
   - component: {fileID: 5579339752722888201}
+  - component: {fileID: 5136190832202813612}
+  - component: {fileID: 2870964615438159794}
   m_Layer: 3
   m_Name: FoodSoda
   m_TagString: Food
@@ -83,20 +84,6 @@ MeshRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 0
   m_AdditionalVertexStreams: {fileID: 0}
---- !u!136 &2662326745947929626
-CapsuleCollider:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2662326745947929627}
-  m_Material: {fileID: 0}
-  m_IsTrigger: 0
-  m_Enabled: 1
-  m_Radius: 0.5000001
-  m_Height: 2
-  m_Direction: 1
-  m_Center: {x: 0.000000059604645, y: 0, z: -0.00000008940697}
 --- !u!114 &5579339752722888201
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -112,7 +99,39 @@ MonoBehaviour:
   displayName: Soda
   goid: 
   descriptiveText: 
+  amount: 0
+  maxAmount: 0
   icon: {fileID: 21300000, guid: 543584f5b74acc640a42d23bcf6858c1, type: 3}
   calories: 150
   milliliters: 350
   eatingTime: 1
+--- !u!64 &5136190832202813612
+MeshCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2662326745947929627}
+  m_Material: {fileID: 0}
+  m_IsTrigger: 0
+  m_Enabled: 1
+  serializedVersion: 4
+  m_Convex: 1
+  m_CookingOptions: 30
+  m_Mesh: {fileID: 10206, guid: 0000000000000000e000000000000000, type: 0}
+--- !u!54 &2870964615438159794
+Rigidbody:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2662326745947929627}
+  serializedVersion: 2
+  m_Mass: 1
+  m_Drag: 0
+  m_AngularDrag: 0.05
+  m_UseGravity: 1
+  m_IsKinematic: 1
+  m_Interpolate: 0
+  m_Constraints: 0
+  m_CollisionDetection: 0

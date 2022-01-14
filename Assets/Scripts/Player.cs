@@ -541,12 +541,14 @@ public class Player : MonoBehaviour, IDamageable<float>
                 if (item.transform.parent.gameObject.GetComponent<Container>())
                     item.transform.parent.gameObject.GetComponent<Container>().NextItem();
             item.AddToInventory();
-            inspected.Add(item.name);
+            if (!inspected.Contains(item.name))
+                inspected.Add(item.name);
             inspecting = null;
             fov.target = null;
             CalculateFoodInInventory();
             CalculateAmmoInInventory();
         }
+        pickUpTarget = null;
     }
 
     public void Drop(Item item)

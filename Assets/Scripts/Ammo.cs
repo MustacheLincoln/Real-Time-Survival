@@ -32,7 +32,8 @@ public class Ammo : Item
 
     public override void Use(Player owner)
     {
-        StartCoroutine(owner.Reloading(owner.rangedWeaponEquipped, this));
+        if (owner.rangedWeaponEquipped)
+            StartCoroutine(owner.Reloading(owner.rangedWeaponEquipped, this));
     }
 
     public override void Load()

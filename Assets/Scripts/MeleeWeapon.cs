@@ -58,7 +58,7 @@ public class MeleeWeapon : Item
                     owner.Drop(owner.meleeWeaponEquipped);
                 }
             }
-        gameObject.SetActive(true);
+        GetComponent<Renderer>().enabled = true;
         GetComponent<Collider>().enabled = false;
         owner.RemoveItem(this, isReplacingEquipment);
         owner.meleeWeaponEquipped = this;

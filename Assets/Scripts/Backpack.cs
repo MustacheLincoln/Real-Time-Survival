@@ -24,7 +24,7 @@ public class Backpack : Item
                 owner.backpackEquipped.Unequip(owner);
                 isReplacingEquipment = true;
             }
-        gameObject.SetActive(true);
+        GetComponent<Renderer>().enabled = true;
         GetComponent<Collider>().enabled = false;
         owner.RemoveItem(this, isReplacingEquipment);
         owner.backpackEquipped = this;

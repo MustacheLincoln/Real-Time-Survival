@@ -15,4 +15,9 @@ public class Food : Item
         descriptiveText = "Calories: " + calories + "\nmL: " + milliliters + "\nTime to eat: " + eatingTime;
         Load();
     }
+
+    public override void Use(Player owner)
+    {
+        StartCoroutine(owner.Eat(this));
+    }
 }

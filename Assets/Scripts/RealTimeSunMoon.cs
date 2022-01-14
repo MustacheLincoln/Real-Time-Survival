@@ -6,7 +6,7 @@ public class RealTimeSunMoon : MonoBehaviour
     Light directionalLight;
     Color sunColor = new Color(.9922f, .9843f, .8275f);
     Color moonColor = new Color(.31f, .412f, .533f);
-    float fadeAngle = 20;
+    float fadeAngle = 5;
     float dayIntensity = 1;
     float nightIntensity = .5f;
 
@@ -19,7 +19,7 @@ public class RealTimeSunMoon : MonoBehaviour
         float angle = secondsSinceMidnight / 240 + 90;
         if (angle >= 180 && angle < 360)
         {
-            angle = angle - 180;
+            angle -= 180;
             directionalLight.color = sunColor;
             directionalLight.intensity = dayIntensity;
             if (angle < fadeAngle)
@@ -29,6 +29,8 @@ public class RealTimeSunMoon : MonoBehaviour
         }
         else
         {
+            if (angle >= 360)
+                angle -= 360;
             directionalLight.color = moonColor;
             directionalLight.intensity = nightIntensity;
             if (angle < fadeAngle)

@@ -222,57 +222,39 @@ public class Player : MonoBehaviour, IDamageable<float>
         }
     }
 
-    private IEnumerator Reloading(RangedWeapon weapon)
+    public IEnumerator Reloading(RangedWeapon weapon, Ammo ammo = null)
     {
+        if (ammo == null)
+            foreach (Item item in items)
+                if (item.GetComponent<Ammo>())
+                    if (ammo.ammoType == weapon.ammoType)
+                    {
+                        ammo = item as Ammo;
+                        break;
+                    }
+        if (ammo == null)
+            yield break;
         if (weapon.inMagazine >= weapon.magazineSize)
-            yield break;
-        if (weapon.ammoType == Ammo.AmmoType.Pistol && pistolAmmo <= 0)
-            yield break;
-        if (weapon.ammoType == Ammo.AmmoType.Rifle && rifleAmmo <= 0)
             yield break;
         if (reloading)
             yield break;
         reloading = weapon;
-        reloadTimeElapsed = 0;
         while (reloadTimeElapsed < weapon.reloadTime)
         {
             aimTimeElapsed = 0;
             reloadTimeElapsed += Time.deltaTime;
             yield return null;
         }
-        if (weapon.ammoType == Ammo.AmmoType.Pistol)
+        int reloadAmount = Mathf.Min((rangedWeaponEquipped.magazineSize - rangedWeaponEquipped.inMagazine), ammo.amount);
+        ammo.amount -= reloadAmount;
+        rangedWeaponEquipped.inMagazine += reloadAmount;
+        reloading = null;
+        if (rangedWeaponEquipped.magazineSize - rangedWeaponEquipped.inMagazine > 0)
         {
-            int reloadAmount = Mathf.Min((rangedWeaponEquipped.magazineSize - rangedWeaponEquipped.inMagazine), pistolAmmo);
-            pistolAmmo -= reloadAmount;
-            rangedWeaponEquipped.inMagazine += reloadAmount;
-        }
-        if (weapon.ammoType == Ammo.AmmoType.Rifle)
-        {
-            int reloadAmount = Mathf.Min((rangedWeaponEquipped.magazineSize - rangedWeaponEquipped.inMagazine), rifleAmmo);
-            rifleAmmo -= reloadAmount;
-            rangedWeaponEquipped.inMagazine += reloadAmount;
-        }
-        foreach (Item item in items)
-        {
-            if (item.GetComponent<Ammo>())
-            {
-                Ammo ammo = item as Ammo;
-                if (ammo.ammoType == weapon.ammoType)
-                {
-                    ammo.amount = Mathf.Min(pistolAmmo, ammo.maxAmount);
-                    pistolAmmo -= ammo.amount;
-                    break;
-                }
-                else if (ammo.ammoType == Ammo.AmmoType.Rifle)
-                {
-                    ammo.amount = Mathf.Min(rifleAmmo, ammo.maxAmount);
-                    rifleAmmo -= ammo.amount;
-                    break;
-                }
-            }
+            StartCoroutine(Reloading(weapon));
+            yield break;
         }
         reloadTimeElapsed = 0;
-        reloading = null;
         CalculateAmmoInInventory();
     }
 
@@ -307,7 +289,7 @@ public class Player : MonoBehaviour, IDamageable<float>
         pickingUp = null;
     }
 
-    private IEnumerator Eat(Food food)
+    public IEnumerator Eat(Food food)
     {
         bool edible;
         if (food.calories > food.milliliters)
@@ -584,18 +566,10 @@ public class Player : MonoBehaviour, IDamageable<float>
         inspecting = null;
         fov.target = null;
         inspected.Add(item.name);
-        if (item.GetComponent<Food>())
-        {
-            StartCoroutine(Eat(item as Food));
-            return;
-        }
-        else if (item.GetComponent<Ammo>())
-            PickUp(item);
-        else
-            item.Equip(this);
-        if (item.transform.parent)
-            if (item.transform.parent.gameObject.GetComponent<Container>())
-                item.transform.parent.gameObject.GetComponent<Container>().NextItem();
+        item.Use(this);
+        //if (item.transform.parent)
+            //if (item.transform.parent.gameObject.GetComponent<Container>())
+                //item.transform.parent.gameObject.GetComponent<Container>().NextItem();
     }
 
     private void CaptureInput()
@@ -677,14 +651,7 @@ public class Player : MonoBehaviour, IDamageable<float>
                 itemSelectionChanged = false;
             if (Input.GetButtonDown("Use"))
                 if (itemSelected)
-                {
-                    if (itemSelected.GetComponent<Food>())
-                        StartCoroutine(Eat(itemSelected as Food));
-                    else
-                    {
-                        itemSelected.Equip(this);
-                    }
-                }
+                    itemSelected.Use(this);
             if (Input.GetButtonDown("Cancel"))
                 if (itemSelected)
                     Drop(itemSelected);

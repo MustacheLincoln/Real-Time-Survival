@@ -62,7 +62,7 @@ public class RangedWeapon : Item
                     owner.Drop(owner.rangedWeaponEquipped);
                 }
             }
-        gameObject.SetActive(true);
+        GetComponent<Renderer>().enabled = true;
         GetComponent<Collider>().enabled = false;
         owner.RemoveItem(this, isReplacingEquipment);
         owner.rangedWeaponEquipped = this;

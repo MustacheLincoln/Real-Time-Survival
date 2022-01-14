@@ -61,6 +61,8 @@ MonoBehaviour:
   displayName: Pistol
   goid: 
   descriptiveText: 
+  amount: 0
+  maxAmount: 0
   icon: {fileID: 21300000, guid: b4cc8c94360a8bb4290a759342fe59ae, type: 3}
   rangedAttackDamage: 34
   rangedAttackSpeed: 0.25
@@ -69,7 +71,7 @@ MonoBehaviour:
   rangedKnockback: 0.1
   large: 0
   magazineSize: 10
-  inMagazine: 10
+  inMagazine: 5
   reloadTime: 1
   aimTime: 0.5
   ammoType: 1

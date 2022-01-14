@@ -30,6 +30,11 @@ public class Ammo : Item
         }
     }
 
+    public override void Use(Player owner)
+    {
+        StartCoroutine(owner.Reloading(owner.rangedWeaponEquipped, this));
+    }
+
     public override void Load()
     {
         amount = ES3.Load(goid + "ammo", amount);

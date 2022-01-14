@@ -224,17 +224,26 @@ public class Player : MonoBehaviour, IDamageable<float>
 
     public IEnumerator Reloading(RangedWeapon weapon, Ammo ammo = null)
     {
+        reloading = weapon;
         if (ammo == null)
             foreach (Item item in items)
                 if (item.GetComponent<Ammo>())
                     if (item.GetComponent<Ammo>().ammoType == weapon.ammoType)
                     {
                         ammo = item as Ammo;
+                        reloading = null;
                         break;
                     }
         if (ammo == null || weapon.inMagazine >= weapon.magazineSize || reloading)
+        {
+            reloading = null;
             yield break;
-        reloading = weapon;
+        }
+        if (ammo.ammoType != weapon.ammoType)
+        {
+            reloading = null;
+            yield break;
+        }
         while (reloadTimeElapsed < weapon.reloadTime)
         {
             aimTimeElapsed = 0;

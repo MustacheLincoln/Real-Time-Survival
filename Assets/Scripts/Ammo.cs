@@ -9,6 +9,7 @@ public class Ammo : Item
 
     private void Start()
     {
+        nameForInspected = displayName;
         goid = GetInstanceID().ToString();
         descriptiveText = "A box of " + ammoType + " cartridges";
         Load();

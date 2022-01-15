@@ -11,6 +11,7 @@ public class Food : Item
     private void Start()
     {
         name = displayName;
+        nameForInspected = displayName;
         goid = GetInstanceID().ToString();
         descriptiveText = "Calories: " + calories + "\nmL: " + milliliters + "\nTime to eat: " + eatingTime;
         Load();

@@ -3,8 +3,6 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.AI;
-using UnityEngine.UI;
-using TMPro;
 
 public class Player : MonoBehaviour, IDamageable<float>
 {
@@ -91,6 +89,7 @@ public class Player : MonoBehaviour, IDamageable<float>
     public enum MovementState { Idle, Walking, Running, Crouching, CrouchWalking, Holding }
     public MovementState movementState;
     public float searchTimeElapsed;
+    private bool transitioning;
 
     private void Awake()
     {
@@ -291,15 +290,6 @@ public class Player : MonoBehaviour, IDamageable<float>
     {
         if (pickingUp)
             yield break;
-        int storage = 0;
-        if (backpackEquipped)
-            storage = backpackEquipped.storage;
-        if (items.Count >= inventorySize + storage)
-        {
-            if (item.GetComponent<Ammo>())
-                RefillAmmo(item as Ammo);
-            yield break;
-        }
         pickingUp = item;
         HolsterWeapon();
         aimTimeElapsed = 0;
@@ -319,7 +309,7 @@ public class Player : MonoBehaviour, IDamageable<float>
             }
         }
         navMeshAgent.ResetPath();
-        if (inspected.Contains(item.name))
+        if (inspected.Contains(item.nameForInspected))
             PickUp(item);
         else
             StartCoroutine(Inspect(item));
@@ -584,8 +574,8 @@ public class Player : MonoBehaviour, IDamageable<float>
                 if (item.transform.parent.gameObject.GetComponent<Container>())
                     item.transform.parent.gameObject.GetComponent<Container>().NextItem();
             item.AddToInventory();
-            if (!inspected.Contains(item.name))
-                inspected.Add(item.name);
+            if (!inspected.Contains(item.nameForInspected))
+                inspected.Add(item.nameForInspected);
             inspecting = null;
             fov.target = null;
             CalculateFoodInInventory();
@@ -609,7 +599,7 @@ public class Player : MonoBehaviour, IDamageable<float>
     {
         inspecting = null;
         fov.target = null;
-        inspected.Add(item.name);
+        inspected.Add(item.nameForInspected);
         item.Use(this);
         //if (item.transform.parent)
             //if (item.transform.parent.gameObject.GetComponent<Container>())
@@ -622,6 +612,7 @@ public class Player : MonoBehaviour, IDamageable<float>
         {
             if (Input.GetButtonDown("Submit"))
             {
+                transitioning = true;
                 PickUp(inspecting);
             }
             else if (Input.GetButtonDown("Use"))
@@ -644,7 +635,10 @@ public class Player : MonoBehaviour, IDamageable<float>
             {
                 StartCoroutine(Aiming());
                 if (Input.GetButtonDown("Reload"))
+                {
+                    transitioning = true;
                     StartCoroutine(Reloading(rangedWeaponEquipped));
+                }
                 if (Input.GetMouseButton(1))
                 {
                     input = Vector2.zero;
@@ -711,7 +705,7 @@ public class Player : MonoBehaviour, IDamageable<float>
         }
         else
         {
-            if (Input.GetButton("PickUp"))
+            if (Input.GetButton("PickUp") && transitioning == false)
             {
                 if (fov.target && isAiming == false)
                 {
@@ -733,7 +727,13 @@ public class Player : MonoBehaviour, IDamageable<float>
         if (Input.GetButtonDown("PickUp"))
             if (fov.target)
                 if (fov.target.name == "Door")
+                {
+                    transitioning = true;
                     fov.target.GetComponent<Door>().Interact();
+                }
+
+        if (Input.GetButtonUp("PickUp"))
+            transitioning = false;
 
         if (navTarget)
             if (Vector3.Distance(transform.position, navTarget.transform.position) < grabDistance)

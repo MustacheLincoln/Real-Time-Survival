@@ -10,6 +10,7 @@ public class Backpack : Item
     private void Start()
     {
         name = displayName;
+        nameForInspected = displayName;
         goid = GetInstanceID().ToString();
         descriptiveText = "Adds " + storage + " Inventory Slots";
         Load();

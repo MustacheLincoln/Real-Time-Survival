@@ -16,6 +16,7 @@ public class MeleeWeapon : Item
     private void Start()
     {
         name = displayName;
+        nameForInspected = displayName;
         goid = GetInstanceID().ToString();
         durability = maxDurability / 2 + Random.Range(0, maxDurability / 2 + 1);
         descriptiveText = "Damage: " + meleeAttackDamage + "\nSpeed: " + meleeAttackSpeed + "\nRange: " + meleeAttackRange + "\nRT to swing";

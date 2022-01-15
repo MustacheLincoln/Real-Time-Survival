@@ -22,7 +22,6 @@ public class RangedWeapon : Item
     private void Start()
     {
         name = displayName;
-        nameForInspected = displayName;
         goid = GetInstanceID().ToString();
         descriptiveText = "Damage: " + rangedAttackDamage + "\nTime to aim: " + aimTime + "\nRange: " + rangedAttackRange + "\nLT to aim, RT to fire";
         Load();

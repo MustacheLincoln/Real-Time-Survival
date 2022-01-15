@@ -23,8 +23,8 @@ public class Player : MonoBehaviour, IDamageable<float>
     public Backpack backpackEquipped;
 
     float pickUpTime = .25f;
-    float pickUpTimeElapsed;
-    public Item pickUpTarget;
+    float interactTimeElapsed;
+    public Item interactTarget;
     GameObject navTarget;
 
     public float danger = 0;
@@ -35,7 +35,7 @@ public class Player : MonoBehaviour, IDamageable<float>
     float acceleration = 50;
     float turnSpeedLow = 7;
     float turnSpeedHigh = 15;
-    float grabDistance = 1.4f;
+    float interactDistance = 1.4f;
     float idleRadius = 1;
     float walkRadius = 2;
     float runRadius = 6;
@@ -43,7 +43,7 @@ public class Player : MonoBehaviour, IDamageable<float>
     float noiseSphereRadius = 1;
     public int inventorySize = 4;
     public bool meleeAttacking = false;
-    public bool itemSelectionChanged = false;
+    bool inventoryPressed = false;
 
     float rangedAttackCooldown;
     public float reloadTimeElapsed;
@@ -55,14 +55,13 @@ public class Player : MonoBehaviour, IDamageable<float>
     public MeleeWeapon meleeWeaponEquipped;
 
     public List<Item> items;
-    public List<String> inspected;
 
     public int pistolAmmo;
     public int rifleAmmo;
 
     public Food eating;
     public Item inspecting;
-    public Item pickingUp;
+    public Item interacting;
     public RangedWeapon reloading;
     public Item itemSelected;
     public float eatingTimeElapsed;
@@ -89,7 +88,7 @@ public class Player : MonoBehaviour, IDamageable<float>
     public enum MovementState { Idle, Walking, Running, Crouching, CrouchWalking, Holding }
     public MovementState movementState;
     public float searchTimeElapsed;
-    private bool transitioning;
+    private bool pickUpPressed;
 
     private void Awake()
     {
@@ -125,7 +124,6 @@ public class Player : MonoBehaviour, IDamageable<float>
         items = ES3.Load("playerItems", items);
         itemSelected = ES3.Load("playerItemSelected", itemSelected);
         backpackEquipped = ES3.Load("backpackEquipped", backpackEquipped);
-        inspected = ES3.Load("inspected", inspected);
     }
 
     private void Start()
@@ -286,36 +284,39 @@ public class Player : MonoBehaviour, IDamageable<float>
             ammo.Destroy();
     }
 
-    private IEnumerator PickingUp(Item item)
+    private IEnumerator Interacting(Item item, string action)
     {
-        if (pickingUp)
+        if (interacting)
             yield break;
-        pickingUp = item;
+        interacting = item;
         HolsterWeapon();
         aimTimeElapsed = 0;
         reloadTimeElapsed = 0;
         movementState = MovementState.Holding;
-        pickUpTimeElapsed = 0;
-        while (pickUpTimeElapsed < pickUpTime)
+        interactTimeElapsed = 0;
+        while (interactTimeElapsed < pickUpTime)
         {
-            pickUpTimeElapsed += Time.deltaTime;
+            interactTimeElapsed += Time.deltaTime;
             yield return null;
             if (isMoving)
             {
-                pickUpTimeElapsed = 0;
-                pickingUp = null;
+                interactTimeElapsed = 0;
+                interacting = null;
                 movementState = MovementState.Idle;
                 yield break;
             }
         }
         navMeshAgent.ResetPath();
-        if (inspected.Contains(item.nameForInspected))
+        if (action == "pickUp")
             PickUp(item);
-        else
+        else if (action == "inspect")
             StartCoroutine(Inspect(item));
+        else if (action == "use")
+            Use(item);
         movementState = MovementState.Idle;
-        pickUpTimeElapsed = 0;
-        pickingUp = null;
+        interactTimeElapsed = 0;
+        interactTarget = null;
+        interacting = null;
     }
 
     public IEnumerator Eat(Food food)
@@ -333,7 +334,7 @@ public class Player : MonoBehaviour, IDamageable<float>
         HolsterWeapon();
         aimTimeElapsed = 0;
         reloadTimeElapsed = 0;
-        pickUpTarget = null;
+        interactTarget = null;
         while (eatingTimeElapsed < food.eatingTime)
         {
             eatingTimeElapsed += Time.deltaTime;
@@ -382,7 +383,7 @@ public class Player : MonoBehaviour, IDamageable<float>
             yield break;
         inspecting = target;
         fov.target = null;
-        pickUpTarget = null;
+        interactTarget = null;
         HolsterWeapon();
         while (inspecting)
         {
@@ -463,7 +464,6 @@ public class Player : MonoBehaviour, IDamageable<float>
                     i = -1;
                 itemSelected = items[i + 1];
             }
-            itemSelectionChanged = true;
         }
     }
 
@@ -482,7 +482,6 @@ public class Player : MonoBehaviour, IDamageable<float>
                     i = items.Count;
                 itemSelected = items[i - 1];
             }
-            itemSelectionChanged = true;
         }
     }
 
@@ -574,17 +573,14 @@ public class Player : MonoBehaviour, IDamageable<float>
                 if (item.transform.parent.gameObject.GetComponent<Container>())
                     item.transform.parent.gameObject.GetComponent<Container>().NextItem();
             item.AddToInventory();
-            if (!inspected.Contains(item.nameForInspected))
-                inspected.Add(item.nameForInspected);
-            inspecting = null;
-            fov.target = null;
-            CalculateFoodInInventory();
-            CalculateAmmoInInventory();
         }
         else
             if (item.GetComponent<Ammo>())
                 RefillAmmo(item as Ammo);
-        pickUpTarget = null;
+        inspecting = null;
+        fov.target = null;
+        CalculateFoodInInventory();
+        CalculateAmmoInInventory();
     }
 
     public void Drop(Item item)
@@ -598,8 +594,8 @@ public class Player : MonoBehaviour, IDamageable<float>
     private void Use(Item item)
     {
         inspecting = null;
+        interactTarget = null;
         fov.target = null;
-        inspected.Add(item.nameForInspected);
         item.Use(this);
         //if (item.transform.parent)
             //if (item.transform.parent.gameObject.GetComponent<Container>())
@@ -612,7 +608,7 @@ public class Player : MonoBehaviour, IDamageable<float>
         {
             if (Input.GetButtonDown("Submit"))
             {
-                transitioning = true;
+                pickUpPressed = true;
                 PickUp(inspecting);
             }
             else if (Input.GetButtonDown("Use"))
@@ -636,7 +632,7 @@ public class Player : MonoBehaviour, IDamageable<float>
                 StartCoroutine(Aiming());
                 if (Input.GetButtonDown("Reload"))
                 {
-                    transitioning = true;
+                    pickUpPressed = true;
                     StartCoroutine(Reloading(rangedWeaponEquipped));
                 }
                 if (Input.GetMouseButton(1))
@@ -673,46 +669,65 @@ public class Player : MonoBehaviour, IDamageable<float>
                 else
                     movementState = MovementState.Idle;
             }
-            if (Input.GetMouseButton(0) || Input.GetAxis("Fire") > 0 || Input.GetKey(KeyCode.Tab))
+            if (Input.GetMouseButton(0) || Input.GetAxis("Fire") > 0)
                 StartCoroutine(MeleeAttack());
-            if (Input.GetAxis("InventoryAxis") < 0)
+            if (Input.GetAxis("InventoryHorizontal") < 0)
             {
-                if (itemSelectionChanged == false)
+                if (inventoryPressed == false)
+                {
+                    inventoryPressed = true;
                     ChangeItemSelectedDown();
+                } 
             }
-            else if (Input.GetAxis("InventoryAxis") > 0 || Input.GetKeyDown(KeyCode.BackQuote))
+            else if (Input.GetAxis("InventoryHorizontal") > 0)
             {
-                if (itemSelectionChanged == false)
+                if (inventoryPressed == false)
+                {
+                    inventoryPressed = true;
                     ChangeItemSelectedUp();
+                }
+            }
+            else if (Input.GetAxis("InventoryVertical") > 0)
+            {
+                if (inventoryPressed == false)
+                {
+                    inventoryPressed = true;
+                    if (itemSelected)
+                        itemSelected.Use(this);
+                }
+
+            }
+            else if (Input.GetAxis("InventoryVertical") < 0)
+            {
+                if (inventoryPressed == false)
+                {
+                    inventoryPressed = true;
+                    if (itemSelected)
+                        Drop(itemSelected);
+                }
             }
             else
-                itemSelectionChanged = false;
-            if (Input.GetButtonDown("Use"))
-                if (itemSelected)
-                    itemSelected.Use(this);
-            if (Input.GetButtonDown("Cancel"))
-                if (itemSelected)
-                    Drop(itemSelected);
+                inventoryPressed = false;
         }
-
+        string action = "inspect";
         if (input.magnitude > 0)
         {
             navMeshAgent.ResetPath();
-            pickUpTarget = null;
+            interactTarget = null;
             intent = camForward * input.y + camRight * input.x;
             if (intent != Vector3.zero)
                 transform.rotation = Quaternion.Lerp(transform.rotation, Quaternion.LookRotation(intent), turnSpeed * Time.deltaTime);
         }
         else
         {
-            if (Input.GetButton("PickUp") && transitioning == false)
+            if (Input.GetButton("PickUp") && pickUpPressed == false)
             {
                 if (fov.target && isAiming == false)
                 {
                     if (fov.target.GetComponent<Item>())
                     {
-                        pickUpTarget = fov.target.GetComponent<Item>();
-                        navTarget = pickUpTarget.gameObject;
+                        interactTarget = fov.target.GetComponent<Item>();
+                        navTarget = interactTarget.gameObject;
                     }
                     if (fov.target.GetComponent<Container>())
                     {
@@ -728,20 +743,20 @@ public class Player : MonoBehaviour, IDamageable<float>
             if (fov.target)
                 if (fov.target.name == "Door")
                 {
-                    transitioning = true;
+                    pickUpPressed = true;
                     fov.target.GetComponent<Door>().Interact();
                 }
 
         if (Input.GetButtonUp("PickUp"))
-            transitioning = false;
+            pickUpPressed = false;
 
         if (navTarget)
-            if (Vector3.Distance(transform.position, navTarget.transform.position) < grabDistance)
+            if (Vector3.Distance(transform.position, navTarget.transform.position) < interactDistance)
             {
                 navMeshAgent.ResetPath();
-                if (pickUpTarget)
-                    if (navTarget == pickUpTarget.gameObject)
-                        StartCoroutine(PickingUp(pickUpTarget));
+                if (interactTarget)
+                    if (navTarget == interactTarget.gameObject)
+                        StartCoroutine(Interacting(interactTarget, action));
                 if (navTarget.GetComponent<Container>())
                     if (Input.GetButton("PickUp"))
                         if (isMoving == false)
@@ -761,8 +776,8 @@ public class Player : MonoBehaviour, IDamageable<float>
         }
         DrawWeapon(rangedWeaponEquipped);
         isHoldingLargeRanged = rangedWeaponEquipped.large;
-        pickUpTarget = null;
-        pickUpTimeElapsed = 0;
+        interactTarget = null;
+        interactTimeElapsed = 0;
         aimTimeElapsed = 0;
         while (isAiming)
         {
@@ -931,7 +946,6 @@ public class Player : MonoBehaviour, IDamageable<float>
         ES3.Save("playerItems", items);
         ES3.Save("playerItemSelected", itemSelected);
         ES3.Save("backpackEquipped", backpackEquipped);
-        ES3.Save("inspected", inspected);
     }
 
     private void CheckDanger()

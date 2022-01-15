@@ -5,7 +5,6 @@ using UnityEngine;
 public abstract class Item : MonoBehaviour
 {
     public string displayName;
-    public string nameForInspected;
     public string goid;
     public string descriptiveText;
     public int amount;

@@ -224,7 +224,6 @@ public class Player : MonoBehaviour, IDamageable<float>
 
     public IEnumerator Reloading(RangedWeapon weapon, Ammo ammo = null)
     {
-        reloading = weapon;
         if (ammo == null)
             foreach (Item item in items)
                 if (item.GetComponent<Ammo>())
@@ -244,6 +243,7 @@ public class Player : MonoBehaviour, IDamageable<float>
             reloading = null;
             yield break;
         }
+        reloading = weapon;
         while (reloadTimeElapsed < weapon.reloadTime)
         {
             aimTimeElapsed = 0;
@@ -263,10 +263,43 @@ public class Player : MonoBehaviour, IDamageable<float>
         CalculateAmmoInInventory();
     }
 
+    private void RefillAmmo(Ammo ammo)
+    {
+        Ammo inventoryAmmo = null;
+        foreach (Item item in items)
+            if (item.GetComponent<Ammo>())
+                if (item.GetComponent<Ammo>().ammoType == ammo.ammoType && item.GetComponent<Ammo>().amount < item.GetComponent<Ammo>().maxAmount)
+                {
+                    inventoryAmmo = item as Ammo;
+                    break;
+                }
+        if (inventoryAmmo == null)
+            return;
+        int refillAmount = Mathf.Min((inventoryAmmo.maxAmount - inventoryAmmo.amount), ammo.amount);
+        ammo.amount -= refillAmount;
+        inventoryAmmo.amount += refillAmount;
+        CalculateAmmoInInventory();
+        if (ammo.amount > 0)
+        {
+            RefillAmmo(ammo);
+        }
+        else
+            ammo.Destroy();
+    }
+
     private IEnumerator PickingUp(Item item)
     {
         if (pickingUp)
             yield break;
+        int storage = 0;
+        if (backpackEquipped)
+            storage = backpackEquipped.storage;
+        if (items.Count >= inventorySize + storage)
+        {
+            if (item.GetComponent<Ammo>())
+                RefillAmmo(item as Ammo);
+            yield break;
+        }
         pickingUp = item;
         HolsterWeapon();
         aimTimeElapsed = 0;
@@ -281,6 +314,7 @@ public class Player : MonoBehaviour, IDamageable<float>
             {
                 pickUpTimeElapsed = 0;
                 pickingUp = null;
+                movementState = MovementState.Idle;
                 yield break;
             }
         }
@@ -557,6 +591,9 @@ public class Player : MonoBehaviour, IDamageable<float>
             CalculateFoodInInventory();
             CalculateAmmoInInventory();
         }
+        else
+            if (item.GetComponent<Ammo>())
+                RefillAmmo(item as Ammo);
         pickUpTarget = null;
     }
 
@@ -866,7 +903,6 @@ public class Player : MonoBehaviour, IDamageable<float>
                     {
                         emptyBoxesToDestroy.Add(ammo);
                     }
-                    ammo.UpdateName();
                 }
             }
             if (emptyBoxesToDestroy.Count > 0)

@@ -23,7 +23,7 @@ public class RangedWeapon : Item
     {
         name = displayName;
         goid = GetInstanceID().ToString();
-        descriptiveText = "Semi-automatic\nDamage: " + rangedAttackDamage + "\nTime to aim: " + aimTime + "\nNoise: " + rangedAttackNoise + "\nRange: " + rangedAttackRange + "\nLT to aim, RT to fire";
+        descriptiveText = "Damage: " + rangedAttackDamage + "\nTime to aim: " + aimTime + "\nRange: " + rangedAttackRange + "\nLT to aim, RT to fire";
         Load();
     }
 
@@ -52,7 +52,7 @@ public class RangedWeapon : Item
                 int storage = 0;
                 if (owner.backpackEquipped)
                     storage = owner.backpackEquipped.storage;
-                if (owner.items.Count < owner.inventorySize + storage)
+                if (owner.items.Count < owner.inventorySize + storage || owner.items.Contains(this))
                 {
                     owner.rangedWeaponEquipped.Unequip(owner);
                     isReplacingEquipment = true;

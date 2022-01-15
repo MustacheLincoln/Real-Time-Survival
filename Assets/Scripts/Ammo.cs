@@ -10,12 +10,11 @@ public class Ammo : Item
     private void Start()
     {
         goid = GetInstanceID().ToString();
-        descriptiveText = amount + " " + ammoType + " cartridges";
+        descriptiveText = "A box of " + ammoType + " cartridges";
         Load();
-        UpdateName();
     }
 
-    public void UpdateName()
+    public void Update()
     {
         name = displayName + " (" + amount + ")";
     }

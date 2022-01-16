@@ -24,8 +24,6 @@ public class Player : MonoBehaviour, IDamageable<float>
 
     float pickUpTime = .25f;
     float interactTimeElapsed;
-    public Item interactTarget;
-    GameObject navTarget;
 
     public float danger = 0;
     public float speed;
@@ -44,6 +42,8 @@ public class Player : MonoBehaviour, IDamageable<float>
     public int inventorySize = 4;
     public bool meleeAttacking = false;
     bool inventoryPressed = false;
+    bool pickUpPressed;
+    public float searchTimeElapsed;
 
     float rangedAttackCooldown;
     public float reloadTimeElapsed;
@@ -62,6 +62,7 @@ public class Player : MonoBehaviour, IDamageable<float>
     public Food eating;
     public Item inspecting;
     public Item interacting;
+    public GameObject navigatingTo;
     public RangedWeapon reloading;
     public Item itemSelected;
     public float eatingTimeElapsed;
@@ -87,8 +88,6 @@ public class Player : MonoBehaviour, IDamageable<float>
 
     public enum MovementState { Idle, Walking, Running, Crouching, CrouchWalking, Holding }
     public MovementState movementState;
-    public float searchTimeElapsed;
-    private bool pickUpPressed;
 
     private void Awake()
     {
@@ -284,7 +283,7 @@ public class Player : MonoBehaviour, IDamageable<float>
             ammo.Destroy();
     }
 
-    private IEnumerator Interacting(Item item, string action)
+    private IEnumerator Interacting(Item item, string method)
     {
         if (interacting)
             yield break;
@@ -307,15 +306,14 @@ public class Player : MonoBehaviour, IDamageable<float>
             }
         }
         navMeshAgent.ResetPath();
-        if (action == "pickUp")
+        if (method == "pickUp")
             PickUp(item);
-        else if (action == "inspect")
+        else if (method == "inspect")
             StartCoroutine(Inspect(item));
-        else if (action == "use")
+        else if (method == "use")
             Use(item);
         movementState = MovementState.Idle;
         interactTimeElapsed = 0;
-        interactTarget = null;
         interacting = null;
     }
 
@@ -334,7 +332,6 @@ public class Player : MonoBehaviour, IDamageable<float>
         HolsterWeapon();
         aimTimeElapsed = 0;
         reloadTimeElapsed = 0;
-        interactTarget = null;
         while (eatingTimeElapsed < food.eatingTime)
         {
             eatingTimeElapsed += Time.deltaTime;
@@ -383,7 +380,6 @@ public class Player : MonoBehaviour, IDamageable<float>
             yield break;
         inspecting = target;
         fov.target = null;
-        interactTarget = null;
         HolsterWeapon();
         while (inspecting)
         {
@@ -594,7 +590,6 @@ public class Player : MonoBehaviour, IDamageable<float>
     private void Use(Item item)
     {
         inspecting = null;
-        interactTarget = null;
         fov.target = null;
         item.Use(this);
         //if (item.transform.parent)
@@ -606,7 +601,7 @@ public class Player : MonoBehaviour, IDamageable<float>
     {
         if (inspecting)
         {
-            if (Input.GetButtonDown("Submit"))
+            if (Input.GetButtonDown("PickUp"))
             {
                 pickUpPressed = true;
                 PickUp(inspecting);
@@ -709,33 +704,23 @@ public class Player : MonoBehaviour, IDamageable<float>
             else
                 inventoryPressed = false;
         }
-        string action = "inspect";
         if (input.magnitude > 0)
         {
             navMeshAgent.ResetPath();
-            interactTarget = null;
             intent = camForward * input.y + camRight * input.x;
             if (intent != Vector3.zero)
                 transform.rotation = Quaternion.Lerp(transform.rotation, Quaternion.LookRotation(intent), turnSpeed * Time.deltaTime);
         }
         else
         {
-            if (Input.GetButton("PickUp") && pickUpPressed == false)
+            if (fov.target && isAiming == false)
             {
-                if (fov.target && isAiming == false)
-                {
-                    if (fov.target.GetComponent<Item>())
-                    {
-                        interactTarget = fov.target.GetComponent<Item>();
-                        navTarget = interactTarget.gameObject;
-                    }
-                    if (fov.target.GetComponent<Container>())
-                    {
-                        navTarget = fov.target;
-                    }
-                }
-                if (navTarget)
-                    navMeshAgent.destination = navTarget.transform.position;
+                if (Input.GetButton("PickUp") && pickUpPressed == false)
+                        StartCoroutine(Approach(fov.target, "pickUp"));
+                else if (Input.GetButtonDown("Use"))
+                        StartCoroutine(Approach(fov.target, "use"));
+                else if (Input.GetButtonDown("Inspect"))
+                        StartCoroutine(Approach(fov.target, "inspect"));
             }
         }
 
@@ -748,22 +733,25 @@ public class Player : MonoBehaviour, IDamageable<float>
                 }
 
         if (Input.GetButtonUp("PickUp"))
-            pickUpPressed = false;
-
-        if (navTarget)
-            if (Vector3.Distance(transform.position, navTarget.transform.position) < interactDistance)
-            {
-                navMeshAgent.ResetPath();
-                if (interactTarget)
-                    if (navTarget == interactTarget.gameObject)
-                        StartCoroutine(Interacting(interactTarget, action));
-                if (navTarget.GetComponent<Container>())
-                    if (Input.GetButton("PickUp"))
-                        if (isMoving == false)
-                            Search(navTarget.GetComponent<Container>());
-            }    
+            pickUpPressed = false; 
     }
 
+    private IEnumerator Approach(GameObject target, string method)
+    {
+        if (navigatingTo)
+            yield break;
+        navigatingTo = target;
+        navMeshAgent.destination = navigatingTo.transform.position;
+        while (Vector3.Distance(transform.position, navigatingTo.transform.position) > interactDistance)
+            yield return null;
+        navMeshAgent.ResetPath();
+        if (target.GetComponent<Item>())
+            StartCoroutine(Interacting(target.GetComponent<Item>(), method));
+        if (target.GetComponent<Container>())
+            if (Input.GetButton("PickUp"))
+                    Search(target.GetComponent<Container>());
+        navigatingTo = null;
+    }
     private IEnumerator Aiming()
     {
         if (isAiming)
@@ -776,7 +764,6 @@ public class Player : MonoBehaviour, IDamageable<float>
         }
         DrawWeapon(rangedWeaponEquipped);
         isHoldingLargeRanged = rangedWeaponEquipped.large;
-        interactTarget = null;
         interactTimeElapsed = 0;
         aimTimeElapsed = 0;
         while (isAiming)

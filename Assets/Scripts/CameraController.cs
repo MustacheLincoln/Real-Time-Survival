@@ -1,22 +1,11 @@
-using System;
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.Rendering;
-using UnityEngine.Rendering.Universal;
-using UnityEngine.UI;
 
 public class CameraController : MonoBehaviour
 {
     public static CameraController Instance { get; private set; }
-    public Transform inspectPoint;
-    public Volume volume;
-    public DepthOfField depthOfField;
-    public Image black;
     Transform cameraTransform;
     Transform followTransform;
     Player player;
-    GameManager gm;
     float movementTime = 10;
     float rotationSpeed = 100;
     Vector3 zoomSpeed = new Vector3(0, -200, 200);
@@ -35,7 +24,6 @@ public class CameraController : MonoBehaviour
     private void Start()
     {
         player = Player.Instance;
-        gm = GameManager.Instance;
         cameraTransform = Camera.main.transform;
         followTransform = player.transform;
         newPosition = ES3.Load("cameraPosition", transform.position);
@@ -43,7 +31,6 @@ public class CameraController : MonoBehaviour
         newZoom = ES3.Load("cameraZoom", cameraTransform.localPosition);
         if (followTransform)
             newPosition = followTransform.position;
-        volume.profile.TryGet(out depthOfField);
     }
 
     private void LateUpdate()

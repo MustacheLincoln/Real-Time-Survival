@@ -793,7 +793,9 @@ public class Player : MonoBehaviour, IDamageable<float>
             {
                 aimTimeElapsed = 0;
                 if (Input.GetMouseButton(0) || Input.GetAxis("Fire") > 0 || Input.GetKey(KeyCode.Tab))
-                    StartCoroutine(Reloading(rangedWeaponEquipped));
+                {
+                    //Click
+                }
             }
             if (Input.GetMouseButton(0) || Input.GetAxis("Fire") > 0)
             {

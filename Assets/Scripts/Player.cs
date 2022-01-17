@@ -305,7 +305,6 @@ public class Player : MonoBehaviour, IDamageable<float>
                 yield break;
             }
         }
-        navMeshAgent.ResetPath();
         if (method == "pickUp")
             PickUp(item);
         else if (method == "inspect")
@@ -742,9 +741,18 @@ public class Player : MonoBehaviour, IDamageable<float>
             yield break;
         navigatingTo = target;
         navMeshAgent.destination = navigatingTo.transform.position;
-        while (Vector3.Distance(transform.position, navigatingTo.transform.position) > interactDistance)
+        while (Vector3.Distance(transform.position, navigatingTo.transform.position) >= interactDistance)
+        {
             yield return null;
+            if (input.magnitude > 0)
+            {
+                navigatingTo = null;
+                yield break;
+            }
+        }
         navMeshAgent.ResetPath();
+        while (isMoving)
+            yield return null;
         if (target.GetComponent<Item>())
             StartCoroutine(Interacting(target.GetComponent<Item>(), method));
         if (target.GetComponent<Container>())
